@@ -1,3 +1,5 @@
-.idea/
-
-target/
+*.class
+*.jar
+target
+.idea
+uploads
