@@ -5,4 +5,4 @@ http://localhost:8080/deleteUser?id=3
 http://localhost:8080/searchUsers?searchQuery=school
 
 
-тут лежать реквесты на тесты сайтика
+тут лежат реквесты на тесты сайтика
