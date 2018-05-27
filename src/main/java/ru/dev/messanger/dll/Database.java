@@ -16,12 +16,12 @@ public class Database implements AbstractDal {
 
     public Database() {
         properties = new Properties();
-        properties.setProperty("url", "jdbc:mariadb://localhost/messenger?useUnicode=yes&characterEncoding=UTF-8");
+        properties.setProperty("url", "jdbc:mariadb://localhost:3306/messenger?useUnicode=yes&characterEncoding=UTF-8");
         properties.setProperty("jdbc.driver", "org.mariadb.jdbc.Driver");
         properties.setProperty("user", "root");
         properties.setProperty("password", "root");
 
-        url = "jdbc:mariadb://localhost/messenger?useUnicode=yes&characterEncoding=UTF-8";
+        url = "jdbc:mariadb://localhost:3306/messenger?useUnicode=yes&characterEncoding=UTF-8";
 
         try {
             Class.forName("org.mariadb.jdbc.Driver");
