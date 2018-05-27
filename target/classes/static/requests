@@ -1,0 +1,5 @@
+http://localhost:8080/setUser?email=1&login=1&password=1&first_name=1&last_name=1&sex=1&status=1&avatar=1
+http://localhost:8080/getUser?id=3
+http://localhost:8080/updateUser?id=3&password=1&first_name=1&last_name=1&sex=1&status=1&avatar=1
+http://localhost:8080/deleteUser?id=3
+http://localhost:8080/searchUsers?searchQuery=school

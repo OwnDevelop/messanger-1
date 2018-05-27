@@ -1,0 +1,183 @@
+body{
+  background-color: #E7EBF0;
+}
+.brand{
+  color: #14489E;
+  font-weight: 700;
+}
+.navbar-brand{
+  display: block;
+}
+.navbar-brand img{
+  margin-top: -10px;
+  display: inline-block;
+}
+.col-sm-3,.col-sm-9, .col-xs-2, .col-xs-8{
+  padding: 0;
+}
+.content{
+/*   height: 88vh; */
+  background-color: white;
+}
+.list{
+  border-bottom: 1px solid blue;
+  height: 300px;
+}
+.content:nth-child(1){
+  border-right: 1px grey solid;
+  border-bottom: 1px grey solid;
+  height: 300px;
+}
+.action-box{
+  padding: 10px 0;
+  border-bottom: 1px solid grey;
+}
+.content .create-conversation{
+  width: 90%;
+  margin: 0 5%;
+}
+.search-dialog{
+  padding: 0 5% ;
+  margin-bottom: 10px;
+}
+.search-dialog input{
+  width: 100%;
+  border: none;
+  background-color: #F2F2F2;
+}
+.search-dialog input:focus{
+  background-color: white;
+}
+.scroll-pane {
+	width: 100%; /* Ширина видимой области*/
+ 	height: 60vh; /* Высота видимой области*/ 
+/*   height: 60vh; */
+	overflow-y: auto; /* Если отключены скрипты это правило позволит отобразить обычный скролл */
+  overflow-x: none;
+}
+.profile-photo{
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 5px;
+}
+.dialog:hover{
+  background-color: rgb(199, 221, 231);
+  /* background-color: rgb(122, 255, 166); */
+  cursor: pointer;
+}
+.dial-name{
+  display: inline-block;
+  margin-top: 10px;
+}
+.short-message{
+  margin-left: 15px;
+  margin-top: 5px;
+  padding-bottom: 10px;
+}
+.dialog .profile-photo{
+  margin-left: 15px;
+  margin-top: 10px;
+}
+.last-message-time{
+  margin-left: 5px;
+  display: inline-block;
+}
+.badge{
+  float: right;
+  margin-top: -50px;
+  margin-right: 10px;
+  padding: 5px 10px;
+  background-color: grey;
+}
+.message{
+  padding-top: 5px;
+}
+.message .profile-photo{
+  margin-left: 50px;
+}
+.full-message{
+  margin-top: 10px;
+  margin-left: 50px;
+  margin-right: 30px;
+  padding-bottom: 15px;
+}
+.messages{
+  height: 75vh;
+}
+.sender{
+  position: relative;
+  height: 80px;
+  background-color: white;
+  padding: 5px;
+  margin: 0;
+}
+.send-field{
+  height: 40px;
+  display: inline-block;
+  border-left: 1px black solid;
+  border-right: 1px black solid;
+  border-bottom: 2px grey solid;
+  margin: 10px 10px 0 10px;
+  width: 50%;
+  resize: none;
+  margin: 10px 5px 0 0;
+}
+.send-field:focus{
+  border-bottom: 2px blue solid;
+}
+textarea.scroll-pane{
+  display: inline-block;
+}
+
+.sender .profile-photo{
+  margin-top: 10px;
+}
+button.btn{
+  width: auto;
+  height: auto;
+  margin-top: 10px;
+}
+
+
+
+.activeted,.activeted a{
+  /* background-color: rgb(88, 255, 82); */
+  background-color: #6490B1;
+  color: white;
+}
+.activeted:hover{
+   background-color: #6490B1;
+   /* background-color: rgb(14, 143, 9); */
+}
+.selected{
+  background-color: #00c7ff;
+  color: white;
+}
+
+.modal-body .profile-img{
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  margin-left: 30px;
+}
+.modal-body .name{
+  margin-top: 20px;
+  font-size: 24px;
+}
+.modal-body .btn-write{
+  width: 100%;
+  margin-top: 30px;
+}
+
+@media(min-width: 768px){
+  .content:nth-child(1){
+    border-right: 1px grey solid;
+    border-bottom: none;
+    height: 88vh;
+  }
+  .send-field{
+    width: 60%;
+  }
+}
