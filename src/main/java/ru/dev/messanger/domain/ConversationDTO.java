@@ -1,4 +1,4 @@
-package domain;
+package ru.dev.messanger.domain;
 
 import java.util.Date;
 import java.util.List;

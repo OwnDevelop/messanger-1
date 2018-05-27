@@ -1,4 +1,4 @@
-package domain;
+package ru.dev.messanger.domain;
 
 public class MessageConversationDTO extends SendMessageDTO {
     private String image_url;

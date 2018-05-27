@@ -1,4 +1,4 @@
-package domain;
+package ru.dev.messanger.domain;
 
 public class NewUserDTO extends UserDTO {
     private String password;
