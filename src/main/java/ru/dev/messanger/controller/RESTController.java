@@ -8,9 +8,10 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.dev.messanger.dll.Database;
 import ru.dev.messanger.entities.ConversationDTO;
 import ru.dev.messanger.entities.NewUserDTO;
+import ru.dev.messanger.entities.SentMessageDTO;
 
-import java.util.Date;
-import java.util.UUID;
+import javax.validation.constraints.Max;
+import java.util.*;
 
 @RestController
 public class RESTController {
@@ -66,7 +67,7 @@ public class RESTController {
             @RequestParam String sex,
             @RequestParam String status,
             @RequestParam String avatar
-            ) {
+    ) {
         NewUserDTO user = new NewUserDTO();
         user.setId(id);
         user.setPassword(password);
@@ -78,6 +79,7 @@ public class RESTController {
 
         return new Gson().toJson(Database.INSTANCE.updateUser(user, id));
     }
+
     @RequestMapping(value = "/deleteUser", method = RequestMethod.GET, produces = "application/json")
     public String deleteUser(
             @RequestParam int id
@@ -86,37 +88,58 @@ public class RESTController {
         user.setId(id);
         return new Gson().toJson(Database.INSTANCE.deleteUser(user));
     }
+
     @RequestMapping(value = "/searchUsers", method = RequestMethod.GET, produces = "application/json")
     public String searchUsers(
             @RequestParam String searchQuery
     ) {
         return new Gson().toJson(Database.INSTANCE.searchUsers(searchQuery));
     }
-  //АПАСНО
-   @RequestMapping(value = "/getConversations", method = RequestMethod.GET, produces = "application/json")
+
+    @RequestMapping(value = "/getConversations", method = RequestMethod.GET, produces = "application/json")
     public String getConversations(
             @RequestParam int id
     ) {
         return new Gson().toJson(Database.INSTANCE.getConversations(id));
     }
 
-  @RequestMapping(value = "/getDialogs", method = RequestMethod.GET, produces = "application/json")
-  public String getDialogs(
-          @RequestParam int id
-  ) {
-      return new Gson().toJson(Database.INSTANCE.getDialogs(id));
-  }
+    @RequestMapping(value = "/getDialogs", method = RequestMethod.GET, produces = "application/json")
+    public String getDialogs(
+            @RequestParam int id
+    ) {
+        return new Gson().toJson(Database.INSTANCE.getDialogs(id));
+    }
 
+    //АПАСНО
     @RequestMapping(value = "/setConversation", method = RequestMethod.GET, produces = "application/json")
     public String setConversation(
             @RequestParam int admin_id,
             @RequestParam String title
-            ) {
+    ) {
         ConversationDTO conversation = new ConversationDTO();
         conversation.setAdmin_id(admin_id);
         conversation.setTitle(title);
-        conversation.setParticipants_id(null);
+        List<Integer> list = new ArrayList<Integer>();
+        list.add(0);
+        conversation.setParticipants_id(list);
+        list.add(0);
 
         return new Gson().toJson(Database.INSTANCE.setConversation(conversation));
+    }
+
+    @RequestMapping(value = "/setMessage", method = RequestMethod.GET, produces = "application/json")
+    public String setMessage(
+            @RequestParam int from_id,
+            @RequestParam int conversation_id,
+            @RequestParam String message,
+            @RequestParam String attachment_url
+    ) {
+        SentMessageDTO messageDTO = new SentMessageDTO();
+        messageDTO.setFrom_id(from_id);
+        messageDTO.setConversation_id(conversation_id);
+        messageDTO.setMessage(message);
+        messageDTO.setAttachment_url(attachment_url);
+
+        return new Gson().toJson(Database.INSTANCE.setMessage(messageDTO));
     }
 }
