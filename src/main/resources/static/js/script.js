@@ -134,18 +134,25 @@ APP.utilities.actions = (function () {
     function showModal(id) {
         var html = "", i = id,
             user = {};
-        $modalBody = $('.modal-body'),
+            $modalBody = $('.modal-body'),
             $modalFooter = $('.modal-footer');
 
+        console.log("op");
+
         $.ajax({
-            url: "GetProfileInfo",
-            data: JSON.stringify(id),
+            url: "/getUser",
+            data: {id: i},
+            method: "GET",
             success: function (request) {
-                var res = JSON.parse(request);
+                console.log(request);
+                // var res = JSON.parse(request);
+                //console.log(res);
+
                 //дальнейшая работа
             },
-            error: function (e) {
-                console.log(e);
+            dateType: "json",
+            error: function (a,b,c) {
+                console.log(a,b,c);
             }
         });
 
