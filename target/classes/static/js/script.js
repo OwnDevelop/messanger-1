@@ -17,7 +17,7 @@ APP.createNamespace = function (path) {
     }
 
     return parent;
-}
+};
 
 APP.createNamespace('APP.models.buttons');
 APP.createNamespace('APP.models.fields');
@@ -27,7 +27,7 @@ APP.createNamespace('APP.utilities.actions');
 APP.createNamespace('APP.utilities.ajax');
 
 APP.models.entities = {
-    me: { id: 12, login: "BestGuy", url: "img/profiles/my.jpg", firstName: "Sergey", lastName: "Kovalenko", created_at: "6/10/1998", status: "Online", email: "best@people.math", sex:"male" },
+    me: { id: 1, login: "BestGuy", url: "img/profiles/my.jpg", firstName: "Sergey", lastName: "Kovalenko", created_at: "6/10/1998", status: "Online", email: "best@people.math", sex:"male" },
     dialogs: [{ id: 1, url: "img/profiles/my.jpg", name: "ivan", surname: "ivanov", lastMessage: "last msg", date: "9:05PM", unreaded: 5 },
     { id: 2, url: "img/profiles/my.jpg", name: "vova", surname: "ivanov", lastMessage: "last msg", date: "Yestarday", unreaded: 5 },
     { id: 3, url: "img/profiles/my.jpg", name: "vasya", surname: "ivanov", lastMessage: "last mess", date: "9:00 PM", unreaded: 5 },
@@ -36,7 +36,7 @@ APP.models.entities = {
     { id: 2, login: "hero", url: "img/profiles/my.jpg", firstName: "vova", lastName: "ivanov", created_at: "5/15/2018", status: "Online", email: "mail2@google.com", sex:"male"  },
     { id: 3, login: "MeetBoss", url: "img/profiles/my.jpg", firstName: "vasya", lastName: "ivanov", created_at: "5/12/2018", status: "Online", email: "mail3@google.com", sex:"male"  },
     { id: 4, login: "IAmHacker", url: "img/profiles/my.jpg", firstName: "petya", lastName: "ivanov", created_at: "5/18/2018", status: "Online", email: "mail4@google.com", sex:"male"  }]
-}
+};
 
 APP.models.buttons = {
     $btnSettings: $('.settings-btn'),
@@ -64,7 +64,7 @@ APP.utilities.actions = (function () {
         var $form = $('.jspPane:eq(0)'),
             $names = {},
             $dialogs = {},
-            html = '',
+            html = "",
             i = 0,
             elem = {};
 
@@ -82,7 +82,7 @@ APP.utilities.actions = (function () {
         });
 
         //работа с данными
-        for (i = 0; i < dialogs.length; i++) {
+        for (i = 0; i < dialogs.length; i+=1) {
             elem = dialogs[i];
 
             html += '<div class="dialog"><img class="profile-photo" src="' + elem.url + '" alt="user">' +
@@ -97,9 +97,11 @@ APP.utilities.actions = (function () {
         $names = $('.dial-name');
         $dialogs = $('.dialog');
 
-        for (i = 0; i < $names.length; i++) {
+        for(i = 0; i < $names.length; i+=1) {
             $dialogs[i].current = i;
-            $dialogs[i].onclick = openDialog;
+            $dialogs[i].onclick = function (e) {
+                openDialog(dialogs[this.current].id);
+            };
 
             $names[i].current = i;
             $names[i].onclick = function (e) {
@@ -109,15 +111,15 @@ APP.utilities.actions = (function () {
         }
     }
 
-    function openDialog() {
-        var data = { currentUserId: me.id, showId: dialogs[this.current].id }
+    function openDialog(id) {
+        var data = { currentUserId: me.id, showId: id }
 
         $.ajax({
             url: "GetMessage",
-            data: JSON.stringify(data),
+            data: data,
             success: function (request) {
-                var res = JSON.parse(request);
                 dialogs = res;
+                var res = JSON.parse(request);
                 //дальнейшая работа
             },
             error: function (a,b,c) {
@@ -128,28 +130,23 @@ APP.utilities.actions = (function () {
         $('.dialog').removeClass('activeted');
         $(this).addClass('activeted');
 
-        alert('show dialog for id: ' + this.current);
+        alert('show dialog for id: ' + id);
     }
 
     function showModal(id) {
         var html = "",
-            user = {};
             $modalBody = $('.modal-body'),
             $modalFooter = $('.modal-footer');
-
-        console.log("op");
 
         $.ajax({
             url: "/getUser",
             data: {id: id},
             method: "GET",
             success: function (request) {
-                console.log(request);
-
-                user=request;
+                var user=request;
 
                 if(user){
-                    html = '<div class="row"><div class="col-xs-5"><img class="profile-img" src="img/profiles/my.jpg" alt="user photo"></div>' +
+                    html = '<div class="row"><div class="col-xs-5"><img class="profile-img" src="'+user.avatar_url+'" alt="user photo"></div>' +
                         '<div class="col-xs-7"><div class="name text-center">' + user.firstName + ' ' + user.lastName + '</div>' +
                         '<div class="status text-center" >' + user.status + '</div>' +
                         '<button type="button" class="btn btn-default btn-write" data-dismiss="modal">Write</button></div></div></div>';
@@ -209,7 +206,7 @@ APP.utilities.actions = (function () {
                 maintainPosition: true,
                 stickToBottom: true
             });
-        }
+        };
     }
 
     function initializeSearch() {
