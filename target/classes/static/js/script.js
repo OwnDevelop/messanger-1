@@ -27,15 +27,15 @@ APP.createNamespace('APP.utilities.actions');
 APP.createNamespace('APP.utilities.ajax');
 
 APP.models.entities = {
-    me: { id: 100, login: "BestGuy", url: "img/profiles/my.jpg", name: "Sergey", surname: "Kovalenko", regDate: "6/10/1998", status: "Online", email: "best@people.math" },
+    me: { id: 12, login: "BestGuy", url: "img/profiles/my.jpg", firstName: "Sergey", lastName: "Kovalenko", created_at: "6/10/1998", status: "Online", email: "best@people.math", sex:"male" },
     dialogs: [{ id: 1, url: "img/profiles/my.jpg", name: "ivan", surname: "ivanov", lastMessage: "last msg", date: "9:05PM", unreaded: 5 },
     { id: 2, url: "img/profiles/my.jpg", name: "vova", surname: "ivanov", lastMessage: "last msg", date: "Yestarday", unreaded: 5 },
     { id: 3, url: "img/profiles/my.jpg", name: "vasya", surname: "ivanov", lastMessage: "last mess", date: "9:00 PM", unreaded: 5 },
     { id: 4, url: "img/profiles/my.jpg", name: "petya", surname: "ivanov", lastMessage: "last ", date: "5:05 PM", unreaded: 5 }],
-    profiles: [{ id: 1, login: "boss", url: "img/profiles/my.jpg", name: "ivan", surname: "ivanov", regDate: "5/19/2018", status: "Offline", email: "mail1@google.com" },
-    { id: 2, login: "hero", url: "img/profiles/my.jpg", name: "vova", surname: "ivanov", regDate: "5/15/2018", status: "Online", email: "mail2@google.com" },
-    { id: 3, login: "MeetBoss", url: "img/profiles/my.jpg", name: "vasya", surname: "ivanov", regDate: "5/12/2018", status: "Online", email: "mail3@google.com" },
-    { id: 4, login: "IAmHacker", url: "img/profiles/my.jpg", name: "petya", surname: "ivanov", regDate: "5/18/2018", status: "Online", email: "mail4@google.com" }]
+    profiles: [{ id: 1, login: "boss", url: "img/profiles/my.jpg", name: "ivan", lastName: "ivanov", created_at: "5/19/2018", status: "Offline", email: "mail1@google.com", sex:"male"  },
+    { id: 2, login: "hero", url: "img/profiles/my.jpg", firstName: "vova", lastName: "ivanov", created_at: "5/15/2018", status: "Online", email: "mail2@google.com", sex:"male"  },
+    { id: 3, login: "MeetBoss", url: "img/profiles/my.jpg", firstName: "vasya", lastName: "ivanov", created_at: "5/12/2018", status: "Online", email: "mail3@google.com", sex:"male"  },
+    { id: 4, login: "IAmHacker", url: "img/profiles/my.jpg", firstName: "petya", lastName: "ivanov", created_at: "5/18/2018", status: "Online", email: "mail4@google.com", sex:"male"  }]
 }
 
 APP.models.buttons = {
@@ -120,35 +120,55 @@ APP.utilities.actions = (function () {
                 dialogs = res;
                 //дальнейшая работа
             },
-            error: function (e) {
-                // console.log(e);
+            error: function (a,b,c) {
+                 console.log(a,b,c);
             }
         });
 
         $('.dialog').removeClass('activeted');
         $(this).addClass('activeted');
 
-        alert('show dialog for id: ' + dialogs[this.current].id);
+        alert('show dialog for id: ' + this.current);
     }
 
     function showModal(id) {
-        var html = "", i = id,
+        var html = "",
             user = {};
-        $modalBody = $('.modal-body'),
+            $modalBody = $('.modal-body'),
             $modalFooter = $('.modal-footer');
 
         console.log("op");
 
         $.ajax({
             url: "/getUser",
-            data: {id: i},
+            data: {id: id},
             method: "GET",
             success: function (request) {
                 console.log(request);
-                var res = JSON.parse(request);
-                //console.log(res);
 
-                //дальнейшая работа
+                user=request;
+
+                if(user){
+                    html = '<div class="row"><div class="col-xs-5"><img class="profile-img" src="img/profiles/my.jpg" alt="user photo"></div>' +
+                        '<div class="col-xs-7"><div class="name text-center">' + user.firstName + ' ' + user.lastName + '</div>' +
+                        '<div class="status text-center" >' + user.status + '</div>' +
+                        '<button type="button" class="btn btn-default btn-write" data-dismiss="modal">Write</button></div></div></div>';
+
+                    $modalBody.html(html);
+
+                    html = '<div class="row"><div class="col-xs-5"><h4 class="profile-info text-right">E-mail:</h4>' +
+                        '<h4 class="profile-info text-right">Login:</h4><h4 class="profile-info text-right">Sex:</h4><h4 class="profile-info text-right">Registration:</h4></div>' +
+                        '<div class="col-xs-7"><h4 class="profile-info text-left">' + user.email + '</h4>' +
+                        '<h4 class="profile-info text-left">' + user.login + '</h4>' +
+                        '<h4 class="profile-info text-left">' + user.sex + '</h4>' +
+                        '<h4 class="profile-info text-left">' + user.created_at + '</h4 ></div ></div >';
+
+                    $modalFooter.html(html);
+
+                    $('.btn-write').on('click', openDialog);
+
+                    $('#Modal').modal('show');
+                }
             },
             dateType: "json",
             error: function (a,b,c) {
@@ -156,31 +176,22 @@ APP.utilities.actions = (function () {
             }
         });
 
-        if (i != 100) {
-            user = profiles[i];
-        }
-        else {
-            user = me;
-        }
-
-        html = '<div class="row"><div class="col-xs-5"><img class="profile-img" src="img/profiles/my.jpg" alt="user photo"></div>' +
-            '<div class="col-xs-7"><div class="name text-center">' + user.name + ' ' + user.surname + '</div>' +
-            '<div class="status text-center" >' + user.status + '</div>' +
-            '<button type="button" class="btn btn-default btn-write" data-dismiss="modal">Write</button></div></div></div>';
-
-        $modalBody.html(html);
-
-        html = '<div class="row"><div class="col-xs-5"><h4 class="profile-info text-right">E-mail:</h4>' +
-            '<h4 class="profile-info text-right">Login:</h4><h4 class="profile-info text-right">Registration:</h4></div>' +
-            '<div class="col-xs-7"><h4 class="profile-info text-left">' + user.email + '</h4>' +
-            '<h4 class="profile-info text-left">' + user.login + '</h4>' +
-            '<h4 class="profile-info text-left">' + user.regDate + '</h4 ></div ></div >';
-
-        $modalFooter.html(html);
-
-        $('.btn-write').on('click', openDialog);
-
-        $('#Modal').modal('show');
+        // if (i != 100) {user = profiles[i];}
+        // else { user = me;}
+        // html = '<div class="row"><div class="col-xs-5"><img class="profile-img" src="img/profiles/my.jpg" alt="user photo"></div>' +
+        //     '<div class="col-xs-7"><div class="name text-center">' + user.firstName + ' ' + user.lastName + '</div>' +
+        //     '<div class="status text-center" >' + user.status + '</div>' +
+        //     '<button type="button" class="btn btn-default btn-write" data-dismiss="modal">Write</button></div></div></div>';
+        // $modalBody.html(html);
+        // html = '<div class="row"><div class="col-xs-5"><h4 class="profile-info text-right">E-mail:</h4>' +
+        //     '<h4 class="profile-info text-right">Login:</h4><h4 class="profile-info text-right">Sex:</h4><h4 class="profile-info text-right">Registration:</h4></div>' +
+        //     '<div class="col-xs-7"><h4 class="profile-info text-left">' + user.email + '</h4>' +
+        //     '<h4 class="profile-info text-left">' + user.login + '</h4>' +
+        //     '<h4 class="profile-info text-left">' + user.sex + '</h4>' +
+        //     '<h4 class="profile-info text-left">' + user.created_at + '</h4 ></div ></div >';
+        // $modalFooter.html(html);
+        // $('.btn-write').on('click', openDialog);
+        // $('#Modal').modal('show');
     }
 
     function initializeScroll() {
