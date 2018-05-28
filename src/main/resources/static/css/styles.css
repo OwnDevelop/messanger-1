@@ -72,9 +72,18 @@ body{
   margin-top: 10px;
 }
 .short-message{
+  max-width: 220px;
   margin-left: 15px;
   margin-top: 5px;
   padding-bottom: 10px;
+}
+.ellipsis{
+  -ms-text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  display: block;
 }
 .dialog .profile-photo{
   margin-left: 15px;

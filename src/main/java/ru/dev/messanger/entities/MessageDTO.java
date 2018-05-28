@@ -1,12 +1,16 @@
 package ru.dev.messanger.entities;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.Date;
 
 public class MessageDTO extends SentMessageDTO {
-
     private int id;
+    @SerializedName("avatar_url")
     private String image_url;
+    @SerializedName("firstName")
     private String first_name;
+    @SerializedName("lastName")
     private String last_name;
 
     public String getImage_url() {

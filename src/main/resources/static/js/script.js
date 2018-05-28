@@ -27,15 +27,45 @@ APP.createNamespace('APP.utilities.actions');
 APP.createNamespace('APP.utilities.ajax');
 
 APP.models.entities = {
-    me: { id: 1, login: "BestGuy", url: "img/profiles/my.jpg", firstName: "Sergey", lastName: "Kovalenko", created_at: "6/10/1998", status: "Online", email: "best@people.math", sex:"male" },
-    dialogs: [{ id: 1, url: "img/profiles/my.jpg", name: "ivan", surname: "ivanov", lastMessage: "last msg", date: "9:05PM", unreaded: 5 },
-    { id: 2, url: "img/profiles/my.jpg", name: "vova", surname: "ivanov", lastMessage: "last msg", date: "Yestarday", unreaded: 5 },
-    { id: 3, url: "img/profiles/my.jpg", name: "vasya", surname: "ivanov", lastMessage: "last mess", date: "9:00 PM", unreaded: 5 },
-    { id: 4, url: "img/profiles/my.jpg", name: "petya", surname: "ivanov", lastMessage: "last ", date: "5:05 PM", unreaded: 5 }],
-    profiles: [{ id: 1, login: "boss", url: "img/profiles/my.jpg", name: "ivan", lastName: "ivanov", created_at: "5/19/2018", status: "Offline", email: "mail1@google.com", sex:"male"  },
-    { id: 2, login: "hero", url: "img/profiles/my.jpg", firstName: "vova", lastName: "ivanov", created_at: "5/15/2018", status: "Online", email: "mail2@google.com", sex:"male"  },
-    { id: 3, login: "MeetBoss", url: "img/profiles/my.jpg", firstName: "vasya", lastName: "ivanov", created_at: "5/12/2018", status: "Online", email: "mail3@google.com", sex:"male"  },
-    { id: 4, login: "IAmHacker", url: "img/profiles/my.jpg", firstName: "petya", lastName: "ivanov", created_at: "5/18/2018", status: "Online", email: "mail4@google.com", sex:"male"  }]
+    me: {
+        id: 9,
+        login: "BestGuy",
+        url: "img/profiles/my.jpg",
+        firstName: "Sergey",
+        lastName: "Kovalenko",
+        created_at: "6/10/1998",
+        status: "Online",
+        email: "best@people.math",
+        sex: "male"
+    },
+    dialogs: [{
+        userId: 1,
+        avatar_url: "img/profiles/my.jpg",
+        firstName: "ivan",
+        lastName: "ivanov",
+        message: "last msg",
+        created_at: "9:05PM",
+        unreaded: 5
+    }],
+    profiles: [{
+        id: 1,
+        login: "boss",
+        url: "img/profiles/my.jpg",
+        name: "ivan",
+        lastName: "ivanov",
+        created_at: "5/19/2018",
+        status: "Offline",
+        email: "mail1@google.com",
+        sex: "male"
+    }],
+    conversations: [{
+        userId: 1,
+        from_id: 852,
+        title: "ivan",
+        message: "last msg",
+        created_at: "9:05PM",
+        unreaded: 5
+    }]
 };
 
 APP.models.buttons = {
@@ -55,7 +85,7 @@ APP.models.fields = {
 
 APP.utilities.actions = (function () {
     var dialogs = APP.models.entities.dialogs,
-        profiles = APP.models.entities.profiles,
+        conversations = APP.models.entities.conversations,
         me = APP.models.entities.me,
         buttons = APP.models.buttons;
     fields = APP.models.fields;
@@ -70,49 +100,95 @@ APP.utilities.actions = (function () {
 
         //получение диалогов из ajax
         $.ajax({
-            url: "GetDialogs",
+            url: "/getDialogs",
+            data: {id: me.id},
             success: function (request) {
-                var res = JSON.parse(request);
-                dialogs = res;
-                //дальнейшая работа
+                dialogs = request;
+                // console.log(dialogs);
+
+                //приходит отправитель сообщения (сам юзер)
+                for (i = 0; i < dialogs.length; i += 1) {
+                    elem = dialogs[i];
+
+                    html += '<div class="dialog"><img class="profile-photo" src="' + elem.avatar_url + '" alt="user">' +
+                        '<a class="dial-name">' + elem.firstName + ' ' + elem.lastName + '</a>' +
+                        '<span class="last-message-time">' + elem.created_at + '</span>' +
+                        '<div class="short-message ellipsis">' + elem.message + '</div>' +
+                        '<span class="badge">' + elem.unreaded + '</span></div>';
+                }
+
+                $form[0].innerHTML=html;
+
+                $names = $('.dial-name');
+                $dialogs = $('.dialog');
+
+                for (i = 0; i < $dialogs.length; i += 1) {
+                    $dialogs[i].current = i;
+                    $dialogs[i].onclick = function (e) {
+                        openDialog(dialogs[this.current].userId);
+                    };
+
+                    $names[i].current = i;
+                    $names[i].onclick = function (e) {
+                        e.stopPropagation();
+                        // console.log(dialogs[this.current].userId);
+                        // console.log(this.current);
+                        showModal(dialogs[this.current].userId);
+                    };
+                }
             },
             error: function (e) {
                 console.log(e);
             }
         });
 
-        //работа с данными
-        for (i = 0; i < dialogs.length; i+=1) {
-            elem = dialogs[i];
+        //TODO: доделать вывод бесед с учетом того, что подписка должна быть после диалогов
+        $.ajax({
+            url: "/getConversationsКОСЯК",
+            data: {id: me.id},
+            success: function (request) {
+                conversations = request;
+                // console.log(dialogs);
 
-            html += '<div class="dialog"><img class="profile-photo" src="' + elem.url + '" alt="user">' +
-                '<a class="dial-name">' + elem.name + ' ' + elem.surname + '</a>' +
-                '<span class="last-message-time">' + elem.date + '</span>' +
-                '<div class="short-message">' + elem.lastMessage + '</div>' +
-                '<span class="badge">' + elem.unreaded + '</span></div>';
-        }
+                //приходит отправитель сообщения (сам юзер)
+                for (i = 0; i < conversations.length; i += 1) {
+                    elem = conversations[i];
 
-        $form.html(html);
+                    html += '<div class="dialog"><img class="profile-photo" src="img/default/conversation.jpg" alt="user">' +
+                        '<a class="dial-name">' + elem.title+ '</a>' +
+                        '<span class="last-message-time">' + elem.created_at + '</span>' +
+                        '<div class="short-message ellipsis">' + elem.message + '</div>' +
+                        '<span class="badge">' + elem.unreaded + '</span></div>';
+                }
 
-        $names = $('.dial-name');
-        $dialogs = $('.dialog');
+                $form[0].innerHTML=html;
 
-        for(i = 0; i < $dialogs.length; i+=1) {
-            $dialogs[i].current = i;
-            $dialogs[i].onclick = function (e) {
-                openDialog(dialogs[this.current].id);
-            };
+                $names = $('.dial-name');
+                $dialogs = $('.dialog');
 
-            $names[i].current = i;
-            $names[i].onclick = function (e) {
-                e.stopPropagation();
-                showModal(dialogs[this.current].id);
-            };
-        }
+                for (i = 0; i < $dialogs.length; i += 1) {
+                    $dialogs[i].current = i;
+                    $dialogs[i].onclick = function (e) {
+                        openDialog(dialogs[this.current].userId);
+                    };
+
+                    $names[i].current = i;
+                    $names[i].onclick = function (e) {
+                        e.stopPropagation();
+                        // console.log(dialogs[this.current].userId);
+                        // console.log(this.current);
+                        showModal(dialogs[this.current].userId);
+                    };
+                }
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
     }
 
     function openDialog(id) {
-        var data = { currentUserId: me.id, showId: id }
+        var data = {currentUserId: me.id, showId: id}
 
         $.ajax({
             url: "GetMessage",
@@ -122,8 +198,8 @@ APP.utilities.actions = (function () {
                 var res = JSON.parse(request);
                 //дальнейшая работа
             },
-            error: function (a,b,c) {
-                 console.log(a,b,c);
+            error: function (a, b, c) {
+                console.log(a, b, c);
             }
         });
 
@@ -143,10 +219,10 @@ APP.utilities.actions = (function () {
             data: {id: id},
             method: "GET",
             success: function (request) {
-                var user=request;
+                var user = request;
 
-                if(user){
-                    html = '<div class="row"><div class="col-xs-5"><img class="profile-img" src="'+user.avatar_url+'" alt="user photo"></div>' +
+                if (user) {
+                    html = '<div class="row"><div class="col-xs-5"><img class="profile-img" src="' + user.avatar_url + '" alt="user photo"></div>' +
                         '<div class="col-xs-7"><div class="name text-center">' + user.firstName + ' ' + user.lastName + '</div>' +
                         '<div class="status text-center" >' + user.status + '</div>' +
                         '<button type="button" class="btn btn-default btn-write" data-dismiss="modal">Write</button></div></div></div>';
@@ -168,8 +244,8 @@ APP.utilities.actions = (function () {
                 }
             },
             dateType: "json",
-            error: function (a,b,c) {
-                console.log(a,b,c);
+            error: function (a, b, c) {
+                console.log(a, b, c);
             }
         });
 
