@@ -1,7 +1,6 @@
 *.class
 *.jar
-target
+target/
 .idea/
-uploads
 .idea/workspace.xml
 target/classes/static/js/script.js
