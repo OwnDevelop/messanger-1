@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName;
 import java.util.Date;
 
 public class MessageDTO extends SentMessageDTO {
-    private int id;
+  
     @SerializedName("avatar_url")
     private String image_url;
     @SerializedName("firstName")
@@ -35,13 +35,5 @@ public class MessageDTO extends SentMessageDTO {
 
     public void setLast_name(String last_name) {
         this.last_name = last_name;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 }
