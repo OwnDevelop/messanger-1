@@ -46,34 +46,7 @@ APP.models.entities = {
         message: "last msg",
         created_at: "9:05PM",
         unreaded: 5
-    },
-        {
-            userId: 2,
-            avatar_url: "img/profiles/my.jpg",
-            firstName: "vova",
-            lastName: "ivanov",
-            message: "last msg",
-            created_at: "Yestarday",
-            unreaded: 5
-        },
-        {
-            userId: 3,
-            url: "img/profiles/my.jpg",
-            name: "vasya",
-            surname: "ivanov",
-            lastMessage: "last mess",
-            date: "9:00 PM",
-            unreaded: 5
-        },
-        {
-            userId: 4,
-            url: "img/profiles/my.jpg",
-            name: "petya",
-            surname: "ivanov",
-            lastMessage: "last ",
-            date: "5:05 PM",
-            unreaded: 5
-        }],
+    }],
     profiles: [{
         id: 1,
         login: "boss",
@@ -84,40 +57,15 @@ APP.models.entities = {
         status: "Offline",
         email: "mail1@google.com",
         sex: "male"
-    },
-        {
-            id: 2,
-            login: "hero",
-            url: "img/profiles/my.jpg",
-            firstName: "vova",
-            lastName: "ivanov",
-            created_at: "5/15/2018",
-            status: "Online",
-            email: "mail2@google.com",
-            sex: "male"
-        },
-        {
-            id: 3,
-            login: "MeetBoss",
-            url: "img/profiles/my.jpg",
-            firstName: "vasya",
-            lastName: "ivanov",
-            created_at: "5/12/2018",
-            status: "Online",
-            email: "mail3@google.com",
-            sex: "male"
-        },
-        {
-            id: 4,
-            login: "IAmHacker",
-            url: "img/profiles/my.jpg",
-            firstName: "petya",
-            lastName: "ivanov",
-            created_at: "5/18/2018",
-            status: "Online",
-            email: "mail4@google.com",
-            sex: "male"
-        }]
+    }],
+    conversations: [{
+        userId: 1,
+        from_id: 852,
+        title: "ivan",
+        message: "last msg",
+        created_at: "9:05PM",
+        unreaded: 5
+    }]
 };
 
 APP.models.buttons = {
@@ -137,7 +85,7 @@ APP.models.fields = {
 
 APP.utilities.actions = (function () {
     var dialogs = APP.models.entities.dialogs,
-        profiles = APP.models.entities.profiles,
+        conversations = APP.models.entities.conversations,
         me = APP.models.entities.me,
         buttons = APP.models.buttons;
     fields = APP.models.fields;
@@ -169,30 +117,66 @@ APP.utilities.actions = (function () {
                         '<span class="badge">' + elem.unreaded + '</span></div>';
                 }
 
-                $form[0].innerHTML=html;
+                $form[0].innerHTML = html;
 
-                $names = $('.dial-name');
-                $dialogs = $('.dialog');
-
-                for (i = 0; i < $dialogs.length; i += 1) {
-                    $dialogs[i].current = i;
-                    $dialogs[i].onclick = function (e) {
-                        openDialog(dialogs[this.current].userId);
-                    };
-
-                    $names[i].current = i;
-                    $names[i].onclick = function (e) {
-                        e.stopPropagation();
-                        // console.log(dialogs[this.current].userId);
-                        // console.log(this.current);
-                        showModal(dialogs[this.current].userId);
-                    };
-                }
+                setEventsForDialogs();
             },
             error: function (e) {
                 console.log(e);
             }
         });
+
+        $.ajax({
+            url: "/getConversations",
+            data: {id: me.id},
+            success: function (request) {
+                html = "";
+                conversations = request;
+                console.log(conversations);
+                for (i = 0; i < conversations.length; i += 1) {
+                    elem = conversations[i];
+
+                    html += '<div class="conversation"><img class="profile-photo" src="img/defaults/conversation.jpg" alt="user">' +
+                        '<a class="convers-name">' + elem.title + '</a>' +
+                        '<span class="last-message-time">' + elem.created_at + '</span>' +
+                        '<div class="short-message ellipsis">' + elem.message + '</div>' +
+                        '<span class="badge">' + elem.countUnread + '</span></div>';
+                }
+
+                $form[0].innerHTML += html;
+                setEventsForDialogs();
+            },
+            error: function (e) {
+                console.log(e);
+            }
+        });
+    }
+
+    function setEventsForDialogs() {
+        var $dialNames = $('.dial-name'),
+            $conversNames = $('.convers-name'),
+            $dialogs = $('.dialog'),
+            $convers = $('.conversation');
+
+        for (i = 0; i < $dialogs.length; i += 1) {
+            $dialogs[i].current = i;
+            $dialogs[i].onclick = function (e) {
+                openDialog(dialogs[this.current].userId);
+            };
+
+            $dialNames[i].current = i;
+            $dialNames[i].onclick = function (e) {
+                e.stopPropagation();
+                showModal(dialogs[this.current].userId);
+            };
+        }
+
+        for (i = 0; i < $convers.length; i += 1) {
+            $convers[i].current = i;
+            $convers[i].onclick = function (e) {
+                openConversation(conversations[this.current].userId);
+            };
+        }
     }
 
     function openDialog(id) {
@@ -215,6 +199,28 @@ APP.utilities.actions = (function () {
         $(this).addClass('activeted');
 
         alert('show dialog for id: ' + id);
+    }
+
+    function openConversation(id) {
+        var data = {currentUserId: me.id, showId: id}
+
+        $.ajax({
+            url: "GetMessage",
+            data: data,
+            success: function (request) {
+                dialogs = res;
+                var res = JSON.parse(request);
+                //дальнейшая работа
+            },
+            error: function (a, b, c) {
+                console.log(a, b, c);
+            }
+        });
+
+        $('.conversation').removeClass('activeted');
+        $(this).addClass('activeted');
+
+        alert('show conversation for id: ' + id);
     }
 
     function showModal(id) {
