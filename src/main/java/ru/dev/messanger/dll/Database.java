@@ -541,72 +541,92 @@ public class Database implements AbstractDal {
         return conversations;
     }
 
-    @Override
+       @Override
     public Iterable<MessageWithUnreadDTO> getDialogs(Integer id) {
         List<MessageWithUnreadDTO> conversations = null;
 
-        List<Integer> conversations_id = null;
+        List<Integer> conversations_id=null;
         String SqlQuery = "SELECT participants.conversation_id FROM participants " +
                 "LEFT JOIN deleted_conversations on participants.conversation_id=deleted_conversations.conversation_id " +
-                "WHERE participants.user_id=" + id + " AND (deleted_conversations.user_id !=" + id + " OR deleted_conversations.user_id IS NULL)";
+                "WHERE participants.user_id="+id+" AND (deleted_conversations.user_id !="+id+" OR deleted_conversations.user_id IS NULL)";
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                 st.executeQuery();
 
                 try (ResultSet rs = st.getResultSet()) {
-                    conversations_id = new ArrayList<>();
-                    while (rs.next()) {
+                    conversations_id= new ArrayList<>();
+                    while(rs.next()) {
                         conversations_id.add(rs.getInt(1));
                     }
                 }
             }
-            conversations = new ArrayList<>();
-            for (int i : conversations_id) {
 
-                SqlQuery = "SELECT COUNT (user_id) FROM participants WHERE conversation_id=" + i;
+            conversations= new ArrayList<>();
+            for (int i:conversations_id) {
+
+                SqlQuery = "SELECT COUNT (user_id) FROM participants WHERE conversation_id="+i;
 
                 try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                     st.executeQuery();
 
                     try (ResultSet rs = st.getResultSet()) {
-                        while (rs.next()) {
-                            SqlQuery = "UPDATE messages LEFT JOIN participants ON messages.conversation_id=participants.conversation_id " +
-                                    "SET messages.to_id='" + id +
-                                    "' WHERE messages.conversation_id=" + i + " AND user_id=" + id;
+                        while(rs.next()) {
+                            SqlQuery="UPDATE messages LEFT JOIN participants ON messages.conversation_id=participants.conversation_id " +
+                                    "SET messages.to_id='"+id+
+                                    "' WHERE messages.conversation_id="+i+" AND user_id="+id;
 
                             try (PreparedStatement str = connection.prepareStatement(SqlQuery)) {
                                 str.executeQuery();
                             }
-                            if (rs.getInt(1) == 2) {
-                                SqlQuery = "SELECT messages.id, messages.conversation_id, from_id, first_name, last_name, url as avatar_url, message, messages.created_at, unread_messages " +
-                                        "FROM messages LEFT JOIN users ON messages.from_id=users.id LEFT JOIN photos ON users.avatar=photos.id " +
-                                        "LEFT JOIN participants ON participants.user_id=users.id " +
-                                        "WHERE messages.conversation_id=" + i + " ORDER BY messages.id DESC LIMIT 1;";
-                                try (PreparedStatement stm = connection.prepareStatement(SqlQuery)) {
-                                    stm.executeQuery();
 
-                                    try (ResultSet rst = stm.getResultSet()) {
-                                        while (rst.next()) {
-                                            MessageWithUnreadDTO msg = new MessageWithUnreadDTO();
-                                            msg.setId(rst.getInt(1));
-                                            msg.setConversation_id(rst.getInt(2));
-                                            msg.setFrom_id(rst.getInt(3));
-                                            msg.setFirst_name(rst.getString(4));
-                                            msg.setLast_name(rst.getString(5));
-                                            msg.setImage_url(rst.getString(6));
-                                            msg.setMessage(rst.getString(7));
-                                            msg.setCreated_at(rst.getDate(8));
-                                            msg.setCountUnread(rst.getInt(9));
+                           if(rs.getInt(1)==2){
 
-                                            conversations.add(msg);
-                                        }
-                                    }
-                                }
+                                SqlQuery="SELECT conversation_id, users.id, first_name, last_name, url as avatar_url " +
+                                        "FROM users LEFT JOIN participants ON users.id=participants.user_id LEFT JOIN photos ON users.avatar=photos.id " +
+                                        "WHERE conversation_id="+i+" AND user_id!="+id;
+                               try (PreparedStatement stm = connection.prepareStatement(SqlQuery)) {
+                                   stm.executeQuery();
 
+                                   try (ResultSet rst = stm.getResultSet()) {
+                                       while(rst.next()) {
+                                           MessageWithUnreadDTO msg=new MessageWithUnreadDTO();
+                                           msg.setConversation_id(rst.getInt(1));
+                                           msg.setFrom_id(rst.getInt(2));
+                                           msg.setFirst_name(rst.getString(3));
+                                           msg.setLast_name(rst.getString(4));
+                                           msg.setImage_url(rst.getString(5));
+                                           conversations.add(msg);
+                                       }
+                                   }
+                               }
                             }
                         }
                     }
                 }
+            }
+            int k=0;
+            for (MessageWithUnreadDTO i: conversations) {
+                SqlQuery = "SELECT messages.id, message, messages.created_at, url as attachment_id, unread_messages " +
+                            "FROM messages LEFT JOIN photos ON messages.attachment_id=photos.id " +
+                            "LEFT JOIN participants ON messages.conversation_id=participants.conversation_id " +
+                            "WHERE messages.conversation_id="+i.getConversation_id()+" AND user_id="+id+" ORDER BY messages.id DESC LIMIT 1;";
+                    try (PreparedStatement stm = connection.prepareStatement(SqlQuery)) {
+                        stm.executeQuery();
+
+                        try (ResultSet rst = stm.getResultSet()) {
+                            while(rst.next()) {
+                                MessageWithUnreadDTO msg=conversations.get(k);
+                                msg.setId(rst.getInt(1));
+                                msg.setMessage(rst.getString(2));
+                                msg.setCreated_at(rst.getDate(3));
+                                msg.setAttachment_url(rst.getString(4));
+                                msg.setCountUnread(rst.getInt(5));
+
+                                conversations.set(k, msg);
+                            }
+                        }
+                }
+                k++;
             }
         } catch (SQLException e) {
             System.out.println("Connection problem.");
