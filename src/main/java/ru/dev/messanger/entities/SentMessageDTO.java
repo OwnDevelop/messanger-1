@@ -5,11 +5,15 @@ import com.google.gson.annotations.SerializedName;
 import java.util.Date;
 
 public class SentMessageDTO {
-    @SerializedName("userId")
+    @SerializedName("from_id")
     private int from_id;
+    @SerializedName("conversation_id")
     private int conversation_id;
+    @SerializedName("message")
     private String message;
+    @SerializedName("attachment_url")
     private String attachment_url;
+    @SerializedName("created_at")
     private Date created_at;
 
     public int getFrom_id() {

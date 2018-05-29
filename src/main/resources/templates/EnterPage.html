@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Messanger - Sign Up</title>
+    <link type="text/css" href="css/bootstrap.min.css" rel="stylesheet">
+    <link type="text/css" href="css/forms.css" rel="stylesheet">
+    <link type="text/css" href="css/login.css" rel="stylesheet">
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="js/html5shiv.min.js"></script>
+    <script src="js/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+<main class="bg-img">
+    <div class="container">
+        <div class="row">
+            <div class="tableEmitator">
+                <div class="cellEmitator">
+                    <div class="centeredBlock">
+                        <div class="col-xs-12 col-sm-3 col-sm-offset-2">
+                            <h1>Messenger</h1>
+                        </div>
+                        <div class="col-xs-12 col-sm-5 col-sm-offset-2">
+                            <div class="tab">
+                                <form class="form-horizontal">
+                                    <div class="form-group">
+                                        <label for="login">Login</label>
+                                        <input type="text" class="form-control" id="login" maxlength="35" required>
+                                        <label id="login-error" class="invalid" for="login"></label>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="password">Password</label>
+                                        <input type="password" class="form-control" id="password" maxlength="20"
+                                               required>
+                                        <label id="password-error" class="invalid" for="password"></label>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" name="isRemembered">Remember me
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <button type="submit" class="btn btn-default send" value="">Sign In</button>
+                                        <a href="registration.html" class="btn btn-default">Sign up</a>
+                                        <hr/>
+                                    </div>
+                                    <div class="form-group">
+                                        <a href="registration.html" class="forgot">Forgot password</a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<script src="js/jquery-3.3.1.min.js"></script>
+<script src="js/jquery.validate.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/login.js"></script>
+</body>
