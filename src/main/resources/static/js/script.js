@@ -86,6 +86,7 @@ APP.models.fields = {
 APP.utilities.actions = (function () {
     var dialogs = APP.models.entities.dialogs,
         conversations = APP.models.entities.conversations,
+        profiles = APP.models.entities.profiles,
         me = APP.models.entities.me,
         buttons = APP.models.buttons;
     fields = APP.models.fields;
@@ -104,9 +105,7 @@ APP.utilities.actions = (function () {
             data: {id: me.id},
             success: function (request) {
                 dialogs = request;
-                // console.log(dialogs);
 
-                //приходит отправитель сообщения (сам юзер)
                 for (i = 0; i < dialogs.length; i += 1) {
                     elem = dialogs[i];
 
@@ -118,7 +117,6 @@ APP.utilities.actions = (function () {
                 }
 
                 $form[0].innerHTML = html;
-
                 setEventsForDialogs();
             },
             error: function (e) {
@@ -301,21 +299,54 @@ APP.utilities.actions = (function () {
 
     function initializeSearch() {
         fields.$searchField.on('blur', function () {
-            var value = this.val();
-
-            //получение данных на основании фильтра
-            $.ajax({
-                url: "GetDialogs",
-                data: JSON.stringify(value),
-                success: function (request) {
-                    var res = JSON.parse(request);
-                    //дальнейшая работа
-                },
-                error: function (e) {
-                    console.log(e);
-                }
-            });
+            var value = this.value;
+            if (value) {
+                $.ajax({
+                    url: "/searchUsers",
+                    data: {searchQuery: value},
+                    success: function (request) {
+                        console.log(request);
+                        //дальнейшая работа
+                        if (!request) {
+                            return;
+                        }
+                        profiles = request;
+                        showSearchResults(request);
+                    },
+                    error: function (e) {
+                        console.log(e);
+                    }
+                });
+            } else{
+                showDialogs();
+            }
         });
+    }
+
+    function showSearchResults(arr) {
+        var $form = $('.jspPane:eq(0)'),
+            html = "", elem = {}, i=0,
+            $dialogs = {};
+
+        for (i = 0; i < arr.length; i += 1) {
+            elem = arr[i];
+
+            html += '<div class="dialog"><img class="profile-photo" src="' + elem.avatar_url + '" alt="user">' +
+                '<a class="dial-name">' + elem.firstName + ' ' + elem.lastName + '</a>' +
+                '<span class="last-message-time"></span>' +
+                '<div class="short-message ellipsis">' + elem.status + '</div></div>';
+        }
+
+        $form.html(html);
+
+        $dialogs = $('.dialog');
+
+        for (i = 0; i < $dialogs.length; i += 1) {
+            $dialogs[i].current = i;
+            $dialogs[i].onclick = function (e) {
+                showModal(profiles[this.current].id);
+            };
+        }
     }
 
     function initialization() {
@@ -329,7 +360,7 @@ APP.utilities.actions = (function () {
         });
 
         initializeScroll();
-        // initializeSearch();
+        initializeSearch();
     }
 
     return {
