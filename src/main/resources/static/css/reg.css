@@ -17,11 +17,11 @@ a:hover,a:focus{
  margin: 0 0 15px 0;
  position: relative;
 }
-.form-horizontal .form-control:focus{
+/* .form-horizontal .form-control:focus{
  box-shadow: none;
  outline: 0 none;
-}
-.form-horizontal .form-group label{
+} */
+/*.form-horizontal*/ .form-group label{
  padding: 0 20px;
  color: #000;
  text-transform: capitalize;
@@ -39,4 +39,20 @@ h3.text-center{
   top: 15px;
   left:0;
   right: 0;
+}
+input.invalid{
+  color: rgb(200, 0, 0);
+  border-color: red;
+  box-shadow: 0 0 10px rgb(255, 0, 0);
+}
+input.invalid:focus{
+  border-color: red;
+  box-shadow: 0 0 10px rgb(255, 0, 0);
+}
+label.invalid{
+  margin-top: 5px;
+  color:red;
+  text-transform: none;
+  font-weight: 500;
+  font-size: 13px;
 }
