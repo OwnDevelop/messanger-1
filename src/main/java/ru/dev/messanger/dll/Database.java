@@ -515,7 +515,7 @@ public class Database implements AbstractDal {
                             }
                             System.out.println(rs.getInt(1));
                             if (rs.getInt(1) > 2) {
-                                SqlQuery = "SELECT messages.conversation_id, title, from_id, url as avatar_url, message, messages.created_at, unread_messages " +
+                                SqlQuery = "SELECT messages.id, messages.conversation_id, title, from_id, url as avatar_url, message, messages.created_at, unread_messages " +
                                         "FROM messages LEFT JOIN conversations ON messages.conversation_id=conversations.id " +
                                         "LEFT JOIN users ON messages.from_id=users.id LEFT JOIN photos ON users.avatar=photos.id " +
                                         "LEFT JOIN participants ON participants.user_id=messages.to_id " +
@@ -528,13 +528,14 @@ public class Database implements AbstractDal {
 
                                         while (rst.next()) {
                                             MessageConversationDTO msg = new MessageConversationDTO();
-                                            msg.setConversation_id(rst.getInt(1));
-                                            msg.setTitle(rst.getString(2));
-                                            msg.setFrom_id(rst.getInt(3));
-                                            msg.setImage_url(rst.getString(4));
-                                            msg.setMessage(rst.getString(5));
-                                            msg.setCreated_at(rst.getDate(6));
-                                            msg.setCountUnread(rst.getInt(7));
+                                            msg.setId(rst.getInt(1));
+                                            msg.setConversation_id(rst.getInt(2));
+                                            msg.setTitle(rst.getString(3));
+                                            msg.setFrom_id(rst.getInt(4));
+                                            msg.setImage_url(rst.getString(5));
+                                            msg.setMessage(rst.getString(6));
+                                            msg.setCreated_at(rst.getDate(7));
+                                            msg.setCountUnread(rst.getInt(8));
 
                                             conversations.add(msg);
                                         }
