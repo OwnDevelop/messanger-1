@@ -261,19 +261,25 @@ public class Database implements AbstractDal {
         return null;
     }
 
-    @Override
+       @Override
     public Iterable<MessageDTO> getMessages(Integer conversation_id, Integer id, Integer message_id) {
-        List<MessageDTO> messages = null;
 
-        String SqlQuery = "SELECT messages.id, messages.conversation_id, from_id, first_name, last_name, url AS avatar_url, message, messages.created_at " +
-                "FROM messages LEFT JOIN users ON messages.from_id=users.id LEFT JOIN photos ON users.avatar=photos.id " +
+
+        String SqlQuery = "SELECT messages.id, messages.conversation_id, from_id, message, messages.created_at, url AS attachment_url " +
+                "FROM messages LEFT JOIN photos ON messages.attachment_id=photos.id " +
                 "LEFT JOIN deleted_conversations ON messages.conversation_id=deleted_conversations.conversation_id " +
                 "WHERE messages.conversation_id="+conversation_id+" AND messages.id<="+message_id+
                 " AND (messages.created_at>deleted_conversations.deleted_at OR deleted_conversations.user_id IS NULL OR deleted_conversations.user_id!="+id+
-                ") ORDER BY messages.id DESC LIMIT 10;";
+                ") LIMIT 10;";
+        List<MessageDTO> messages = getMessages(SqlQuery);
 
+        return messages;
+    }
+
+    private List<MessageDTO> getMessages(String sqlQuery) {
+        List<MessageDTO> messages = null;
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
-            try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
+            try (PreparedStatement st = connection.prepareStatement(sqlQuery)) {
                 st.executeQuery();
 
                 try (ResultSet rs = st.getResultSet()) {
@@ -283,40 +289,43 @@ public class Database implements AbstractDal {
                     }
                 }
             }
+            int k=0;
+            for (MessageDTO i:messages) {
+                sqlQuery ="SELECT first_name, last_name, url AS avatar_url FROM users LEFT JOIN messages ON users.id=messages.from_id LEFT JOIN photos ON users.avatar=photos.id " +
+                        "WHERE messages.id="+i.getId();
+                try (PreparedStatement st = connection.prepareStatement(sqlQuery)) {
+                    st.executeQuery();
+
+                    try (ResultSet rs = st.getResultSet()) {
+                        while(rs.next()) {
+                            MessageDTO msg=messages.get(k);
+                            msg.setFirst_name(rs.getString(1));
+                            msg.setLast_name(rs.getString(2));
+                            msg.setImage_url(rs.getString(3));
+                            messages.set(k, msg);
+                        }
+                    }
+                }
+                k++;
+            }
+
         } catch (SQLException e) {
             System.out.println("Connection problem.");
             e.printStackTrace();
         }
-
         return messages;
     }
 
     @Override
     public Iterable<MessageDTO> searchInConversation(String searchQuery, Integer conversation_id) {
-        List<MessageDTO> messages = null;
+        String SqlQuery = "SELECT messages.id, messages.conversation_id, from_id, message, messages.created_at, url AS attachment_url " +
+                "FROM messages LEFT JOIN photos ON messages.attachment_id=photos.id " +
+                "WHERE messages.conversation_id="+conversation_id+" AND message LIKE '%"+searchQuery+"%' ORDER BY messages.id DESC LIMIT 100;";
 
-        String SqlQuery = "SELECT messages.id, conversation_id, from_id, first_name, last_name, url AS avatar_url, message, messages.created_at " +
-                "FROM messages LEFT JOIN users ON messages.from_id=users.id LEFT JOIN photos ON users.avatar=photos.id " +
-                "WHERE messages.conversation_id=" + conversation_id + " AND message LIKE '%" + searchQuery + "%' ORDER BY messages.id DESC LIMIT 100;";
-        try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
-            try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
-                //st.setInt(1,2);
-                st.executeQuery();
-
-                try (ResultSet rs = st.getResultSet()) { //Что получаем
-                    messages = new ArrayList<>();
-                    while (rs.next()) {
-                        messages.add(getMessage(rs));
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            System.out.println("Connection problem.");
-            e.printStackTrace();
-        }
-
+        List<MessageDTO> messages = getMessages(SqlQuery);
         return messages;
     }
+
 
     @Override
     public Iterable<SimpleConversationDTO> searchConversations(String searchQuery) {
@@ -688,17 +697,14 @@ public class Database implements AbstractDal {
         return user;
     }
 
-    private static MessageDTO getMessage(ResultSet rs) throws SQLException {
-        MessageDTO msg = new MessageDTO();
+     private static MessageDTO getMessage(ResultSet rs) throws SQLException{
+        MessageDTO msg=new MessageDTO();
         msg.setId(rs.getInt(1));
         msg.setConversation_id(rs.getInt(2));
         msg.setFrom_id(rs.getInt(3));
-        msg.setFirst_name(rs.getString(4));
-        msg.setLast_name(rs.getString(5));
-        msg.setImage_url(rs.getString(6));
-        msg.setMessage(rs.getString(7));
-        msg.setCreated_at(rs.getDate(8));
-        //  msg.setAttachment_url(rs.getString(14));
+        msg.setMessage(rs.getString(4));
+        msg.setCreated_at(rs.getDate(5));
+        msg.setAttachment_url(rs.getString(6));
         return msg;
     }
 
