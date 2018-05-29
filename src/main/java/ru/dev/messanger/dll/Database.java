@@ -35,7 +35,7 @@ public class Database implements AbstractDal {
     public UserDTO authorization(String login, String password) {
         UserDTO user = null;
         String SqlQuery = "SELECT users.id, email, login, first_name, last_name, sex, created_at, value as status, url as avatar FROM users LEFT JOIN status ON users.status=status.id LEFT JOIN photos ON users.avatar=photos.id " +
-                "WHERE login='" + login + "'AND password='" + password + "';";
+                "WHERE (login='" + login + "' OR email='" + login + "') AND password='" + password + "';";
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                 //st.setInt(1,2);
