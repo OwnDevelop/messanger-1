@@ -372,6 +372,8 @@ APP.utilities.actions = (function () {
 
 $("document").ready(function () {
     var actions = APP.utilities.actions;
+    APP.models.entities.me=localStorage.getItem("me");
+    localStorage.clear();
 
     actions.initialization();
     actions.showDialogs();

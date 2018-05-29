@@ -51,6 +51,9 @@ public class Database implements AbstractDal {
             System.out.println("Connection problem.");
             e.printStackTrace();
         }
+        if (user != null && user.getId() == 0) {
+            return null;
+        }
         return user;
     }
 
@@ -261,15 +264,15 @@ public class Database implements AbstractDal {
         return null;
     }
 
-       @Override
+    @Override
     public Iterable<MessageDTO> getMessages(Integer conversation_id, Integer id, Integer message_id) {
 
 
         String SqlQuery = "SELECT messages.id, messages.conversation_id, from_id, message, messages.created_at, url AS attachment_url " +
                 "FROM messages LEFT JOIN photos ON messages.attachment_id=photos.id " +
                 "LEFT JOIN deleted_conversations ON messages.conversation_id=deleted_conversations.conversation_id " +
-                "WHERE messages.conversation_id="+conversation_id+" AND messages.id<="+message_id+
-                " AND (messages.created_at>deleted_conversations.deleted_at OR deleted_conversations.user_id IS NULL OR deleted_conversations.user_id!="+id+
+                "WHERE messages.conversation_id=" + conversation_id + " AND messages.id<=" + message_id +
+                " AND (messages.created_at>deleted_conversations.deleted_at OR deleted_conversations.user_id IS NULL OR deleted_conversations.user_id!=" + id +
                 ") LIMIT 10;";
         List<MessageDTO> messages = getMessages(SqlQuery);
 
@@ -284,21 +287,21 @@ public class Database implements AbstractDal {
 
                 try (ResultSet rs = st.getResultSet()) {
                     messages = new ArrayList<>();
-                    while(rs.next()) {
+                    while (rs.next()) {
                         messages.add(getMessage(rs));
                     }
                 }
             }
-            int k=0;
-            for (MessageDTO i:messages) {
-                sqlQuery ="SELECT first_name, last_name, url AS avatar_url FROM users LEFT JOIN messages ON users.id=messages.from_id LEFT JOIN photos ON users.avatar=photos.id " +
-                        "WHERE messages.id="+i.getId();
+            int k = 0;
+            for (MessageDTO i : messages) {
+                sqlQuery = "SELECT first_name, last_name, url AS avatar_url FROM users LEFT JOIN messages ON users.id=messages.from_id LEFT JOIN photos ON users.avatar=photos.id " +
+                        "WHERE messages.id=" + i.getId();
                 try (PreparedStatement st = connection.prepareStatement(sqlQuery)) {
                     st.executeQuery();
 
                     try (ResultSet rs = st.getResultSet()) {
-                        while(rs.next()) {
-                            MessageDTO msg=messages.get(k);
+                        while (rs.next()) {
+                            MessageDTO msg = messages.get(k);
                             msg.setFirst_name(rs.getString(1));
                             msg.setLast_name(rs.getString(2));
                             msg.setImage_url(rs.getString(3));
@@ -320,7 +323,7 @@ public class Database implements AbstractDal {
     public Iterable<MessageDTO> searchInConversation(String searchQuery, Integer conversation_id) {
         String SqlQuery = "SELECT messages.id, messages.conversation_id, from_id, message, messages.created_at, url AS attachment_url " +
                 "FROM messages LEFT JOIN photos ON messages.attachment_id=photos.id " +
-                "WHERE messages.conversation_id="+conversation_id+" AND message LIKE '%"+searchQuery+"%' ORDER BY messages.id DESC LIMIT 100;";
+                "WHERE messages.conversation_id=" + conversation_id + " AND message LIKE '%" + searchQuery + "%' ORDER BY messages.id DESC LIMIT 100;";
 
         List<MessageDTO> messages = getMessages(SqlQuery);
         return messages;
@@ -550,90 +553,90 @@ public class Database implements AbstractDal {
         return conversations;
     }
 
-       @Override
+    @Override
     public Iterable<MessageWithUnreadDTO> getDialogs(Integer id) {
         List<MessageWithUnreadDTO> conversations = null;
 
-        List<Integer> conversations_id=null;
+        List<Integer> conversations_id = null;
         String SqlQuery = "SELECT participants.conversation_id FROM participants " +
                 "LEFT JOIN deleted_conversations on participants.conversation_id=deleted_conversations.conversation_id " +
-                "WHERE participants.user_id="+id+" AND (deleted_conversations.user_id !="+id+" OR deleted_conversations.user_id IS NULL)";
+                "WHERE participants.user_id=" + id + " AND (deleted_conversations.user_id !=" + id + " OR deleted_conversations.user_id IS NULL)";
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                 st.executeQuery();
 
                 try (ResultSet rs = st.getResultSet()) {
-                    conversations_id= new ArrayList<>();
-                    while(rs.next()) {
+                    conversations_id = new ArrayList<>();
+                    while (rs.next()) {
                         conversations_id.add(rs.getInt(1));
                     }
                 }
             }
 
-            conversations= new ArrayList<>();
-            for (int i:conversations_id) {
+            conversations = new ArrayList<>();
+            for (int i : conversations_id) {
 
-                SqlQuery = "SELECT COUNT (user_id) FROM participants WHERE conversation_id="+i;
+                SqlQuery = "SELECT COUNT (user_id) FROM participants WHERE conversation_id=" + i;
 
                 try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                     st.executeQuery();
 
                     try (ResultSet rs = st.getResultSet()) {
-                        while(rs.next()) {
-                            SqlQuery="UPDATE messages LEFT JOIN participants ON messages.conversation_id=participants.conversation_id " +
-                                    "SET messages.to_id='"+id+
-                                    "' WHERE messages.conversation_id="+i+" AND user_id="+id;
+                        while (rs.next()) {
+                            SqlQuery = "UPDATE messages LEFT JOIN participants ON messages.conversation_id=participants.conversation_id " +
+                                    "SET messages.to_id='" + id +
+                                    "' WHERE messages.conversation_id=" + i + " AND user_id=" + id;
 
                             try (PreparedStatement str = connection.prepareStatement(SqlQuery)) {
                                 str.executeQuery();
                             }
 
-                           if(rs.getInt(1)==2){
+                            if (rs.getInt(1) == 2) {
 
-                                SqlQuery="SELECT conversation_id, users.id, first_name, last_name, url as avatar_url " +
+                                SqlQuery = "SELECT conversation_id, users.id, first_name, last_name, url as avatar_url " +
                                         "FROM users LEFT JOIN participants ON users.id=participants.user_id LEFT JOIN photos ON users.avatar=photos.id " +
-                                        "WHERE conversation_id="+i+" AND user_id!="+id;
-                               try (PreparedStatement stm = connection.prepareStatement(SqlQuery)) {
-                                   stm.executeQuery();
+                                        "WHERE conversation_id=" + i + " AND user_id!=" + id;
+                                try (PreparedStatement stm = connection.prepareStatement(SqlQuery)) {
+                                    stm.executeQuery();
 
-                                   try (ResultSet rst = stm.getResultSet()) {
-                                       while(rst.next()) {
-                                           MessageWithUnreadDTO msg=new MessageWithUnreadDTO();
-                                           msg.setConversation_id(rst.getInt(1));
-                                           msg.setFrom_id(rst.getInt(2));
-                                           msg.setFirst_name(rst.getString(3));
-                                           msg.setLast_name(rst.getString(4));
-                                           msg.setImage_url(rst.getString(5));
-                                           conversations.add(msg);
-                                       }
-                                   }
-                               }
+                                    try (ResultSet rst = stm.getResultSet()) {
+                                        while (rst.next()) {
+                                            MessageWithUnreadDTO msg = new MessageWithUnreadDTO();
+                                            msg.setConversation_id(rst.getInt(1));
+                                            msg.setFrom_id(rst.getInt(2));
+                                            msg.setFirst_name(rst.getString(3));
+                                            msg.setLast_name(rst.getString(4));
+                                            msg.setImage_url(rst.getString(5));
+                                            conversations.add(msg);
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
-            int k=0;
-            for (MessageWithUnreadDTO i: conversations) {
+            int k = 0;
+            for (MessageWithUnreadDTO i : conversations) {
                 SqlQuery = "SELECT messages.id, message, messages.created_at, url as attachment_id, unread_messages " +
-                            "FROM messages LEFT JOIN photos ON messages.attachment_id=photos.id " +
-                            "LEFT JOIN participants ON messages.conversation_id=participants.conversation_id " +
-                            "WHERE messages.conversation_id="+i.getConversation_id()+" AND user_id="+id+" ORDER BY messages.id DESC LIMIT 1;";
-                    try (PreparedStatement stm = connection.prepareStatement(SqlQuery)) {
-                        stm.executeQuery();
+                        "FROM messages LEFT JOIN photos ON messages.attachment_id=photos.id " +
+                        "LEFT JOIN participants ON messages.conversation_id=participants.conversation_id " +
+                        "WHERE messages.conversation_id=" + i.getConversation_id() + " AND user_id=" + id + " ORDER BY messages.id DESC LIMIT 1;";
+                try (PreparedStatement stm = connection.prepareStatement(SqlQuery)) {
+                    stm.executeQuery();
 
-                        try (ResultSet rst = stm.getResultSet()) {
-                            while(rst.next()) {
-                                MessageWithUnreadDTO msg=conversations.get(k);
-                                msg.setId(rst.getInt(1));
-                                msg.setMessage(rst.getString(2));
-                                msg.setCreated_at(rst.getDate(3));
-                                msg.setAttachment_url(rst.getString(4));
-                                msg.setCountUnread(rst.getInt(5));
+                    try (ResultSet rst = stm.getResultSet()) {
+                        while (rst.next()) {
+                            MessageWithUnreadDTO msg = conversations.get(k);
+                            msg.setId(rst.getInt(1));
+                            msg.setMessage(rst.getString(2));
+                            msg.setCreated_at(rst.getDate(3));
+                            msg.setAttachment_url(rst.getString(4));
+                            msg.setCountUnread(rst.getInt(5));
 
-                                conversations.set(k, msg);
-                            }
+                            conversations.set(k, msg);
                         }
+                    }
                 }
                 k++;
             }
@@ -697,8 +700,8 @@ public class Database implements AbstractDal {
         return user;
     }
 
-     private static MessageDTO getMessage(ResultSet rs) throws SQLException{
-        MessageDTO msg=new MessageDTO();
+    private static MessageDTO getMessage(ResultSet rs) throws SQLException {
+        MessageDTO msg = new MessageDTO();
         msg.setId(rs.getInt(1));
         msg.setConversation_id(rs.getInt(2));
         msg.setFrom_id(rs.getInt(3));
