@@ -1,8 +1,13 @@
 package ru.dev.messanger.entities;
 
+import com.google.gson.annotations.SerializedName;
+
 public class MessageConversationDTO extends SentMessageDTO {
+    @SerializedName("image_url")
     private String image_url;
+    @SerializedName("title")
     private String title;
+    @SerializedName("countUnread")
     private Integer countUnread;
 
     public String getImage_url() {

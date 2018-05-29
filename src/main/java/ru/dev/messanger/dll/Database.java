@@ -225,7 +225,7 @@ public class Database implements AbstractDal {
             }
 
             int conversation_id = 0;
-            SqlQuery = "SELECT id FROM conversations WHERE admin_id='" + item.getAdmin_id() + "'";
+            SqlQuery = "SELECT id FROM conversations WHERE admin_id='" + item.getAdmin_id() + "' ORDER BY id DESC LIMIT 1";
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                 st.executeQuery();
                 try (ResultSet rs = st.getResultSet()) {
@@ -248,11 +248,11 @@ public class Database implements AbstractDal {
 
     @Override
     public MessageDTO setMessage(SentMessageDTO msg) {
-        Integer avatar_id = this.addImage(msg.getAttachment_url());
+        Integer attachment_id = this.addImage(msg.getAttachment_url());
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
             String SqlQuery;
             SqlQuery = "INSERT INTO messages (conversation_id, from_id, message, attachment_id) " +
-                    "VALUES ('" + msg.getConversation_id() + "', '" + msg.getFrom_id() + "', '" + msg.getMessage() + "', '" + avatar_id + "')";
+                    "VALUES ('" + msg.getConversation_id() + "', '" + msg.getFrom_id() + "', '" + msg.getMessage() + "', '" + attachment_id + "')";
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                 st.executeQuery();
             }
@@ -371,10 +371,10 @@ public class Database implements AbstractDal {
                 st.executeQuery();
             }
         } catch (SQLException e) {
-            System.out.println("Connection problem.");
+            System.out.println("Connection problem. (bad id's in joinTheConversation)");
             e.printStackTrace();
+            return false;
         }
-
         return true;
     }
 
@@ -386,10 +386,11 @@ public class Database implements AbstractDal {
                 st.executeQuery();
             }
         } catch (SQLException e) {
-            System.out.println("Connection problem.");
+            System.out.println("Connection problem. (bad id's in leaveTheConversation)");
             e.printStackTrace();
-        }
+            return false;
 
+        }
         return true;
     }
 
@@ -405,8 +406,9 @@ public class Database implements AbstractDal {
                 return false;
             }
         } catch (SQLException e) {
-            System.out.println("Connection problem.");
+            System.out.println("Connection problem. (bad id's ot count in setUnreadMessages)");
             e.printStackTrace();
+            return false;
         }
         return true;
     }
@@ -653,7 +655,13 @@ public class Database implements AbstractDal {
 
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
             String SqlQuery;
+            if (participants == null || participants.size() == 0)
+            {
+                System.out.println("Cannot make new conversation without users");
+                return false;
+            }
             for (int i : participants) {
+
                 Boolean exist = false;
 
                 SqlQuery = "SELECT COUNT (id) FROM participants WHERE conversation_id=" + id + " AND user_id= " + i;
@@ -675,7 +683,6 @@ public class Database implements AbstractDal {
                             "VALUES ('" + id + "', '" + i + "', '" + 0 + "')";
                     try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                         st.executeQuery();
-                        return true;
                     }
                 }
             }
@@ -684,7 +691,7 @@ public class Database implements AbstractDal {
             System.out.println("Connection problem.");
             e.printStackTrace();
         }
-        return false;
+        return true;
     }
 
     private static UserDTO getUser(ResultSet rs) throws SQLException {
