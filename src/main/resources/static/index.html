@@ -155,7 +155,8 @@
                 <img src="img/profiles/my.jpg" alt="user" class="col-xs-2 col-xs-offset-1 profile-photo img-responsive">
                 <textarea class="col-xs-7 send-field form-control" contenteditable="true" aria-multiline="true"
                           max-length="6"> </textarea>
-                <button type="button" class="btn btn-info col-xs-1" id="add-image">
+                <button type="button" class="btn btn-info col-xs-1" id="add-image" data-toggle="modal"
+                        data-target="#Modal">
                     <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
                 </button>
                 <button type="button" class="btn btn-info col-xs-1" id="send-message">
@@ -172,34 +173,10 @@
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
-                    <h4 class="modal-title text-center" id="myModalLabel">Profile Information</h4>
+                    <h4 class="modal-title text-center" id="myModalLabel"></h4>
                 </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-xs-5">
-                            <img class="profile-img" src="img/profiles/my.jpg" alt="user photo">
-                        </div>
-                        <div class="col-xs-7">
-                            <div class="name text-center">Name Surname</div>
-                            <div class="status text-center">Online</div>
-                            <button type="button" class="btn btn-default btn-write" data-dismiss="modal">Write</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <div class="row">
-                        <div class="col-xs-5">
-                            <h4 class="profile-info text-right">E-mail:</h4>
-                            <h4 class="profile-info text-right">Login:</h4>
-                            <h4 class="profile-info text-right">Registration:</h4>
-                        </div>
-                        <div class="col-xs-7">
-                            <h4 class="profile-info text-left">example@messenger.su</h4>
-                            <h4 class="profile-info text-left">example</h4>
-                            <h4 class="profile-info text-left">1.1.1970</h4>
-                        </div>
-                    </div>
-                </div>
+                <div class="modal-body"></div>
+                <div class="modal-footer"></div>
             </div>
         </div>
     </div>

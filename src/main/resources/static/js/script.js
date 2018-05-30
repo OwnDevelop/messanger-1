@@ -46,7 +46,7 @@ APP.models.entities = {
         lastName: "ivanov",
         message: "last msg",
         created_at: "9:05PM",
-        unreaded: 5
+        countUnread: 5
     }],
     profiles: [{
         id: 1,
@@ -65,7 +65,7 @@ APP.models.entities = {
         title: "ivan",
         message: "last msg",
         created_at: "9:05PM",
-        unreaded: 5
+        countUnread: 5
     }]
 };
 
@@ -115,10 +115,8 @@ APP.utilities.actions = (function () {
         fields = APP.models.fields,
         MESSEGE_MAX_LENGHT = 200;
 
-    function showDialogs() {
+    function showDialogsAndConversations() {
         var $form = $('.jspPane:eq(0)'),
-            $names = {},
-            $dialogs = {},
             html = "",
             i = 0,
             elem = {};
@@ -137,7 +135,7 @@ APP.utilities.actions = (function () {
                         '<a class="dial-name">' + elem.firstName + ' ' + elem.lastName + '</a>' +
                         '<span class="last-message-time">' + elem.created_at + '</span>' +
                         '<div class="short-message ellipsis">' + elem.message + '</div>' +
-                        '<span class="badge">' + elem.unreaded + '</span></div>';
+                        '<span class="badge">' + elem.countUnread + '</span></div>';
                 }
 
                 $form[0].innerHTML = html;
@@ -154,7 +152,7 @@ APP.utilities.actions = (function () {
             success: function (request) {
                 html = "";
                 conversations = request;
-                console.log(conversations);
+
                 for (i = 0; i < conversations.length; i += 1) {
                     elem = conversations[i];
 
@@ -176,20 +174,20 @@ APP.utilities.actions = (function () {
 
     function setEventsForDialogs() {
         var $dialNames = $('.dial-name'),
-            $conversNames = $('.convers-name'),
             $dialogs = $('.dialog'),
-            $convers = $('.conversation');
+            $convers = $('.conversation'),
+            i = 0;
 
         for (i = 0; i < $dialogs.length; i += 1) {
             $dialogs[i].current = i;
             $dialogs[i].onclick = function (e) {
-                openDialog(dialogs[this.current].userId);
+                openDialog(dialogs[this.current].from_id);
             };
 
             $dialNames[i].current = i;
             $dialNames[i].onclick = function (e) {
                 e.stopPropagation();
-                showModal(dialogs[this.current].userId);
+                showModalForUser(dialogs[this.current].from_id);
             };
         }
 
@@ -245,7 +243,7 @@ APP.utilities.actions = (function () {
         alert('show conversation for id: ' + id);
     }
 
-    function showModal(id) {
+    function showModalForUser(id) {
         var html = "",
             $modalBody = $('.modal-body'),
             $modalFooter = $('.modal-footer');
@@ -258,6 +256,8 @@ APP.utilities.actions = (function () {
                 var user = request;
 
                 if (user) {
+                    $('#myModalLabel').html('Profile Information');
+
                     html = '<div class="row"><div class="col-xs-5"><img class="profile-img" src="' + user.avatar_url + '" alt="user photo"></div>' +
                         '<div class="col-xs-7"><div class="name text-center">' + user.firstName + ' ' + user.lastName + '</div>' +
                         '<div class="status text-center" >' + user.status + '</div>' +
@@ -275,7 +275,6 @@ APP.utilities.actions = (function () {
                     $modalFooter.html(html);
 
                     $('.btn-write').on('click', openDialog);
-
                     $('#Modal').modal('show');
                 }
             },
@@ -284,23 +283,56 @@ APP.utilities.actions = (function () {
                 console.log(a, b, c);
             }
         });
+    }
 
-        // if (i != 100) {user = profiles[i];}
-        // else { user = me;}
-        // html = '<div class="row"><div class="col-xs-5"><img class="profile-img" src="img/profiles/my.jpg" alt="user photo"></div>' +
-        //     '<div class="col-xs-7"><div class="name text-center">' + user.firstName + ' ' + user.lastName + '</div>' +
-        //     '<div class="status text-center" >' + user.status + '</div>' +
-        //     '<button type="button" class="btn btn-default btn-write" data-dismiss="modal">Write</button></div></div></div>';
-        // $modalBody.html(html);
-        // html = '<div class="row"><div class="col-xs-5"><h4 class="profile-info text-right">E-mail:</h4>' +
-        //     '<h4 class="profile-info text-right">Login:</h4><h4 class="profile-info text-right">Sex:</h4><h4 class="profile-info text-right">Registration:</h4></div>' +
-        //     '<div class="col-xs-7"><h4 class="profile-info text-left">' + user.email + '</h4>' +
-        //     '<h4 class="profile-info text-left">' + user.login + '</h4>' +
-        //     '<h4 class="profile-info text-left">' + user.sex + '</h4>' +
-        //     '<h4 class="profile-info text-left">' + user.created_at + '</h4 ></div ></div >';
-        // $modalFooter.html(html);
-        // $('.btn-write').on('click', openDialog);
-        // $('#Modal').modal('show');
+    function showModalForConversation() {
+        var html = "", i = 0,
+            $modalBody = $('.modal-body'),
+            $modalFooter = $('.modal-footer'),
+            $participant = {};
+
+        for (i = 0; i < dialogs.length; i += 1) {
+            elem = dialogs[i];
+
+            html += '<div class="dialog participant"><img class="profile-photo" src="' + elem.avatar_url + '" alt="user">' +
+                '<a class="dial-name">' + elem.firstName + ' ' + elem.lastName + '</a>' +
+                '<span class="last-message-time"></span>' +
+                '<div class="short-message ellipsis">' + elem.status + '</div></div>';
+        }
+
+        $('#myModalLabel').html("Select participants");
+        $modalBody.html(html);
+        $modalFooter.html('<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>' +
+            '<button type="button" class="btn btn-primary start-convers">Start Conversation</button>');
+
+        $participant = $('.participant');
+
+        for (i = 0; i < $participant.length; i += 1) {
+            $participant[i].current = dialogs[i].id;
+            $participant[i].onclick = function () {
+                $(this).toggleClass('selected');
+            };
+        }
+
+        $('.start-convers').on('click', function () {
+            var $people = $('.selected'),
+                participantsId = [];
+
+            if ($people.length == 0) {
+                return;
+            }
+
+            for (i = 0; i < $people.length; i += 1) {
+                participantsId.push($people[i].current);
+            }
+
+            $("#Modal").modal('hide');
+            $modalBody.html('');
+            $modalFooter.html('');
+        });
+
+        $("#Modal").modal('show');
+        initializeScroll();
     }
 
     function initializeScroll() {
@@ -342,7 +374,7 @@ APP.utilities.actions = (function () {
                     }
                 });
             } else {
-                showDialogs();
+                showDialogsAndConversations();
             }
         });
     }
@@ -368,7 +400,7 @@ APP.utilities.actions = (function () {
         for (i = 0; i < $dialogs.length; i += 1) {
             $dialogs[i].current = i;
             $dialogs[i].onclick = function (e) {
-                showModal(profiles[this.current].id);
+                showModalForUser(profiles[this.current].id);
             };
         }
     }
@@ -380,7 +412,11 @@ APP.utilities.actions = (function () {
         });
 
         buttons.$btnSettings.on('click', function () {
-            showModal(me.id);
+            showModalForUser(me.id);
+        });
+
+        buttons.$btnCreateConvers.on('click', function () {
+            showModalForConversation();
         });
 
         initializeScroll();
@@ -438,7 +474,7 @@ APP.utilities.actions = (function () {
     }
 
     return {
-        showDialogs: showDialogs,
+        showDialogs: showDialogsAndConversations,
         initialization: initialization
     };
 })();
