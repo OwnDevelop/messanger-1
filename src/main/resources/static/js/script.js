@@ -25,6 +25,7 @@ APP.createNamespace('APP.models.entities');
 APP.createNamespace('APP.models.identeties');
 APP.createNamespace('APP.utilities.actions');
 APP.createNamespace('APP.utilities.ajax');
+APP.createNamespace('APP.utilities.validation');
 
 APP.models.entities = {
     me: {
@@ -73,7 +74,7 @@ APP.models.buttons = {
     $btnSearch: $('.search-btn'),
     $btnCreateConvers: $('.create-conversation'),
     $btnSendMess: $('#send-message'),
-    $btnSendPict: $('#send-picture'),
+    $btnSendPict: $('#add-image'),
     $btnRusLang: $('.dropdown-menu li:nth-child(1)'),
     $btnRusLang: $('.dropdown-menu li:nth-child(2)')
 };
@@ -83,13 +84,36 @@ APP.models.fields = {
     $searchField: $('.search-field input')
 };
 
+APP.utilities.validation = (function () {
+    function htmlEscape(text) {
+        return text.replace(/[<>"&]/g, function (match, pos, originalText) {
+            switch (match) {
+                case '<':
+                    return "&lt;";
+                case '>':
+                    return "&gt;";
+                case '"':
+                    return "&quot;";
+                case '&':
+                    return "&amp;";
+            }
+        });
+    }
+
+    return {
+        htmlEscape: htmlEscape
+    };
+}());
+
 APP.utilities.actions = (function () {
     var dialogs = APP.models.entities.dialogs,
         conversations = APP.models.entities.conversations,
         profiles = APP.models.entities.profiles,
+        validation = APP.models.entities.validation,
         me = APP.models.entities.me,
-        buttons = APP.models.buttons;
-    fields = APP.models.fields;
+        buttons = APP.models.buttons,
+        fields = APP.models.fields,
+        MESSEGE_MAX_LENGHT = 200;
 
     function showDialogs() {
         var $form = $('.jspPane:eq(0)'),
@@ -317,7 +341,7 @@ APP.utilities.actions = (function () {
                         console.log(e);
                     }
                 });
-            } else{
+            } else {
                 showDialogs();
             }
         });
@@ -325,7 +349,7 @@ APP.utilities.actions = (function () {
 
     function showSearchResults(arr) {
         var $form = $('.jspPane:eq(0)'),
-            html = "", elem = {}, i=0,
+            html = "", elem = {}, i = 0,
             $dialogs = {};
 
         for (i = 0; i < arr.length; i += 1) {
@@ -361,18 +385,68 @@ APP.utilities.actions = (function () {
 
         initializeScroll();
         initializeSearch();
+
+        initializeMesseges();
+    }
+
+    function initializeMesseges() {
+        fields.$sendField.on("keyup", function (e) {
+            var $this = $(this),
+                key = e.key;
+
+            switch (key) {
+                case "Enter":
+                    fixLength();
+                    buttons.$btnSendMess.click();
+                    return;
+                case "Backspace":
+                    return;
+            }
+
+            function fixLength() {
+                if ($this.val().length > MESSEGE_MAX_LENGHT) {
+                    $this.val($this.val().substr(0, MESSEGE_MAX_LENGHT));
+                }
+            }
+        });
+
+        buttons.$btnSendMess.on("click", function (e) {
+            var text = fields.$sendField.val().trim();
+
+            if (text) {
+                text = validation.htmlEscape(text);
+                console.log(text);
+
+                $.ajax({
+                    url: "/setMessage",
+                    method: "GET",
+                    data: {from_id: me.id, conversation_id: 5, message: text, attachment_urlMISTAKE: ""},
+                    success: function (request) {
+                        //
+                        //добавление текста как нового сообщения
+                        //
+                    },
+                    error: function (error) {
+                        console.log(error);
+                    }
+                });
+            }
+            else {
+                fields.$sendField.focus();
+            }
+        });
     }
 
     return {
         showDialogs: showDialogs,
         initialization: initialization
-    }
+    };
 })();
 
 
 $("document").ready(function () {
     var actions = APP.utilities.actions;
-    APP.models.entities.me=localStorage.getItem("me");
+    APP.models.entities.me = localStorage.getItem("me");
     localStorage.clear();
 
     actions.initialization();
