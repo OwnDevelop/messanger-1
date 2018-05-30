@@ -5,8 +5,9 @@ import com.google.gson.annotations.SerializedName;
 import java.util.Date;
 
 public class SentMessageDTO {
+    @SerializedName("id")
     private int id;
-    @SerializedName("userId")
+    @SerializedName("from_id")
     private int from_id;
     @SerializedName("conversation_id")
     private int conversation_id;
