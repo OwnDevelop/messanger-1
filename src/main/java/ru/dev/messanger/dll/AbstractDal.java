@@ -24,5 +24,5 @@ public interface AbstractDal {
     Boolean leaveTheConversation(Integer conversation_id, Integer id);
     Boolean setUnreadMessages(Integer conversation_id, Integer id, Integer count);
     Boolean deleteConversation(Integer conversation_id, Integer id);
-    Boolean setStatusOnline(Integer id, Boolean now);
+    Boolean setStatusOnline(Integer id, Integer status);
 }
