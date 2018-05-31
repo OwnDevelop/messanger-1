@@ -321,7 +321,7 @@ APP.utilities.actions = (function () {
             var $people = $('.selected'),
                 $title = $('#myModalLabel input'),
                 title = $title.val().trim(),
-                participantsId = [];
+                participantsId = [me.id];
 
             if ($people.length == 0) {
                 return;
@@ -343,10 +343,31 @@ APP.utilities.actions = (function () {
                 data: {admin_id: me.id, title: title, users: participantsId.join()},
                 success: function (request) {
                     console.log(request);
+
+                    if (request) {
+                        $.ajax({
+                            url: '/setMessage',
+                            method: 'GET',
+                            data: {
+                                from_id: me.id,
+                                conversation_id: +request,
+                                message: "Conversation has started",
+                                attachment_url: ""
+                            },
+                            success: function (res) {
+                                console.log(res);
+                                showDialogsAndConversations();
+                            },
+                            error: function (error) {
+                                console.log(error);
+                                alert('message error');
+                            }
+                        });
+                    }
                 },
                 error: function (err) {
                     console.log(err);
-                    alert('server error');
+                    alert('creation error');
                 }
             });
 
@@ -478,16 +499,22 @@ APP.utilities.actions = (function () {
                 console.log(text);
 
                 $.ajax({
-                    url: "/setMessage",
-                    method: "GET",
-                    data: {from_id: me.id, conversation_id: 5, message: text, attachment_urlMISTAKE: ""},
-                    success: function (request) {
-                        //
-                        //добавление текста как нового сообщения
-                        //
+                    url: '/setMessage',
+                    method: 'GET',
+                    data: {
+                        from_id: me.id,
+                        //TODO: поправить после отображения всех сообщений
+                        conversation_id: 5, //вытащить надо
+                        message: text.toString(),
+                        attachment_url: "" //она ещё не будет загружена на сервер в момент отправки. урла нет
+                    },
+                    success: function (res) {
+                        console.log(res);
+                        showDialogsAndConversations();
                     },
                     error: function (error) {
                         console.log(error);
+                        alert('message error');
                     }
                 });
             }

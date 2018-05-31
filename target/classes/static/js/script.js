@@ -321,7 +321,7 @@ APP.utilities.actions = (function () {
             var $people = $('.selected'),
                 $title = $('#myModalLabel input'),
                 title = $title.val().trim(),
-                participantsId = [];
+                participantsId = [me.id];
 
             if ($people.length == 0) {
                 return;
@@ -343,9 +343,30 @@ APP.utilities.actions = (function () {
                 data: {admin_id: me.id, title: title, users: participantsId.join()},
                 success: function (request) {
                     console.log(request);
+
+                    if (request) {
+                        $.ajax({
+                            url: '/setMessage',
+                            method: 'GET',
+                            data: {
+                                from_id: me.id,
+                                conversation_id: +request,
+                                message: "Conversation has started",
+                                attachment_url: ""
+                            },
+                            success: function (res) {
+                                console.log(res);
+                                showDialogsAndConversations();
+                            },
+                            error: function (error) {
+                                console.log(error);
+                            }
+                        });
+                    }
                 },
                 error: function (err) {
                     console.log(err);
+                    alert('server error');
                 }
             });
 
