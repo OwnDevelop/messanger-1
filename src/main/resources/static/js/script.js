@@ -243,7 +243,7 @@ APP.utilities.actions = (function () {
         alert('show conversation for id: ' + id);
     }
 
-    function showModalForUser(id) {
+    function showModalForUser(id, isCurrentUser) {
         var html = "",
             $modalBody = $('.modal-body'),
             $modalFooter = $('.modal-footer');
@@ -253,7 +253,8 @@ APP.utilities.actions = (function () {
             data: {id: id},
             method: "GET",
             success: function (request) {
-                var user = request;
+                var user = request,
+                    $btn = {};
 
                 if (user) {
                     $('#myModalLabel').html('Profile Information');
@@ -261,7 +262,7 @@ APP.utilities.actions = (function () {
                     html = '<div class="row"><div class="col-xs-5"><img class="profile-img" src="' + user.avatar_url + '" alt="user photo"></div>' +
                         '<div class="col-xs-7"><div class="name text-center">' + user.firstName + ' ' + user.lastName + '</div>' +
                         '<div class="status text-center" >' + user.status + '</div>' +
-                        '<button type="button" class="btn btn-default btn-write" data-dismiss="modal">Write</button></div></div></div>';
+                        '<button type="button" class="btn btn-default btn-write">Write</button></div></div></div>';
 
                     $modalBody.html(html);
 
@@ -274,8 +275,70 @@ APP.utilities.actions = (function () {
 
                     $modalFooter.html(html);
 
-                    $('.btn-write').on('click', openDialog);
-                    $('#Modal').modal('show');
+                    $btn = $('.btn-write');
+
+                    if (isCurrentUser) {
+                        $btn.html('Change status');
+                        $btn.on('click', function () {
+                            var $status = $('.status'),
+                                value = $status.html();
+
+                            switch (value) {
+                                case 'Online':
+                                    $status.html('Idle');
+                                    break;
+                                case 'Idle':
+                                    $status.html('Do Not Disturb');
+                                    break;
+                                case 'Do Not Disturb':
+                                    $status.html('Online');
+                                    break;
+                            }
+                        });
+
+                        $('.close')[0].addEventListener('click', listener);
+                    } else {
+                        $btn.on('click', openDialog);
+                    }
+
+                    $('#Modal').modal({
+                        backdrop: 'static',
+                        show: true
+                    });
+
+                    function listener() {
+                        var value = $('.status').html(),
+                            status = 0;
+
+                        switch (value) {
+                            case 'Online':
+                                status = 1;
+                                break;
+                            case 'Idle':
+                                status = 2;
+                                break;
+                            case 'Do Not Disturb':
+                                status = 3;
+                                break;
+                            default:
+                                status = 1;
+                        }
+
+                        $.ajax({
+                            url: "/changeStatus",
+                            data: {id: me.id, status: status},
+                            method: "GET",
+                            success: function (request) {
+                                console.log(request);
+                            },
+                            error: function (error) {
+                                console.log(error);
+                                alert('server error');
+                            }
+                        });
+
+                        $('.close')[0].removeEventListener('click', listener);
+                    }
                 }
             },
             dateType: "json",
@@ -457,7 +520,7 @@ APP.utilities.actions = (function () {
         });
 
         buttons.$btnSettings.on('click', function () {
-            showModalForUser(me.id);
+            showModalForUser(me.id, true);
         });
 
         buttons.$btnCreateConvers.on('click', function () {

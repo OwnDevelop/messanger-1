@@ -208,11 +208,11 @@ public class RESTController {
         return new Gson().toJson(Database.INSTANCE.deleteConversation(conversation_id, id));
     }
 
-    @RequestMapping(value = "/setStatusOnline", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/changeStatus", method = RequestMethod.GET, produces = "application/json")
     public String setStatusOnline(
             @RequestParam Integer id,
-            @RequestParam Boolean now
+            @RequestParam Integer status
     ) {
-        return new Gson().toJson(Database.INSTANCE.setStatusOnline(id, now));
+        return new Gson().toJson(Database.INSTANCE.setStatusOnline(id, status));
     }
 }
