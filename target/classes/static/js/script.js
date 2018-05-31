@@ -275,7 +275,6 @@ APP.utilities.actions = (function () {
                     $modalFooter.html(html);
 
                     $('.btn-write').on('click', openDialog);
-                    
                     $('#Modal').modal('show');
                 }
             },
@@ -301,7 +300,10 @@ APP.utilities.actions = (function () {
                 '<div class="short-message ellipsis">' + elem.status + '</div></div>';
         }
 
-        $('#myModalLabel').html("Select participants");
+        $('#myModalLabel').html('Select participants<div class="input-group">\n' +
+            '  <span class="input-group-addon" id="sizing-addon2">Title</span>\n' +
+            '  <input type="text" class="form-control" placeholder="Conversation name" aria-describedby="sizing-addon2">\n' +
+            '</div>');
         $modalBody.html(html);
         $modalFooter.html('<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>' +
             '<button type="button" class="btn btn-primary start-convers">Start Conversation</button>');
@@ -317,15 +319,35 @@ APP.utilities.actions = (function () {
 
         $('.start-convers').on('click', function () {
             var $people = $('.selected'),
+                $title = $('#myModalLabel input'),
+                title = $title.val().trim(),
                 participantsId = [];
 
             if ($people.length == 0) {
                 return;
             }
 
+            if (!title || title.length < 5) {
+                $title.addClass('invalid')
+                $title.focus();
+                return;
+            }
+
             for (i = 0; i < $people.length; i += 1) {
                 participantsId.push($people[i].current);
             }
+
+            $.ajax({
+                url: '/setConversation',
+                method: 'GET',
+                data: {admin_id: me.id, title: title, users: participantsId.join()},
+                success: function (request) {
+                    console.log(request);
+                },
+                error: function (err) {
+                    console.log(err);
+                }
+            });
 
             $("#Modal").modal('hide');
             $modalBody.html('');
