@@ -458,17 +458,12 @@ public class Database implements AbstractDal {
     }
 
     @Override
-    public Boolean setStatusOnline(Integer id, Boolean now) {
+    public Boolean setStatusOnline(Integer id, Integer status) {
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
             String SqlQuery;
-            if (now) {
-                SqlQuery = "UPDATE users SET status='1' " +
-                        "WHERE id=" + id + ";";
-            } else {
-                SqlQuery = "UPDATE users SET status='4' " +
-                        "WHERE id=" + id + ";";
-            }
-
+            
+                SqlQuery = "UPDATE users SET status='" + status + "' WHERE id=" + id + ";";
+            
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                 st.executeQuery();
             } catch (SQLException e) {
