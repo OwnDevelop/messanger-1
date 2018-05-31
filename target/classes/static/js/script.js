@@ -275,7 +275,6 @@ APP.utilities.actions = (function () {
                     $modalFooter.html(html);
 
                     $('.btn-write').on('click', openDialog);
-                    
                     $('#Modal').modal('show');
                 }
             },

@@ -16,7 +16,7 @@ public class MappingController {
         return "EnterPage";
     }
 
-    @GetMapping("/signup")
+    @GetMapping("/reg")
     public String signup() {
         return "registration";
     }
