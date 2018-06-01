@@ -243,7 +243,7 @@ APP.utilities.actions = (function () {
         alert('show conversation for id: ' + id);
     }
 
-    function showModalForUser(id) {
+    function showModalForUser(id, isCurrentUser) {
         var html = "",
             $modalBody = $('.modal-body'),
             $modalFooter = $('.modal-footer');
@@ -253,7 +253,8 @@ APP.utilities.actions = (function () {
             data: {id: id},
             method: "GET",
             success: function (request) {
-                var user = request;
+                var user = request,
+                    $btn = {};
 
                 if (user) {
                     $('#myModalLabel').html('Profile Information');
@@ -261,7 +262,7 @@ APP.utilities.actions = (function () {
                     html = '<div class="row"><div class="col-xs-5"><img class="profile-img" src="' + user.avatar_url + '" alt="user photo"></div>' +
                         '<div class="col-xs-7"><div class="name text-center">' + user.firstName + ' ' + user.lastName + '</div>' +
                         '<div class="status text-center" >' + user.status + '</div>' +
-                        '<button type="button" class="btn btn-default btn-write" data-dismiss="modal">Write</button></div></div></div>';
+                        '<button type="button" class="btn btn-default btn-write">Write</button></div></div></div>';
 
                     $modalBody.html(html);
 
@@ -274,9 +275,70 @@ APP.utilities.actions = (function () {
 
                     $modalFooter.html(html);
 
-                    $('.btn-write').on('click', openDialog);
-                    
-                    $('#Modal').modal('show');
+                    $btn = $('.btn-write');
+
+                    if (isCurrentUser) {
+                        $btn.html('Change status');
+                        $btn.on('click', function () {
+                            var $status = $('.status'),
+                                value = $status.html();
+
+                            switch (value) {
+                                case 'Online':
+                                    $status.html('Idle');
+                                    break;
+                                case 'Idle':
+                                    $status.html('Do Not Disturb');
+                                    break;
+                                case 'Do Not Disturb':
+                                    $status.html('Online');
+                                    break;
+                            }
+                        });
+
+                        $('.close')[0].addEventListener('click', listener);
+                    } else {
+                        $btn.on('click', openDialog);
+                    }
+
+                    $('#Modal').modal({
+                        backdrop: 'static',
+                        show: true
+                    });
+
+                    function listener() {
+                        var value = $('.status').html(),
+                            status = 0;
+
+                        switch (value) {
+                            case 'Online':
+                                status = 1;
+                                break;
+                            case 'Idle':
+                                status = 2;
+                                break;
+                            case 'Do Not Disturb':
+                                status = 3;
+                                break;
+                            default:
+                                status = 1;
+                        }
+
+                        $.ajax({
+                            url: "/changeStatus",
+                            data: {id: me.id, status: status},
+                            method: "GET",
+                            success: function (request) {
+                                console.log(request);
+                            },
+                            error: function (error) {
+                                console.log(error);
+                                alert('server error');
+                            }
+                        });
+
+                        $('.close')[0].removeEventListener('click', listener);
+                    }
                 }
             },
             dateType: "json",
@@ -301,7 +363,10 @@ APP.utilities.actions = (function () {
                 '<div class="short-message ellipsis">' + elem.status + '</div></div>';
         }
 
-        $('#myModalLabel').html("Select participants");
+        $('#myModalLabel').html('Select participants<div class="input-group">\n' +
+            '  <span class="input-group-addon" id="sizing-addon2">Title</span>\n' +
+            '  <input type="text" class="form-control" placeholder="Conversation name" aria-describedby="sizing-addon2">\n' +
+            '</div>');
         $modalBody.html(html);
         $modalFooter.html('<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>' +
             '<button type="button" class="btn btn-primary start-convers">Start Conversation</button>');
@@ -317,15 +382,57 @@ APP.utilities.actions = (function () {
 
         $('.start-convers').on('click', function () {
             var $people = $('.selected'),
-                participantsId = [];
+                $title = $('#myModalLabel input'),
+                title = $title.val().trim(),
+                participantsId = [me.id];
 
             if ($people.length == 0) {
+                return;
+            }
+
+            if (!title || title.length < 5) {
+                $title.addClass('invalid')
+                $title.focus();
                 return;
             }
 
             for (i = 0; i < $people.length; i += 1) {
                 participantsId.push($people[i].current);
             }
+
+            $.ajax({
+                url: '/setConversation',
+                method: 'GET',
+                data: {admin_id: me.id, title: title, users: participantsId.join()},
+                success: function (request) {
+                    console.log(request);
+
+                    if (request) {
+                        $.ajax({
+                            url: '/setMessage',
+                            method: 'GET',
+                            data: {
+                                from_id: me.id,
+                                conversation_id: +request,
+                                message: "Conversation has started",
+                                attachment_url: ""
+                            },
+                            success: function (res) {
+                                console.log(res);
+                                showDialogsAndConversations();
+                            },
+                            error: function (error) {
+                                console.log(error);
+                                alert('message error');
+                            }
+                        });
+                    }
+                },
+                error: function (err) {
+                    console.log(err);
+                    alert('creation error');
+                }
+            });
 
             $("#Modal").modal('hide');
             $modalBody.html('');
@@ -413,7 +520,7 @@ APP.utilities.actions = (function () {
         });
 
         buttons.$btnSettings.on('click', function () {
-            showModalForUser(me.id);
+            showModalForUser(me.id, true);
         });
 
         buttons.$btnCreateConvers.on('click', function () {
@@ -455,16 +562,22 @@ APP.utilities.actions = (function () {
                 console.log(text);
 
                 $.ajax({
-                    url: "/setMessage",
-                    method: "GET",
-                    data: {from_id: me.id, conversation_id: 5, message: text, attachment_urlMISTAKE: ""},
-                    success: function (request) {
-                        //
-                        //добавление текста как нового сообщения
-                        //
+                    url: '/setMessage',
+                    method: 'GET',
+                    data: {
+                        from_id: me.id,
+                        //TODO: поправить после отображения всех сообщений
+                        conversation_id: 5, //вытащить надо
+                        message: text.toString(),
+                        attachment_url: "" //она ещё не будет загружена на сервер в момент отправки. урла нет
+                    },
+                    success: function (res) {
+                        console.log(res);
+                        showDialogsAndConversations();
                     },
                     error: function (error) {
                         console.log(error);
+                        alert('message error');
                     }
                 });
             }

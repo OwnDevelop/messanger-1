@@ -211,41 +211,44 @@ public class Database implements AbstractDal {
         return users;
     }
 
-    @Override
-    public Boolean setConversation(ConversationDTO item) {
+   @Override
+    public Integer setConversation(ConversationDTO item) {
+        int conversation_id=0;
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
             String SqlQuery;
 
             SqlQuery = "INSERT INTO conversations (admin_id, title) " +
-                    "VALUES ('" + item.getAdmin_id() + "', '" + item.getTitle() + "');";
+                    "VALUES ('"+item.getAdmin_id()+"', '"+item.getTitle()+"');";
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                 st.executeQuery();
-            } catch (SQLException e) {
-                return false;
+            }
+            catch (SQLException e) {
+                System.out.println("Connection problem.");
+                e.printStackTrace();
             }
 
-            int conversation_id = 0;
-            SqlQuery = "SELECT id FROM conversations WHERE admin_id='" + item.getAdmin_id() + "' ORDER BY id DESC LIMIT 1";
+            SqlQuery="SELECT id FROM conversations WHERE admin_id='"+item.getAdmin_id()+"' ORDER BY id DESC LIMIT 1";
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                 st.executeQuery();
                 try (ResultSet rs = st.getResultSet()) {
-                    while (rs.next()) {
-                        conversation_id = rs.getInt(1);
+                    while(rs.next()){
+                        conversation_id=rs.getInt(1);
                     }
                 }
-            } catch (SQLException e) {
-
-                return false;
             }
-            addParticipants(conversation_id, item.getParticipants_id());
+            catch (SQLException e) {
+                System.out.println("Connection problem.");
+                e.printStackTrace();
+            }
 
+            addParticipants(conversation_id,item.getParticipants_id());
         } catch (SQLException e) {
             System.out.println("Connection problem.");
             e.printStackTrace();
         }
-        return true;
+        return conversation_id;
     }
-
+    
     @Override
     public MessageDTO setMessage(SentMessageDTO msg) {
         Integer attachment_id = this.addImage(msg.getAttachment_url());
@@ -455,17 +458,12 @@ public class Database implements AbstractDal {
     }
 
     @Override
-    public Boolean setStatusOnline(Integer id, Boolean now) {
+    public Boolean setStatusOnline(Integer id, Integer status) {
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
             String SqlQuery;
-            if (now) {
-                SqlQuery = "UPDATE users SET status='1' " +
-                        "WHERE id=" + id + ";";
-            } else {
-                SqlQuery = "UPDATE users SET status='4' " +
-                        "WHERE id=" + id + ";";
-            }
-
+            
+                SqlQuery = "UPDATE users SET status='" + status + "' WHERE id=" + id + ";";
+            
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                 st.executeQuery();
             } catch (SQLException e) {
