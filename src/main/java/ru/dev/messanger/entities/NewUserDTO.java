@@ -5,6 +5,7 @@ import com.google.gson.annotations.SerializedName;
 public class NewUserDTO extends UserDTO {
     @SerializedName("password")
     private String password;
+
     public String getPassword() {
         return password;
     }

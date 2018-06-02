@@ -1,6 +1,7 @@
 package ru.dev.messanger.entities;
 
 import com.google.gson.annotations.SerializedName;
+import ru.dev.messanger.BLL.BLL;
 
 import java.util.Date;
 
@@ -94,4 +95,6 @@ public class UserDTO {
     public void setAvatar_url(String avatar_url) {
         this.avatar_url = avatar_url;
     }
+
+
 }

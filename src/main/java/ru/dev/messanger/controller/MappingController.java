@@ -11,6 +11,11 @@ import java.util.Map;
 @Controller
 public class MappingController {
 
+    @GetMapping("/")
+    public String main() {
+        return "redirect:/signin";
+    }
+
     @GetMapping("/signin")
     public String signin() {
         return "EnterPage";
