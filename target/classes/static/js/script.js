@@ -200,6 +200,8 @@ APP.utilities.actions = (function () {
                 openConversation(conversations[this.current].userId);
             };
         }
+
+        initializeScroll();
     }
 
     function openDialog() {
@@ -209,7 +211,8 @@ APP.utilities.actions = (function () {
             success: function (request) {
                 var html = '', i = 0,
                     $messages = $('.messages'),
-                    elem = {};
+                    $names = {};
+                elem = {};
                 console.log(request);
                 //дальнейшая работа
                 for (i = 0; i < request.length; i += 1) {
@@ -223,6 +226,17 @@ APP.utilities.actions = (function () {
                 }
 
                 $messages.html(html);
+
+                $names = $('.name');
+
+                for (i = 0; i < $names.length; i += 1) {
+                    $names[i].current = i;
+                    $names[i].onclick = function () {
+                        showModalForUser(request[this.current].from_id, "closeModal");
+                    };
+                }
+                
+                fields.$sendField.focus();
             },
             error: function (error) {
                 console.log(error);
@@ -255,10 +269,12 @@ APP.utilities.actions = (function () {
         alert('show conversation for id: ' + id);
     }
 
-    function showModalForUser(id) {
+    function showModalForUser(id, behavior) {
         var html = "",
             $modalBody = $('.modal-body'),
             $modalFooter = $('.modal-footer');
+
+        behavior = behavior || "open";
 
         $.ajax({
             url: "/getUser",
@@ -290,27 +306,43 @@ APP.utilities.actions = (function () {
                     $btn = $('.btn-write');
 
                     if (user.id == entities.me.id) {
-                        $btn.html('Change status');
-                        $btn.on('click', function () {
-                            var $status = $('.status'),
-                                value = $status.html();
+                        behavior = "changeStatus";
+                    }
 
-                            switch (value) {
-                                case 'Online':
-                                    $status.html('Idle');
-                                    break;
-                                case 'Idle':
-                                    $status.html('Do Not Disturb');
-                                    break;
-                                case 'Do Not Disturb':
-                                    $status.html('Online');
-                                    break;
-                            }
-                        });
+                    switch (behavior) {
+                        case "open":
+                            //открытие нового диалога
+                            //с пустыми сообщениями
+                            //для начала диалога нужно отправить сообщение
+                            break;
+                        case "closeModal":
+                            $btn.html('Continue writing');
+                            $btn.on('click', function () {
+                                $('#Modal').modal('hide');
+                                fields.$sendField.focus();
+                            });
+                            break;
+                        case "changeStatus":
+                            $btn.html('Change status');
+                            $btn.on('click', function () {
+                                var $status = $('.status'),
+                                    value = $status.html();
 
-                        $('.close')[0].addEventListener('click', listener);
-                    } else {
-                        $btn.on('click', openDialog);
+                                switch (value) {
+                                    case 'Online':
+                                        $status.html('Idle');
+                                        break;
+                                    case 'Idle':
+                                        $status.html('Do Not Disturb');
+                                        break;
+                                    case 'Do Not Disturb':
+                                        $status.html('Online');
+                                        break;
+                                }
+                            });
+
+                            $('.close')[0].addEventListener('click', listener);
+                            break;
                     }
 
                     $('#Modal').modal({
@@ -352,9 +384,10 @@ APP.utilities.actions = (function () {
                         $('.close')[0].removeEventListener('click', listener);
                     }
                 }
-            },
-            error: function (a, b, c) {
-                console.log(a, b, c);
+            }
+            ,
+            error: function (error) {
+                console.log(error);
             }
         });
     }
