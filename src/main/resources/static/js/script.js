@@ -59,6 +59,12 @@ APP.models.entities = {
         email: "mail1@google.com",
         sex: "male"
     }],
+    foundConversations: [{
+        id: 1,
+        admin_id: 1,
+        title: "ivan",
+        created_at: "5/19/2018"
+    }],
     conversations: [{
         userId: 1,
         from_id: 852,
@@ -200,7 +206,7 @@ APP.utilities.actions = (function () {
     }
 
     function openDialog(id) {
-        var data = {currentUserId: me.id, showId: id}
+        var data = {currentUserId: me.id, showId: id};
 
         $.ajax({
             url: "GetMessage",
@@ -243,7 +249,7 @@ APP.utilities.actions = (function () {
         alert('show conversation for id: ' + id);
     }
 
-    function showModalForUser(id, isCurrentUser) {
+    function showModalForUser(id) {
         var html = "",
             $modalBody = $('.modal-body'),
             $modalFooter = $('.modal-footer');
@@ -262,7 +268,7 @@ APP.utilities.actions = (function () {
                     html = '<div class="row"><div class="col-xs-5"><img class="profile-img" src="' + user.avatar_url + '" alt="user photo"></div>' +
                         '<div class="col-xs-7"><div class="name text-center">' + user.firstName + ' ' + user.lastName + '</div>' +
                         '<div class="status text-center" >' + user.status + '</div>' +
-                        '<button type="button" class="btn btn-default btn-write">Write</button></div></div></div>';
+                        '<button type="button" class="btn btn-default btn-write">Open dialog</button></div></div></div>';
 
                     $modalBody.html(html);
 
@@ -277,7 +283,7 @@ APP.utilities.actions = (function () {
 
                     $btn = $('.btn-write');
 
-                    if (isCurrentUser) {
+                    if (user.id == me.id) {
                         $btn.html('Change status');
                         $btn.on('click', function () {
                             var $status = $('.status'),
@@ -329,7 +335,7 @@ APP.utilities.actions = (function () {
                             data: {id: me.id, status: status},
                             method: "GET",
                             success: function (request) {
-                                console.log(request);
+                                console.log('status was changed');
                             },
                             error: function (error) {
                                 console.log(error);
@@ -341,7 +347,6 @@ APP.utilities.actions = (function () {
                     }
                 }
             },
-            dateType: "json",
             error: function (a, b, c) {
                 console.log(a, b, c);
             }
@@ -462,6 +467,8 @@ APP.utilities.actions = (function () {
     }
 
     function initializeSearch() {
+        var foundConversations = APP.models.entities.foundConversations;
+
         fields.$searchField.on('blur', function () {
             var value = this.value;
             if (value) {
@@ -470,11 +477,28 @@ APP.utilities.actions = (function () {
                     data: {searchQuery: value},
                     success: function (request) {
                         console.log(request);
-                        //дальнейшая работа
+
                         if (!request) {
                             return;
                         }
                         profiles = request;
+                        showSearchResults(request);
+                    },
+                    error: function (e) {
+                        console.log(e);
+                    }
+                });
+
+                $.ajax({
+                    url: "/searchConversations",
+                    data: {searchQuery: value},
+                    success: function (request) {
+                        console.log(request);
+
+                        if (!request) {
+                            return;
+                        }
+                        foundConversations = request;
                         showSearchResults(request);
                     },
                     error: function (e) {
@@ -490,25 +514,42 @@ APP.utilities.actions = (function () {
     function showSearchResults(arr) {
         var $form = $('.jspPane:eq(0)'),
             html = "", elem = {}, i = 0,
-            $dialogs = {};
+            className = '', dialogName = '',
+            $dialogs = {},
+            $conversations = {};
 
         for (i = 0; i < arr.length; i += 1) {
             elem = arr[i];
 
-            html += '<div class="dialog"><img class="profile-photo" src="' + elem.avatar_url + '" alt="user">' +
-                '<a class="dial-name">' + elem.firstName + ' ' + elem.lastName + '</a>' +
-                '<span class="last-message-time"></span>' +
-                '<div class="short-message ellipsis">' + elem.status + '</div></div>';
+            if (elem.hasOwnProperty("firstName")) {
+                html += '<div class="dialog"><img class="profile-photo" src="' + elem.avatar_url + '" alt="user">' +
+                    '<a class="dial-name">' + elem.firstName + ' ' + elem.lastName + '</a>' +
+                    '<span class="last-message-time"></span>' +
+                    '<div class="short-message ellipsis">' + elem.status + '</div></div>';
+            } else {
+                html += '<div class="conversation"><img class="profile-photo" src="img/defaults/conversation.jpg" alt="user">' +
+                    '<a class="dial-name">' + elem.title + '</a>' +
+                    '<span class="last-message-time"></span>' +
+                    '<div class="short-message ellipsis">Click to join!</div></div>';
+            }
         }
 
         $form.html(html);
 
         $dialogs = $('.dialog');
+        $conversations = $('.conversation');
 
         for (i = 0; i < $dialogs.length; i += 1) {
             $dialogs[i].current = i;
             $dialogs[i].onclick = function (e) {
                 showModalForUser(profiles[this.current].id);
+            };
+        }
+
+        for (i = 0; i < $conversations.length; i += 1) {
+            $conversations[i].current = i;
+            $conversations[i].onclick = function () {
+                alert('eeee');
             };
         }
     }
