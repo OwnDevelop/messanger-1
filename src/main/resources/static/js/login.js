@@ -53,10 +53,8 @@ $('document').ready(function () {
                         success: function (answer) {
                             console.log(answer);
                             if (answer) {
-                                //костыль для сохранения инфы о авторизированном юзере
-                                //чтобы вытащить его при переходе
                                 localStorage.setItem("user", JSON.stringify(answer));
-                                location.replace("/");
+                                location.replace("/main.html");
                             } else {
                                 $password.addClass('invalid');
                                 $('#password').addClass('invalid');
@@ -73,8 +71,8 @@ $('document').ready(function () {
                     $loginError[0].innerHTML = 'Uncorrect login';
                 }
             },
-            error: function (a, b, c) {
-                console.log(a, b, c);
+            error: function (error) {
+                console.log(error);
             }
         });
     });

@@ -128,6 +128,8 @@ APP.utilities.actions = (function () {
             success: function (request) {
                 dialogs = request;
 
+                console.log(request);
+
                 for (i = 0; i < dialogs.length; i += 1) {
                     elem = dialogs[i];
 
@@ -180,9 +182,9 @@ APP.utilities.actions = (function () {
 
         for (i = 0; i < $dialogs.length; i += 1) {
             $dialogs[i].current = i;
-            $dialogs[i].onclick = function (e) {
-                openDialog(dialogs[this.current].from_id);
-            };
+            $dialogs[i].lastMessId = dialogs[i].id;
+            $dialogs[i].conversId = dialogs[i].conversation_id;
+            $dialogs[i].onclick = openDialog;
 
             $dialNames[i].current = i;
             $dialNames[i].onclick = function (e) {
@@ -193,32 +195,42 @@ APP.utilities.actions = (function () {
 
         for (i = 0; i < $convers.length; i += 1) {
             $convers[i].current = i;
+            $convers[i].lastMessId = $convers[i].id;
             $convers[i].onclick = function (e) {
                 openConversation(conversations[this.current].userId);
             };
         }
     }
 
-    function openDialog(id) {
-        var data = {currentUserId: entities.me.id, showId: id};
-
+    function openDialog() {
         $.ajax({
-            url: "GetMessage",
-            data: data,
+            url: "/getMessages",
+            data: {id: entities.me.id, message_id: this.lastMessId, conversation_id: this.conversId},
             success: function (request) {
-                dialogs = res;
-                var res = JSON.parse(request);
+                var html = '', i = 0,
+                    $messages = $('.messages'),
+                    elem = {};
+                console.log(request);
                 //дальнейшая работа
+                for (i = 0; i < request.length; i += 1) {
+                    elem = request[i];
+
+                    html += '<div class="message">' +
+                        '<img src="' + elem.avatar_url + '" alt="user" class="profile-photo">\n' +
+                        '<a href="#" class="name">' + elem.firstName + ' ' + elem.lastName + '</a>' +
+                        '<div class="last-message-time">' + elem.created_at + '</div>' +
+                        '<div class="full-message">' + elem.message + '</div></div>';
+                }
+
+                $messages.html(html);
             },
-            error: function (a, b, c) {
-                console.log(a, b, c);
+            error: function (error) {
+                console.log(error);
             }
         });
 
         $('.dialog').removeClass('activeted');
         $(this).addClass('activeted');
-
-        alert('show dialog for id: ' + id);
     }
 
     function openConversation(id) {
@@ -628,18 +640,18 @@ APP.utilities.actions = (function () {
     };
 })();
 
-
 $("document").ready(function () {
     var actions = {},
         entities = APP.models.entities;
 
-    if (!entities.me){
+    if (!entities.me) {
         location.replace('/signin');
     } else {
+        $.ajaxSetup({
+            headers: {'token': entities.me.token}
+        });
         actions = APP.utilities.actions;
         actions.initialization();
         actions.showDialogs();
     }
-
-
 });
