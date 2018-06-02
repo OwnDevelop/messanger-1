@@ -2,25 +2,35 @@ package ru.dev.messanger.controller;
 
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
+import ru.dev.messanger.BLL.BLL;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.List;
 
 public class AuthoriseInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String url = request.getRequestURI();
-        if (url.equals("/authorization")) {
+        if (isAllowed(url)){
             return true;
-        } else if (url.equals("/signup")){
-            return true;
-        } else if (url.equals("/signin")){
+        } else if (BLL.INSTANCE.checkToken(request.getHeader("token"))){
+            System.out.println(request.getHeader("token"));
             return true;
         } else {
-            System.out.println( request.getHeader("token"));
-            return true; //TODO: add tokens in web
+            return false;
         }
+    }
+
+
+    private Boolean isAllowed(String url){
+        if (url.equals("/")) return true;
+        String[] allowed = {"/authorization", "/loginAlreadyExists", "/signup", "/signin", "/css/", "/fonts/", "/img/", "/js/", "/psd/"};
+        for (String str: allowed) {
+            if (url.indexOf(str) == 0){
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

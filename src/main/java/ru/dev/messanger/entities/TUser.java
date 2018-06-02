@@ -21,7 +21,7 @@ public class TUser extends NewUserDTO {
         Token token = new Token();
         BLL.INSTANCE.addTokenToUser(this, token);
 
-        this.token = token.STRING_VALUE;
+        this.token = token.getToken();
     }
 
     public String getToken() {

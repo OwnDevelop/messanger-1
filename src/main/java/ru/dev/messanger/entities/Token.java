@@ -10,7 +10,7 @@ public class Token {
 
     private final int LIFETIME = 1;
 
-    public final String STRING_VALUE = UUID.randomUUID().toString();
+    private final String STRING_VALUE = UUID.randomUUID().toString();
     private LocalDateTime expires;
 
     public Token() {
@@ -18,7 +18,9 @@ public class Token {
     }
 
     public String getToken() {
-        if (expires.getLong(ChronoField.NANO_OF_SECOND) <
+        System.out.println(expires.getLong(ChronoField.NANO_OF_SECOND));
+        System.out.println(LocalDateTime.now().getLong(ChronoField.NANO_OF_SECOND));
+        if (expires.getLong(ChronoField.NANO_OF_SECOND) <=
                 LocalDateTime.now().getLong(ChronoField.NANO_OF_SECOND)) {
             this.expires = LocalDateTime.now().plusMinutes(LIFETIME);
             return STRING_VALUE;
