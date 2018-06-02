@@ -50,20 +50,22 @@ $('document').ready(function () {
                     $.ajax({
                         url: '/authorization',
                         data: {login: $login.val(), password: $password.val()},
-                        success: function (request) {
-                            console.log(request);
-                            if (request) {
+                        success: function (answer) {
+                            console.log(answer);
+                            if (answer) {
                                 //костыль для сохранения инфы о авторизированном юзере
                                 //чтобы вытащить его при переходе
-                                localStorage.setItem("user", request);
+                                localStorage.setItem("user", JSON.stringify(answer));
                                 location.replace("/");
                             } else {
                                 $password.addClass('invalid');
-                                $passError[0].innerHTML = 'Uncorrect password';
+                                $('#password').addClass('invalid');
+                                $passError.html('Uncorrect password');
+                                $passError.css('display', 'block');
                             }
                         },
-                        error: function (a, b, c) {
-                            console.log(c);
+                        error: function (a) {
+                            console.log(a);
                         }
                     });
                 } else {
