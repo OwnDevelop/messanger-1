@@ -261,7 +261,7 @@ public class Database implements AbstractDal {
                     st.executeQuery();
                 }
 
-            SqlQuery="SELECT id FROM messages WHERE conversation_id="+msg.getConversation_id()+" AND from_id="+msg.getFrom_id()+" LIMIT 1";
+            SqlQuery="SELECT id FROM messages WHERE conversation_id="+msg.getConversation_id()+" AND from_id="+msg.getFrom_id()+" ORDER BY messages.id DESC LIMIT 1";
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                 st.executeQuery();
                 try (ResultSet rs = st.getResultSet()) {
@@ -279,8 +279,6 @@ public class Database implements AbstractDal {
 
     @Override
     public Iterable<MessageDTO> getMessages(Integer conversation_id, Integer id, Integer message_id) {
-
-
         String SqlQuery = "SELECT messages.id, messages.conversation_id, from_id, message, messages.created_at, url AS attachment_url " +
                 "FROM messages LEFT JOIN photos ON messages.attachment_id=photos.id " +
                 "LEFT JOIN deleted_conversations ON messages.conversation_id=deleted_conversations.conversation_id " +

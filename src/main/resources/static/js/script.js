@@ -108,6 +108,7 @@ APP.utilities.validation = (function () {
 APP.utilities.actions = (function () {
     var dialogs = APP.models.entities.dialogs,
         conversations = APP.models.entities.conversations,
+        foundConversations = APP.models.entities.foundConversations,
         profiles = APP.models.entities.profiles,
         validation = APP.utilities.validation,
         entities = APP.models.entities,
@@ -182,6 +183,7 @@ APP.utilities.actions = (function () {
             $dialogs[i].current = i;
             $dialogs[i].lastMessId = dialogs[i].id;
             $dialogs[i].conversId = dialogs[i].conversation_id;
+            $dialogs[i].countUnread = dialogs[i].countUnread;
             $dialogs[i].onclick = openDialog;
 
             $dialNames[i].current = i;
@@ -195,6 +197,7 @@ APP.utilities.actions = (function () {
             $convers[i].current = i;
             $convers[i].lastMessId = conversations[i].id;
             $convers[i].conversId = conversations[i].conversation_id;
+            $convers[i].countUnread = conversations[i].countUnread;
             $convers[i].onclick = openDialog;
         }
 
@@ -210,6 +213,26 @@ APP.utilities.actions = (function () {
                     $messages = $('.messages > .jspContainer > .jspPane'),
                     $names = {},
                     elem = {};
+
+
+                if (this.countUnread > 0) {
+                    $.ajax({
+                        url: '/setUnreadMessages',
+                        method: 'GET',
+                        data: {
+                            id: entities.me.id,
+                            conversation_id: this.conversId,
+                            count: 0
+                        },
+                        success: function (res) {
+                            console.log('all mess were read');
+                        },
+                        error: function (error) {
+                            console.log(error);
+                            alert('message error');
+                        }
+                    });
+                }
 
                 for (i = 0; i < request.length; i += 1) {
                     elem = request[i];
@@ -235,6 +258,7 @@ APP.utilities.actions = (function () {
                 initializeScroll();
 
                 fields.$sendField.focus();
+                fields.$sendField.val('');
             },
             error: function (error) {
                 console.log(error);
@@ -481,7 +505,7 @@ APP.utilities.actions = (function () {
     }
 
     function initializeSearch() {
-        var foundConversations = APP.models.entities.foundConversations;
+        foundConversations = [];
 
         fields.$searchField.on('blur', function () {
             var value = this.value;
@@ -515,8 +539,8 @@ APP.utilities.actions = (function () {
                         foundConversations = request;
                         showSearchResults(request);
                     },
-                    error: function (e) {
-                        console.log(e);
+                    error: function (error) {
+                        console.log(error);
                     }
                 });
             } else {
@@ -556,14 +580,40 @@ APP.utilities.actions = (function () {
         for (i = 0; i < $dialogs.length; i += 1) {
             $dialogs[i].current = i;
             $dialogs[i].onclick = function (e) {
-                showModalForUser(profiles[this.current].id);
+                showModalForUser(profiles[this.current].id, "open");
             };
         }
 
         for (i = 0; i < $conversations.length; i += 1) {
             $conversations[i].current = i;
+            $conversations[i].conversId = foundConversations[i].id;
             $conversations[i].onclick = function () {
-                alert('eeee');
+                var answer = false,
+                    conversId = this.conversId,
+                    index = 0;
+
+                index = conversations.find(function (element) {
+                    return element.conversation_id === conversId;
+                });
+
+                if (!index) {
+                    answer = confirm('Join conversation?');
+
+                    if (answer) {
+                        $.ajax({
+                            url: '/joinTheConversation',
+                            method: 'GET',
+                            data: {conversation_id: conversId, id: entities.me.id},
+                            success: function (request) {
+                                console.log('joined');
+                                showDialogsAndConversations();
+                            },
+                            error: function (error) {
+                                console.log(error);
+                            }
+                        });
+                    }
+                }
             };
         }
     }
@@ -627,10 +677,12 @@ APP.utilities.actions = (function () {
                         attachment_url: "" //она ещё не будет загружена на сервер в момент отправки. урла нет
                     },
                     success: function (res) {
+                        fields.$sendField.val('');
+
+                        a[0].lastMessId = res;
+                        openDialog.apply(a[0], arguments);
+
                         showDialogsAndConversations();
-                        // setTimeout(function () {
-                        //     a.click('click');
-                        // },1000);
                     },
                     error: function (error) {
                         console.log(error);
