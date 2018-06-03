@@ -284,7 +284,7 @@ public class Database implements AbstractDal {
                 "LEFT JOIN deleted_conversations ON messages.conversation_id=deleted_conversations.conversation_id " +
                 "WHERE messages.conversation_id=" + conversation_id + " AND messages.id<=" + message_id +
                 " AND (messages.created_at>deleted_conversations.deleted_at OR deleted_conversations.user_id IS NULL OR deleted_conversations.user_id!=" + id +
-                ") LIMIT 10;";
+                ") ORDER BY messages.id DESC LIMIT 10;";
         List<MessageDTO> messages = getMessages(SqlQuery);
 
         return messages;
