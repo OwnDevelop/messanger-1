@@ -128,6 +128,7 @@ APP.utilities.actions = (function () {
             data: {id: entities.me.id},
             success: function (request) {
                 dialogs = request;
+                console.log(request);
 
                 for (i = 0; i < dialogs.length; i += 1) {
                     elem = dialogs[i];
@@ -234,7 +235,7 @@ APP.utilities.actions = (function () {
                     });
                 }
 
-                for (i = 0; i < request.length; i += 1) {
+                for (i = request.length - 1; i >= 0; i -= 1) {
                     elem = request[i];
 
                     html += '<div class="message">' +
@@ -312,9 +313,35 @@ APP.utilities.actions = (function () {
 
                     switch (behavior) {
                         case "open":
-                            //открытие нового диалога
-                            //с пустыми сообщениями
-                            //для начала диалога нужно отправить сообщение
+                            $btn.html('Start conversation');
+
+                            $btn.on('click', function () {
+                                var participants = [entities.me.id,user.id];
+                                    index = dialogs.find(function (element) {
+                                    return element.id === user.id;
+                                });
+
+                                console.log(index);
+                                console.log(user.id);
+
+                                if (!index) {
+                                    $.ajax({
+                                        url: '/setConversation',
+                                        method: 'GET',
+                                        data: {users: participants.join(), admin_id: entities.me.id, title: null},
+                                        success: function (request) {
+                                            console.log('joined');
+                                            //firstMessegeAJAX(user.id); это
+                                            firstMessegeAJAX(request);
+                                        },
+                                        error: function (error) {
+                                            console.log(error);
+                                        }
+                                    });
+                                }
+
+                                $('#Modal').modal('hide');
+                            });
                             break;
                         case "closeModal":
                             $btn.html('Continue writing');
@@ -451,24 +478,7 @@ APP.utilities.actions = (function () {
                 data: {admin_id: entities.me.id, title: title, users: participantsId.join()},
                 success: function (request) {
                     if (request) {
-                        $.ajax({
-                            url: '/setMessage',
-                            method: 'GET',
-                            data: {
-                                from_id: entities.me.id,
-                                conversation_id: +request,
-                                message: "Conversation has started",
-                                attachment_url: ""
-                            },
-                            success: function (res) {
-                                console.log(res);
-                                showDialogsAndConversations();
-                            },
-                            error: function (error) {
-                                console.log(error);
-                                alert('message error');
-                            }
-                        });
+                        firstMessegeAJAX(request);
                     }
                 },
                 error: function (err) {
@@ -616,6 +626,28 @@ APP.utilities.actions = (function () {
                 }
             };
         }
+    }
+
+    function firstMessegeAJAX(conversationId) {
+        $.ajax({
+            url: '/setMessage',
+            method: 'GET',
+            data: {
+                from_id: entities.me.id,
+                conversation_id: conversationId,
+                message: "Conversation has started",
+                attachment_url: ""
+            },
+            success: function (res) {
+                console.log(res);
+                fields.$searchField.val('');
+                showDialogsAndConversations();
+            },
+            error: function (error) {
+                console.log(error);
+                alert('message error');
+            }
+        });
     }
 
     function initialization() {
