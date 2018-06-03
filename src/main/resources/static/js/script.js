@@ -30,7 +30,7 @@ APP.createNamespace('APP.utilities.validation');
 APP.models.entities = {
     me: (function () {
         var user = JSON.parse(localStorage.getItem("user"));
-        localStorage.clear();
+        // localStorage.clear();
         return user;
     }()),
     dialogs: [{
@@ -109,7 +109,7 @@ APP.utilities.actions = (function () {
     var dialogs = APP.models.entities.dialogs,
         conversations = APP.models.entities.conversations,
         profiles = APP.models.entities.profiles,
-        validation = APP.models.entities.validation,
+        validation = APP.utilities.validation,
         entities = APP.models.entities,
         buttons = APP.models.buttons,
         fields = APP.models.fields,
@@ -127,8 +127,6 @@ APP.utilities.actions = (function () {
             data: {id: entities.me.id},
             success: function (request) {
                 dialogs = request;
-
-                console.log(request);
 
                 for (i = 0; i < dialogs.length; i += 1) {
                     elem = dialogs[i];
@@ -195,10 +193,9 @@ APP.utilities.actions = (function () {
 
         for (i = 0; i < $convers.length; i += 1) {
             $convers[i].current = i;
-            $convers[i].lastMessId = $convers[i].id;
-            $convers[i].onclick = function (e) {
-                openConversation(conversations[this.current].userId);
-            };
+            $convers[i].lastMessId = conversations[i].id;
+            $convers[i].conversId = conversations[i].conversation_id;
+            $convers[i].onclick = openDialog;
         }
 
         initializeScroll();
@@ -210,11 +207,10 @@ APP.utilities.actions = (function () {
             data: {id: entities.me.id, message_id: this.lastMessId, conversation_id: this.conversId},
             success: function (request) {
                 var html = '', i = 0,
-                    $messages = $('.messages'),
+                    $messages = $('.messages > .jspContainer > .jspPane'),
                     $names = {},
                     elem = {};
-                console.log(request);
-                //дальнейшая работа
+
                 for (i = 0; i < request.length; i += 1) {
                     elem = request[i];
 
@@ -236,6 +232,8 @@ APP.utilities.actions = (function () {
                     };
                 }
 
+                initializeScroll();
+
                 fields.$sendField.focus();
             },
             error: function (error) {
@@ -244,29 +242,8 @@ APP.utilities.actions = (function () {
         });
 
         $('.dialog').removeClass('activeted');
-        $(this).addClass('activeted');
-    }
-
-    function openConversation(id) {
-        var data = {currentUserId: entities.me.id, showId: id}
-
-        $.ajax({
-            url: "GetMessage",
-            data: data,
-            success: function (request) {
-                dialogs = res;
-                var res = JSON.parse(request);
-                //дальнейшая работа
-            },
-            error: function (a, b, c) {
-                console.log(a, b, c);
-            }
-        });
-
         $('.conversation').removeClass('activeted');
         $(this).addClass('activeted');
-
-        alert('show conversation for id: ' + id);
     }
 
     function showModalForUser(id, behavior) {
@@ -449,8 +426,6 @@ APP.utilities.actions = (function () {
                 method: 'GET',
                 data: {admin_id: entities.me.id, title: title, users: participantsId.join()},
                 success: function (request) {
-                    console.log(request);
-
                     if (request) {
                         $.ajax({
                             url: '/setMessage',
@@ -635,25 +610,27 @@ APP.utilities.actions = (function () {
         });
 
         buttons.$btnSendMess.on("click", function (e) {
-            var text = fields.$sendField.val().trim();
+            var text = fields.$sendField.val().trim(),
+                a = $('.activeted'),
+                conversId = a[0].conversId;
 
             if (text) {
                 text = validation.htmlEscape(text);
-                console.log(text);
 
                 $.ajax({
                     url: '/setMessage',
                     method: 'GET',
                     data: {
                         from_id: entities.me.id,
-                        //TODO: поправить после отображения всех сообщений
-                        conversation_id: 5, //вытащить надо
+                        conversation_id: conversId,
                         message: text.toString(),
                         attachment_url: "" //она ещё не будет загружена на сервер в момент отправки. урла нет
                     },
                     success: function (res) {
-                        console.log(res);
                         showDialogsAndConversations();
+                        // setTimeout(function () {
+                        //     a.click('click');
+                        // },1000);
                     },
                     error: function (error) {
                         console.log(error);
@@ -680,9 +657,9 @@ $("document").ready(function () {
     if (!entities.me) {
         location.replace('/signin');
     } else {
-        $.ajaxSetup({
-            headers: {'token': entities.me.token}
-        });
+        // $.ajaxSetup({
+        //     headers: {'token': entities.me.token}
+        // });
         actions = APP.utilities.actions;
         actions.initialization();
         actions.showDialogs();
