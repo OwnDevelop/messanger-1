@@ -391,20 +391,35 @@ public class Database implements AbstractDal {
 
     @Override
     public Boolean leaveTheConversation(Integer conversation_id, Integer id) {
-        String SqlQuery = "DELETE FROM participants WHERE user_id=" + id + " AND conversation_id=" + conversation_id;
+
+        String SqlQuery="SELECT COUNT (user_id) FROM participants WHERE conversation_id="+conversation_id;
+
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
+
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                 st.executeQuery();
+                try (ResultSet rs = st.getResultSet()) {
+                    while(rs.next()){
+                        if (rs.getInt(1) > 3) {
+                            System.out.println(rs.getInt(1));
+                            SqlQuery = "DELETE FROM participants WHERE user_id="+id+" AND conversation_id="+conversation_id;
+
+                            try (PreparedStatement stm = connection.prepareStatement(SqlQuery)) {
+                                stm.executeQuery();
+                                return true;
+                            }
+                        }
+                        else return false;
+                    }
+                }
             }
         } catch (SQLException e) {
-            System.out.println("Connection problem. (bad id's in leaveTheConversation)");
+            System.out.println("Connection problem.");
             e.printStackTrace();
-            return false;
-
         }
+
         return true;
     }
-
     @Override
     public Boolean setUnreadMessages(Integer conversation_id, Integer id, Integer count) {
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
