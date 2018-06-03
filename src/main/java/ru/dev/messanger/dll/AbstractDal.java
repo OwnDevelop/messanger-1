@@ -16,7 +16,7 @@ public interface AbstractDal {
     Iterable<MessageConversationDTO> getConversations(Integer id);
     Iterable<MessageWithUnreadDTO> getDialogs(Integer id);
     Integer setConversation(ConversationDTO item);
-    MessageDTO setMessage(SentMessageDTO msg);
+    Integer setMessage(SentMessageDTO msg);
     Iterable<MessageDTO> getMessages(Integer conversation_id, Integer id, Integer message_id);
     Iterable<MessageDTO> searchInConversation(String searchQuery, Integer conversation_id);
     Iterable<SimpleConversationDTO> searchConversations(String searchQuery);
