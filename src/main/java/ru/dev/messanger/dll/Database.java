@@ -249,22 +249,32 @@ public class Database implements AbstractDal {
         return conversation_id;
     }
     
-    @Override
-    public MessageDTO setMessage(SentMessageDTO msg) {
-        Integer attachment_id = this.addImage(msg.getAttachment_url());
+       @Override
+    public Integer setMessage(SentMessageDTO msg) {
+        Integer id=0;
+        Integer avatar_id=this.addImage(msg.getAttachment_url());
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
             String SqlQuery;
-            SqlQuery = "INSERT INTO messages (conversation_id, from_id, message, attachment_id) " +
-                    "VALUES ('" + msg.getConversation_id() + "', '" + msg.getFrom_id() + "', '" + msg.getMessage() + "', '" + attachment_id + "')";
+                SqlQuery="INSERT INTO messages (conversation_id, from_id, message, attachment_id) "+
+                        "VALUES ('"+msg.getConversation_id()+"', '"+msg.getFrom_id()+"', '"+msg.getMessage()+"', '"+avatar_id+"')";
+                try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
+                    st.executeQuery();
+                }
+
+            SqlQuery="SELECT id FROM messages WHERE conversation_id="+msg.getConversation_id()+" AND from_id="+msg.getFrom_id()+" LIMIT 1";
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                 st.executeQuery();
+                try (ResultSet rs = st.getResultSet()) {
+                    while(rs.next()) {
+                        id=rs.getInt(1);
+                    }
+                }
             }
-
         } catch (SQLException e) {
             System.out.println("Connection problem.");
             e.printStackTrace();
         }
-        return null;
+        return id;
     }
 
     @Override
