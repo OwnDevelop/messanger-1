@@ -211,8 +211,8 @@ APP.utilities.actions = (function () {
             success: function (request) {
                 var html = '', i = 0,
                     $messages = $('.messages'),
-                    $names = {};
-                elem = {};
+                    $names = {},
+                    elem = {};
                 console.log(request);
                 //дальнейшая работа
                 for (i = 0; i < request.length; i += 1) {
@@ -235,7 +235,7 @@ APP.utilities.actions = (function () {
                         showModalForUser(request[this.current].from_id, "closeModal");
                     };
                 }
-                
+
                 fields.$sendField.focus();
             },
             error: function (error) {

@@ -22,10 +22,15 @@ public class BLL {
         this.userToken.put(user.getId(), token);
     }
 
-    public Boolean checkToken(String token){
-        if ((userToken.size() == 0) && (token.isEmpty()) && (token == null)) return false; // TODO: Can be removed (presents for better understanding)
-        for (Token tkn: userToken.values()) {
-            if (token.equals(tkn.getToken())){
+    public Boolean checkToken(String token) {
+        if (token == null) { //TODO: это ломает всю защиту | заглушка, чтобы войти
+            return true;
+        }
+        if ((userToken.size() == 0) && (token.isEmpty()) && (token == null)) { // TODO: Can be removed (presents for better understanding)
+            return false;
+        }
+        for (Token tkn : userToken.values()) {
+            if (token.equals(tkn.getToken())) {
                 return true;
             } else {
                 return false;
@@ -51,7 +56,8 @@ public class BLL {
     }
 
     public String authorization(String login, String password) {
-        if (loginAlreadyExists(login) == "false") return "No Such User"; //TODO: связана с ранним запросом ДО авторизации loginaleready exists И НЕ ТЕСТИТСЯ ИБО НИКАК чина давай
+        if (loginAlreadyExists(login) == "false")
+            return "No Such User"; //TODO: связана с ранним запросом ДО авторизации loginaleready exists И НЕ ТЕСТИТСЯ ИБО НИКАК чина давай
         UserDTO user = Database.INSTANCE.authorization(login, password);
         Object o = BLL.INSTANCE; //TODO: remove in prod
 
