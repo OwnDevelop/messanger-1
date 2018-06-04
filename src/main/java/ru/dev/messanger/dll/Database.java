@@ -369,7 +369,6 @@ public class Database implements AbstractDal {
 
     @Override
     public Boolean leaveTheConversation(Integer conversation_id, Integer id) {
-
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
             String SqlQuery="SELECT COUNT (user_id) FROM participants WHERE conversation_id="+conversation_id;
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
@@ -395,8 +394,7 @@ public class Database implements AbstractDal {
         return true;
     }
     @Override
-    public Boolean setUnreadMessages(Integer conversation_id, Integer id, Integer count) {
-        
+    public Boolean setUnreadMessages(Integer conversation_id, Integer id, Integer count) {        
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
             String SqlQuery = "UPDATE participants SET unread_messages='" + count + "' " +
                     "WHERE conversation_id=" + conversation_id + " AND user_id=" + id + ";";
@@ -430,11 +428,6 @@ public class Database implements AbstractDal {
                     }
                 }
             }
-        } catch (SQLException e) {
-            System.out.println("Connection problem.");
-            e.printStackTrace();
-        }
-
         if (exist) {
             SqlQuery = "UPDATE deleted_conversations SET deleted_at=NOW()" +
                     "WHERE conversation_id=" + conversation_id + " AND user_id=" + id + ";";
@@ -442,7 +435,6 @@ public class Database implements AbstractDal {
             SqlQuery = "INSERT INTO deleted_conversations (conversation_id, user_id) " +
                     "VALUES ('" + conversation_id + "', '" + id + "');";
         }
-        try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                 st.executeQuery();
             }
