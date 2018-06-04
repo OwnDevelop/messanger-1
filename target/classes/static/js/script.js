@@ -639,6 +639,7 @@ APP.utilities.actions = (function () {
                 attachment_url: ""
             },
             success: function (res) {
+                console.log(res);
                 fields.$searchField.val('');
                 showDialogsAndConversations();
             },

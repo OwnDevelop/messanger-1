@@ -48,43 +48,110 @@ $('#form').validate({
     validClass: "valid"
 });
 
-$(function () {
-    var $name, $surname, $login, $email, $password, $confirm_pass;
-    $name = $("#name");
-    $surname = $("#surname");
-    $login = $("#login");
-    $email = $("#email");
-    $password = $("#password");
-    $confirm_pass = $("#confirm-pass");
+$('document').ready(function () {
+    var $name = $("#name"),
+        $surname = $("#last-name"),
+        $login = $("#login"),
+        $email = $("#email"),
+        $password = $("#password"),
+        $confirm_pass = $("#confirm-pass"),
+        isLoginValide = false,
+        isEmailValide = false;
 
     $('.send')[0].onclick = function (e) {
-        console.log($login.val());
-        checkLoginExist($login.val());
-        checkEmailExist($email.val());
+        var login = $login.val().trim(),
+            email = $email.val().trim(),
+            password = $password.val().trim(),
+            confirmPass = $confirm_pass.val().trim(),
+            firstName = $name.val().trim(),
+            lastName = $surname.val().trim(),
+            sex = $('input[name="sex"]:checked').val();
+
+        e.preventDefault();
+
+        if (checkOnFieldsFullFill() && password === $confirm_pass.val()) {
+            checkLoginExist($login.val());
+            checkEmailExist($email.val());
+
+            setTimeout(function () {
+                var rand = Math.floor(1 + Math.random() * 12),
+                    url = 'img/defaults/image0';
+
+                if (isLoginValide && isEmailValide) {
+                    if (rand.toString().length === 1) {
+                        url += '0' + rand;
+                    } else {
+                        url += rand;
+                    }
+
+                    url += '.jpg';
+
+                    $.ajax({
+                        url: '/setUser',
+                        data: {
+                            login: login,
+                            email: email,
+                            password: password,
+                            first_name: firstName,
+                            last_name: lastName,
+                            sex: sex,
+                            status: 4,
+                            avatar: url
+                        },
+                        success: function (request) {
+                            if (request) {
+                                location.replace('/singin');
+                            }
+                        },
+                        error: function (error) {
+                            console.log(error);
+                            alert('server error');
+                        }
+                    });
+                }
+            }, 800);
+        }
+
+        function checkOnFieldsFullFill() {
+            return login.length > 6 && firstName.length > 6 && lastName.length > 6 && email.length > 6 && password.length > 6 && confirmPass.length > 6;
+        }
     }
 
 
     function checkLoginExist(login) {
         $.ajax({
-            data: login,
+            url: '/loginAlreadyExists',
+            data: {login: login},
             success: function (request) {
                 if (!request) {
-                    //вывести ошибку
+                    isLoginValide = true;
+                } else {
+                    isLoginValide = false;
+                    $login.addClass('invalid');
                 }
             },
-            error: function () {
-
+            error: function (error) {
+                console.log(error);
+                alert('server error');
             }
         });
     }
 
     function checkEmailExist(email) {
         $.ajax({
-            data: email,
+            url: '/emailAlreadyExists',
+            data: {email: email},
             success: function (request) {
                 if (!request) {
-                    //вывести ошибку
+                    isEmailValide = true;
+                } else {
+                    isEmailValide = false;
+                    $email.addClass('invalid');
                 }
+            },
+            error: function (error) {
+                console.log(error);
+                alert('server error');
             }
         });
     }
