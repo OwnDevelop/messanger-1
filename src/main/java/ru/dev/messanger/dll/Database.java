@@ -34,13 +34,12 @@ public class Database implements AbstractDal {
     @Override
     public UserDTO authorization(String login, String password) {
         UserDTO user = null;
-        String SqlQuery = "SELECT users.id, email, login, first_name, last_name, sex, created_at, value as status, url as avatar FROM users LEFT JOIN status ON users.status=status.id LEFT JOIN photos ON users.avatar=photos.id " +
-                "WHERE (login='" + login + "' OR email='" + login + "') AND password='" + password + "';";
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
+            String SqlQuery = "SELECT users.id, email, login, first_name, last_name, sex, created_at, value as status, url as avatar FROM users LEFT JOIN status ON users.status=status.id LEFT JOIN photos ON users.avatar=photos.id " +
+                "WHERE (login='" + login + "' OR email='" + login + "') AND password='" + password + "';";
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
-                //st.setInt(1,2);
                 st.executeQuery();
-                try (ResultSet rs = st.getResultSet()) { //Что получаем
+                try (ResultSet rs = st.getResultSet()) { 
                     user = new UserDTO();
                     while (rs.next()) {
                         user = getUser(rs);
@@ -59,8 +58,8 @@ public class Database implements AbstractDal {
 
     @Override
     public Boolean emailAlreadyExists(String email) {
-        String SqlQuery = "SELECT  COUNT(id) FROM users WHERE email='" + email + "'";
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
+            String SqlQuery = "SELECT  COUNT(id) FROM users WHERE email='" + email + "'";
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                 st.executeQuery();
                 try (ResultSet rs = st.getResultSet()) {
@@ -80,8 +79,8 @@ public class Database implements AbstractDal {
 
     @Override
     public Boolean loginAlreadyExists(String login) {
-        String SqlQuery = "SELECT COUNT (id) FROM users WHERE login='" + login + "'";
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
+            String SqlQuery = "SELECT COUNT (id) FROM users WHERE login='" + login + "'";
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                 st.executeQuery();
                 try (ResultSet rs = st.getResultSet()) {
@@ -103,14 +102,11 @@ public class Database implements AbstractDal {
     public Boolean setUser(NewUserDTO item) {
         Integer avatar_id = this.addImage(item.getAvatar_url());
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
-            String SqlQuery;
-
-            SqlQuery = "INSERT INTO users (email, login, password, first_name, last_name, sex, status, avatar) " +
+          String SqlQuery = "INSERT INTO users (email, login, password, first_name, last_name, sex, status, avatar) " +
                     "VALUES ('" + item.getEmail() + "', '" + item.getLogin() + "', '" + item.getPassword() + "', '" + item.getFirstName() + "', '" + item.getLastName() + "', '" + item.getSex() + "', '" + "1" + "', '" + avatar_id + "');";
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                 st.executeQuery();
             } catch (SQLException e) {
-
                 return false;
             }
         } catch (SQLException e) {
@@ -124,14 +120,11 @@ public class Database implements AbstractDal {
     @Override
     public UserDTO getUser(int id) {
         UserDTO user = null;
-
-        String SqlQuery = "SELECT users.id, email, login, first_name, last_name, sex, created_at, value as status, url as avatar FROM users LEFT JOIN status ON users.status=status.id LEFT JOIN photos ON users.avatar=photos.id " +
-                "WHERE users.id=" + id;
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
+            String SqlQuery = "SELECT users.id, email, login, first_name, last_name, sex, created_at, value as status, url as avatar FROM users LEFT JOIN status ON users.status=status.id LEFT JOIN photos ON users.avatar=photos.id " +
+                "WHERE users.id=" + id;
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
-                //st.setInt(1,2);
                 st.executeQuery();
-
                 try (ResultSet rs = st.getResultSet()) {
                     while (rs.next()) {
                         user = getUser(rs);
@@ -149,11 +142,10 @@ public class Database implements AbstractDal {
     @Override
     public Boolean updateUser(NewUserDTO item, Integer id) {
         Integer avatar_id = this.addImage(item.getAvatar_url());
-        String SqlQuery;
+        SqlQuery;
 
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
-
-            SqlQuery = "UPDATE users LEFT JOIN status ON users.status=status.id LEFT JOIN photos ON users.avatar=photos.id " +
+            String SqlQuery = "UPDATE users LEFT JOIN status ON users.status=status.id LEFT JOIN photos ON users.avatar=photos.id " +
                     "SET password='" + item.getPassword() + "', first_name='" + item.getFirstName() + "', last_name='" + item.getLastName() +
                     "', sex='" + item.getSex() + "', status='" + item.getStatus() + "', avatar='" + avatar_id +
                     "' WHERE users.id='" + id + "';";
@@ -171,10 +163,9 @@ public class Database implements AbstractDal {
 
     @Override
     public Boolean deleteUser(UserDTO item) {
-        String SqlQuery = "DELETE FROM users WHERE id=" + item.getId();
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
+            String SqlQuery = "DELETE FROM users WHERE id=" + item.getId();
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
-                //st.setInt(1,2);
                 st.executeQuery();
             }
         } catch (SQLException e) {
@@ -187,15 +178,12 @@ public class Database implements AbstractDal {
     @Override
     public Iterable<UserDTO> searchUsers(String searchQuery) {
         List<UserDTO> users = null;
-
-        String SqlQuery = "SELECT users.id, email, login, first_name, last_name, sex, created_at, VALUE AS status, url AS avatar " +
+        try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
+            String SqlQuery = "SELECT users.id, email, login, first_name, last_name, sex, created_at, VALUE AS status, url AS avatar " +
                 "FROM users LEFT JOIN status ON users.status=status.id LEFT JOIN photos ON users.avatar=photos.id " +
                 "WHERE login LIKE '%" + searchQuery + "%'";
-        try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
-                //st.setInt(1,2);
                 st.executeQuery();
-
                 try (ResultSet rs = st.getResultSet()) { //Что получаем
                     users = new ArrayList<>();
                     while (rs.next()) {
@@ -207,17 +195,14 @@ public class Database implements AbstractDal {
             System.out.println("Connection problem.");
             e.printStackTrace();
         }
-
         return users;
     }
 
-   @Override
+    @Override
     public Integer setConversation(ConversationDTO item) {
         int conversation_id=0;
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
-            String SqlQuery;
-
-            SqlQuery = "INSERT INTO conversations (admin_id, title) " +
+            String SqlQuery = "INSERT INTO conversations (admin_id, title) " +
                     "VALUES ('"+item.getAdmin_id()+"', '"+item.getTitle()+"');";
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                 st.executeQuery();
@@ -226,7 +211,6 @@ public class Database implements AbstractDal {
                 System.out.println("Connection problem.");
                 e.printStackTrace();
             }
-
             SqlQuery="SELECT id FROM conversations WHERE admin_id='"+item.getAdmin_id()+"' ORDER BY id DESC LIMIT 1";
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                 st.executeQuery();
@@ -249,20 +233,18 @@ public class Database implements AbstractDal {
         return conversation_id;
     }
     
-       @Override
+    @Override
     public Integer setMessage(SentMessageDTO msg) {
         Integer id=0;
-        Integer avatar_id=this.addImage(msg.getAttachment_url());
+        Integer image_id=this.addImage(msg.getAttachment_url());
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
-            String SqlQuery;
-                SqlQuery="INSERT INTO messages (conversation_id, from_id, message, attachment_id) "+
-                        "VALUES ('"+msg.getConversation_id()+"', '"+msg.getFrom_id()+"', '"+msg.getMessage()+"', '"+avatar_id+"')";
+                String SqlQuery="INSERT INTO messages (conversation_id, from_id, message, attachment_id) "+
+                        "VALUES ('"+msg.getConversation_id()+"', '"+msg.getFrom_id()+"', '"+msg.getMessage()+"', '"+image_id+"')";
                 try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                     st.executeQuery();
                 }
-
-            SqlQuery="SELECT id FROM messages WHERE conversation_id="+msg.getConversation_id()+" AND from_id="+msg.getFrom_id()+" ORDER BY messages.id DESC LIMIT 1";
-            try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
+                SqlQuery="SELECT id FROM messages WHERE conversation_id="+msg.getConversation_id()+" AND from_id="+msg.getFrom_id()+" ORDER BY messages.id DESC LIMIT 1";
+                try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                 st.executeQuery();
                 try (ResultSet rs = st.getResultSet()) {
                     while(rs.next()) {
@@ -345,15 +327,13 @@ public class Database implements AbstractDal {
     public Iterable<SimpleConversationDTO> searchConversations(String searchQuery) {
         List<SimpleConversationDTO> conversations = null;
 
-        String SqlQuery = "SELECT id, title, created_at " +
+        try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
+            String SqlQuery = "SELECT id, title, created_at " +
                 "FROM conversations " +
                 "WHERE title LIKE '%" + searchQuery + "%';";
-        try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
-                //st.setInt(1,2);
                 st.executeQuery();
-
-                try (ResultSet rs = st.getResultSet()) { //Что получаем
+                try (ResultSet rs = st.getResultSet()) { 
                     conversations = new ArrayList<>();
                     while (rs.next()) {
                         ConversationDTO item = new ConversationDTO();
@@ -368,16 +348,14 @@ public class Database implements AbstractDal {
             System.out.println("Connection problem.");
             e.printStackTrace();
         }
-
         return conversations;
     }
 
     @Override
     public Boolean joinTheConversation(Integer conversation_id, Integer id) {
-
-        String SqlQuery = "INSERT INTO participants (conversation_id, user_id, unread_messages) " +
+        try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {            
+            String SqlQuery = "INSERT INTO participants (conversation_id, user_id, unread_messages) " +
                 "VALUES ('" + conversation_id + "', '" + id + "', 0);";
-        try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                 st.executeQuery();
             }
@@ -392,18 +370,14 @@ public class Database implements AbstractDal {
     @Override
     public Boolean leaveTheConversation(Integer conversation_id, Integer id) {
 
-        String SqlQuery="SELECT COUNT (user_id) FROM participants WHERE conversation_id="+conversation_id;
-
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
-
+            String SqlQuery="SELECT COUNT (user_id) FROM participants WHERE conversation_id="+conversation_id;
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                 st.executeQuery();
                 try (ResultSet rs = st.getResultSet()) {
                     while(rs.next()){
                         if (rs.getInt(1) > 3) {
-                            System.out.println(rs.getInt(1));
                             SqlQuery = "DELETE FROM participants WHERE user_id="+id+" AND conversation_id="+conversation_id;
-
                             try (PreparedStatement stm = connection.prepareStatement(SqlQuery)) {
                                 stm.executeQuery();
                                 return true;
@@ -422,8 +396,8 @@ public class Database implements AbstractDal {
     }
     @Override
     public Boolean setUnreadMessages(Integer conversation_id, Integer id, Integer count) {
+        
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
-
             String SqlQuery = "UPDATE participants SET unread_messages='" + count + "' " +
                     "WHERE conversation_id=" + conversation_id + " AND user_id=" + id + ";";
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
@@ -444,8 +418,8 @@ public class Database implements AbstractDal {
         String SqlQuery;
         Boolean exist = false;
 
-        SqlQuery = "SELECT COUNT (id) FROM deleted_conversations WHERE conversation_id=" + conversation_id + " AND user_id= " + id;
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
+            SqlQuery = "SELECT COUNT (id) FROM deleted_conversations WHERE conversation_id=" + conversation_id + " AND user_id= " + id;
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                 st.executeQuery();
                 try (ResultSet rs = st.getResultSet()) {
@@ -483,10 +457,7 @@ public class Database implements AbstractDal {
     @Override
     public Boolean setStatusOnline(Integer id, Integer status) {
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
-            String SqlQuery;
-            
-                SqlQuery = "UPDATE users SET status='" + status + "' WHERE id=" + id + ";";
-            
+            String SqlQuery = "UPDATE users SET status='" + status + "' WHERE id=" + id + ";";  
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                 st.executeQuery();
             } catch (SQLException e) {
@@ -502,16 +473,15 @@ public class Database implements AbstractDal {
     @Override
     public Iterable<MessageConversationDTO> getConversations(Integer id) {
         List<MessageConversationDTO> conversations = null;
-
         List<Integer> conversations_id = null;
-        String SqlQuery = "SELECT participants.conversation_id FROM participants " +
+       
+        try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
+            String SqlQuery = "SELECT participants.conversation_id FROM participants " +
                 "LEFT JOIN deleted_conversations on participants.conversation_id=deleted_conversations.conversation_id " +
                 "WHERE participants.user_id=" + id + " AND (deleted_conversations.user_id !=" + id + " OR deleted_conversations.user_id IS NULL)";
 
-        try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                 st.executeQuery();
-
                 try (ResultSet rs = st.getResultSet()) {
                     conversations_id = new ArrayList<>();
                     while (rs.next()) {
@@ -521,7 +491,6 @@ public class Database implements AbstractDal {
             }
             conversations = new ArrayList<>();
             for (int i : conversations_id) {
-
                 SqlQuery = "SELECT COUNT (user_id) FROM participants WHERE conversation_id=" + i;
 
                 try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
@@ -536,7 +505,6 @@ public class Database implements AbstractDal {
                             try (PreparedStatement str = connection.prepareStatement(SqlQuery)) {
                                 str.executeQuery();
                             }
-                            System.out.println(rs.getInt(1));
                             if (rs.getInt(1) > 2) {
                                 SqlQuery = "SELECT messages.id, messages.conversation_id, title, from_id, url as avatar_url, message, messages.created_at, unread_messages " +
                                         "FROM messages LEFT JOIN conversations ON messages.conversation_id=conversations.id " +
@@ -546,9 +514,7 @@ public class Database implements AbstractDal {
 
                                 try (PreparedStatement stm = connection.prepareStatement(SqlQuery)) {
                                     stm.executeQuery();
-
                                     try (ResultSet rst = stm.getResultSet()) {
-
                                         while (rst.next()) {
                                             MessageConversationDTO msg = new MessageConversationDTO();
                                             msg.setId(rst.getInt(1));
@@ -580,15 +546,15 @@ public class Database implements AbstractDal {
     @Override
     public Iterable<MessageWithUnreadDTO> getDialogs(Integer id) {
         List<MessageWithUnreadDTO> conversations = null;
-
         List<Integer> conversations_id = null;
-        String SqlQuery = "SELECT participants.conversation_id FROM participants " +
+        
+          try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
+            String SqlQuery = "SELECT participants.conversation_id FROM participants " +
                 "LEFT JOIN deleted_conversations on participants.conversation_id=deleted_conversations.conversation_id " +
                 "WHERE participants.user_id=" + id + " AND (deleted_conversations.user_id !=" + id + " OR deleted_conversations.user_id IS NULL)";
-        try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
+     
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                 st.executeQuery();
-
                 try (ResultSet rs = st.getResultSet()) {
                     conversations_id = new ArrayList<>();
                     while (rs.next()) {
@@ -599,7 +565,6 @@ public class Database implements AbstractDal {
 
             conversations = new ArrayList<>();
             for (int i : conversations_id) {
-
                 SqlQuery = "SELECT COUNT (user_id) FROM participants WHERE conversation_id=" + i;
 
                 try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
@@ -648,7 +613,6 @@ public class Database implements AbstractDal {
                         "WHERE messages.conversation_id=" + i.getConversation_id() + " AND user_id=" + id + " ORDER BY messages.id DESC LIMIT 1;";
                 try (PreparedStatement stm = connection.prepareStatement(SqlQuery)) {
                     stm.executeQuery();
-
                     try (ResultSet rst = stm.getResultSet()) {
                         while (rst.next()) {
                             MessageWithUnreadDTO msg = conversations.get(k);
@@ -673,7 +637,6 @@ public class Database implements AbstractDal {
     }
 
     private Boolean addParticipants(int id, List<Integer> participants) {
-
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
             String SqlQuery;
             if (participants == null || participants.size() == 0)
@@ -682,7 +645,7 @@ public class Database implements AbstractDal {
                 return false;
             }
             for (int i : participants) {
-
+                
                 Boolean exist = false;
 
                 SqlQuery = "SELECT COUNT (id) FROM participants WHERE conversation_id=" + id + " AND user_id= " + i;
@@ -743,8 +706,7 @@ public class Database implements AbstractDal {
     public Integer addImage(String url) {
         Integer id = 0;
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
-            String SqlQuery;
-            SqlQuery = "SELECT id FROM photos WHERE url='" + url + "';";
+            String SqlQuery = "SELECT id FROM photos WHERE url='" + url + "';";
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                 st.executeQuery();
                 try (ResultSet rs = st.getResultSet()) { //Что получаем
