@@ -630,16 +630,15 @@ public class Database implements AbstractDal {
 
     private Boolean addParticipants(int id, List<Integer> participants) {
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
-            String SqlQuery;
+            String SqlQuery;               
+            Boolean exist = false;
+            
             if (participants == null || participants.size() == 0)
             {
                 System.out.println("Cannot make new conversation without users");
                 return false;
             }
             for (int i : participants) {
-                
-                Boolean exist = false;
-
                 SqlQuery = "SELECT COUNT (id) FROM participants WHERE conversation_id=" + id + " AND user_id= " + i;
                 try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                     st.executeQuery();
