@@ -26,9 +26,9 @@ CREATE TABLE IF NOT EXISTS `conversations` (
   PRIMARY KEY (`id`),
   KEY `idx_conversations_admin_id` (`admin_id`),
   CONSTRAINT `fk_conversations_users` FOREIGN KEY (`admin_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8;
 
--- Dumping data for table messenger.conversations: ~12 rows (approximately)
+-- Dumping data for table messenger.conversations: ~11 rows (approximately)
 DELETE FROM `conversations`;
 /*!40000 ALTER TABLE `conversations` DISABLE KEYS */;
 INSERT INTO `conversations` (`id`, `admin_id`, `title`, `participants_id`, `created_at`) VALUES
@@ -43,7 +43,8 @@ INSERT INTO `conversations` (`id`, `admin_id`, `title`, `participants_id`, `crea
 	(20, 9, 'dreamteam', NULL, '2018-05-31 17:03:29'),
 	(21, 9, 'dreamteam2', NULL, '2018-05-31 17:04:05'),
 	(22, 9, 'dreamteam3', NULL, '2018-05-31 17:05:06'),
-	(23, 9, 'dreamteam3', NULL, '2018-05-31 17:06:03');
+	(23, 9, 'dreamteam3', NULL, '2018-05-31 17:06:03'),
+	(25, 1, '', NULL, '2018-06-04 18:48:12');
 /*!40000 ALTER TABLE `conversations` ENABLE KEYS */;
 
 -- Dumping structure for table messenger.deleted_conversations
@@ -79,9 +80,9 @@ CREATE TABLE IF NOT EXISTS `messages` (
   KEY `idx_messages_attachment_url` (`attachment_id`),
   CONSTRAINT `fk_messages_photos` FOREIGN KEY (`attachment_id`) REFERENCES `photos` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `messages_conversations` FOREIGN KEY (`conversation_id`) REFERENCES `conversations` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8;
 
--- Dumping data for table messenger.messages: ~18 rows (approximately)
+-- Dumping data for table messenger.messages: ~24 rows (approximately)
 DELETE FROM `messages`;
 /*!40000 ALTER TABLE `messages` DISABLE KEYS */;
 INSERT INTO `messages` (`id`, `conversation_id`, `from_id`, `to_id`, `message`, `created_at`, `attachment_id`) VALUES
@@ -108,7 +109,9 @@ INSERT INTO `messages` (`id`, `conversation_id`, `from_id`, `to_id`, `message`, 
 	(26, 11, 9, 9, 'at non proident, sunt in culpa qui officia', '2018-06-03 18:12:10', 14),
 	(27, 10, 9, 9, 'asdfsdaf', '2018-06-03 18:14:01', 14),
 	(28, 10, 9, 9, 'sdfgdf', '2018-06-03 18:16:15', 14),
-	(29, 10, 9, 9, 'dsgfgfd', '2018-06-03 18:17:52', 14);
+	(29, 10, 9, 9, 'dsgfgfd', '2018-06-03 18:17:52', 14),
+	(37, 25, 1, 1, 'Conversation has started', '2018-06-04 18:48:12', 14),
+	(38, 25, 1, 1, 'Здарова', '2018-06-04 18:48:19', 14);
 /*!40000 ALTER TABLE `messages` ENABLE KEYS */;
 
 -- Dumping structure for table messenger.participants
@@ -120,7 +123,7 @@ CREATE TABLE IF NOT EXISTS `participants` (
   PRIMARY KEY (`id`),
   KEY `idx_participants_conversation_id` (`conversation_id`),
   CONSTRAINT `participants_conversations` FOREIGN KEY (`conversation_id`) REFERENCES `conversations` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=51 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=59 DEFAULT CHARSET=utf8;
 
 -- Dumping data for table messenger.participants: ~33 rows (approximately)
 DELETE FROM `participants`;
@@ -158,7 +161,9 @@ INSERT INTO `participants` (`id`, `conversation_id`, `user_id`, `unread_messages
 	(47, 22, 17, 0),
 	(48, 23, 9, 0),
 	(49, 23, 14, 0),
-	(50, 23, 17, 0);
+	(50, 23, 17, 0),
+	(57, 25, 1, 0),
+	(58, 25, 8, 2);
 /*!40000 ALTER TABLE `participants` ENABLE KEYS */;
 
 -- Dumping structure for table messenger.photos
@@ -166,9 +171,9 @@ CREATE TABLE IF NOT EXISTS `photos` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `url` varchar(64) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8;
 
--- Dumping data for table messenger.photos: ~14 rows (approximately)
+-- Dumping data for table messenger.photos: ~0 rows (approximately)
 DELETE FROM `photos`;
 /*!40000 ALTER TABLE `photos` DISABLE KEYS */;
 INSERT INTO `photos` (`id`, `url`) VALUES
@@ -195,7 +200,7 @@ CREATE TABLE IF NOT EXISTS `status` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
 
--- Dumping data for table messenger.status: ~4 rows (approximately)
+-- Dumping data for table messenger.status: ~0 rows (approximately)
 DELETE FROM `status`;
 /*!40000 ALTER TABLE `status` DISABLE KEYS */;
 INSERT INTO `status` (`id`, `value`) VALUES
@@ -226,22 +231,22 @@ CREATE TABLE IF NOT EXISTS `users` (
   CONSTRAINT `fk_users_status` FOREIGN KEY (`status`) REFERENCES `status` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8;
 
--- Dumping data for table messenger.users: ~12 rows (approximately)
+-- Dumping data for table messenger.users: ~0 rows (approximately)
 DELETE FROM `users`;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
 INSERT INTO `users` (`id`, `email`, `login`, `password`, `first_name`, `last_name`, `sex`, `created_at`, `status`, `avatar`) VALUES
-	(1, 'best@people.math', 'BestGuy', 'pass', 'Sergey', 'Kovalenko', 'male', '1998-05-28 19:21:10', 1, 13),
-	(2, 'asd', 'zx', 'zdv', 'zdb', 'sdzxv', 'not specified', '2018-05-08 17:05:46', 1, 1),
-	(3, 'dsa', 'df', 'fda', 'fda', 'dfa', 'female', '2018-05-08 17:16:37', 1, 4),
-	(4, 'djk', 'dfjkljk', 'fda', 'fdaf', 'sdfg', 'female', '2018-05-08 17:16:37', 1, 10),
-	(5, 'fds', 'fd', 'k', 'hjk', 'yui', 'female', '2018-05-08 17:20:49', 4, 5),
-	(6, 'email1', 'school1', 'password', 'firstName1', 'lastName', 'female', '2018-05-08 17:24:16', 1, 5),
-	(7, 'email2', 'school2', 'pass', 'firstNa2', 'lastNa', 'male', '2018-05-08 17:27:10', 1, 3),
-	(8, 'email3', 'school3', 'password', 'firstName', 'lastName1', 'female', '2018-05-08 20:22:57', 1, 10),
-	(9, 'emaila', 'WinLogon', 'password', 'firstN3', 'lastM1', 'male', '2018-05-08 21:04:05', 2, 1),
-	(10, 'emaila1', 'WinLogon2', 'password', 'firstN', 'lastM', 'male', '2018-05-08 21:09:40', 1, 2),
-	(11, 'email@', 'Win', 'pass', 'firstNa', 'lastNa1', 'male', '2018-05-08 21:29:50', 1, 3),
-	(12, 'tryru', 'ewrty', 'erty', 'erty', 'qewr', 'not specified', '2018-05-28 18:16:00', 4, 3);
+	(1, 'best@people.math', 'BestGuy', 'password', 'Sergey', 'Kovalenko', 'male', '1998-05-28 19:21:10', 1, 13),
+	(2, 'wfcenzbu@emlpro.com', 'Gloria', 'password', 'Anna', 'Emelyanova', 'female', '2018-05-08 17:05:46', 1, 1),
+	(3, 'qxfuvsao@yomail.info', 'tanya1', 'password', 'Tanya', 'Sergeta', 'female', '2018-05-08 17:16:37', 1, 4),
+	(4, 'shhkhzjo@10mail.org', 'musko1', 'password', 'Tanya', 'Musina', 'female', '2018-05-08 17:16:37', 1, 10),
+	(5, 'fdsshhkjnma@10mail.org', 'Rubrum', 'password', 'Yulia', 'Romanova', 'female', '2018-05-08 17:20:49', 4, 5),
+	(6, 'glitecxt@emlhub.com', 'SirCat', 'password', 'Elena', 'Dodina', 'female', '2018-05-08 17:24:16', 1, 5),
+	(7, 'qweafcxt@emlhub.com', 'sulzh11', 'password', 'Polina', 'Balaban', 'female', '2018-05-08 17:27:10', 1, 3),
+	(8, 'kxsbzrtvb@emltmp.com', 'Hakayna', 'password', 'Alina', 'Taganova', 'female', '2018-05-08 20:22:57', 1, 10),
+	(9, 'sdtecftbxrok@dropmail.me', 'Molb11', 'password', 'Vladislav', 'Li', 'male', '2018-05-08 21:04:05', 2, 1),
+	(10, 'shhkeybz@10mail.org', 'Retro1', 'password', 'Dmitriy', 'Lukin', 'male', '2018-05-08 21:09:40', 1, 2),
+	(11, 'shfqzfff@10mail.org', 'Win111', 'password', 'Oleg', 'Pankin', 'male', '2018-05-08 21:29:50', 1, 3),
+	(12, 'qkarzrtvb@emltmp.com', 'Metro1', 'password', 'Alexandr', 'Hvatov', 'male', '2018-05-28 18:16:00', 4, 3);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 
 -- Dumping structure for trigger messenger.set_unread

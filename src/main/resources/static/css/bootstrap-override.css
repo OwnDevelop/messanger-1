@@ -2,6 +2,7 @@
     margin: 0;
     background-color: rgb(199, 221, 231);
     color: white;
+    border-bottom: 1px solid grey;
 }
 
 .navbar-default .navbar-nav > .active > a, .navbar-default .navbar-nav > .active > a:focus, .navbar-default .navbar-nav > .active > a:hover{
