@@ -1,5 +1,6 @@
 package ru.dev.messanger.controller;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 import ru.dev.messanger.BLL.BLL;
@@ -8,6 +9,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public class AuthoriseInterceptor implements HandlerInterceptor {
+
+    @Value("${upload.path}")
+    private String uploadPath;
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String url = request.getRequestURI();
@@ -21,10 +26,9 @@ public class AuthoriseInterceptor implements HandlerInterceptor {
         }
     }
 
-
     private Boolean isAllowed(String url){
         if (url.equals("/")) return true;
-        String[] allowed = {"/authorization", "/loginAlreadyExists", "/signup", "/signin", "/css/", "/fonts/", "/img/", "/js/", "/psd/"};
+        String[] allowed = {"/logout" ,"/signup", "/signin", "/css/", "/fonts/", "/img/", "/js/", "/psd/", "/activate/"};
         for (String str: allowed) {
             if (url.indexOf(str) == 0){
                 return true;

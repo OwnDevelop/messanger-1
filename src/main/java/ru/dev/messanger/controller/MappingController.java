@@ -21,8 +21,18 @@ public class MappingController {
         return "EnterPage";
     }
 
+    @GetMapping("/main")
+    public String application() {
+        return "main";
+    }
+
     @GetMapping("/signup")
     public String signup() {
         return "registration";
+    }
+
+    @GetMapping("/logout")
+    public String logout() {
+        return "redirect:/signin";
     }
 }

@@ -140,10 +140,29 @@ public class Database implements AbstractDal {
     }
 
     @Override
+    public NewUserDTO getPUser(int id) {
+        NewUserDTO user = null;
+        try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
+            String SqlQuery = "SELECT users.id, email, login, password, first_name, last_name, sex, created_at, value as status, url as avatar FROM users LEFT JOIN status ON users.status=status.id LEFT JOIN photos ON users.avatar=photos.id " +
+                    "WHERE users.id=" + id;
+            try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
+                st.executeQuery();
+                try (ResultSet rs = st.getResultSet()) {
+                    while (rs.next()) {
+                        user = getPUser(rs);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Connection problem.");
+            e.printStackTrace();
+        }
+
+        return user;
+    }
+    @Override
     public Boolean updateUser(NewUserDTO item, Integer id) {
         Integer avatar_id = this.addImage(item.getAvatar_url());
-        SqlQuery;
-
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
             String SqlQuery = "UPDATE users LEFT JOIN status ON users.status=status.id LEFT JOIN photos ON users.avatar=photos.id " +
                     "SET password='" + item.getPassword() + "', first_name='" + item.getFirstName() + "', last_name='" + item.getLastName() +
@@ -680,6 +699,20 @@ public class Database implements AbstractDal {
         user.setCreated_at(rs.getDate(7));
         user.setStatus(rs.getString(8));
         user.setAvatar_url(rs.getString(9));
+        return user;
+    }
+    private static NewUserDTO getPUser(ResultSet rs) throws SQLException {
+        NewUserDTO user = new NewUserDTO();
+        user.setId(rs.getInt(1));
+        user.setEmail(rs.getString(2));
+        user.setLogin(rs.getString(3));
+        user.setPassword(rs.getString(4));
+        user.setFirstName(rs.getString(5));
+        user.setLastName(rs.getString(6));
+        user.setSex(rs.getString(7));
+        user.setCreated_at(rs.getDate(8));
+        user.setStatus(rs.getString(9));
+        user.setAvatar_url(rs.getString(10));
         return user;
     }
 

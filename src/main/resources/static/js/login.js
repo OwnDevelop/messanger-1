@@ -54,11 +54,11 @@ $('document').ready(function () {
                             console.log(answer);
                             if (answer) {
                                 localStorage.setItem("user", JSON.stringify(answer));
-                                location.replace("/main.html");
+                                location.replace("/main");
                             } else {
                                 $password.addClass('invalid');
                                 $('#password').addClass('invalid');
-                                $passError.html('Uncorrect password');
+                                $passError.html('Incorrect password');
                                 $passError.css('display', 'block');
                             }
                         },

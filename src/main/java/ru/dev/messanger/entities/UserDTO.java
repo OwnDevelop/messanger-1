@@ -25,6 +25,12 @@ public class UserDTO {
     private Date created_at;
     @SerializedName("avatar_url")
     private String avatar_url;
+    @SerializedName("activation_code")
+    private String activation_code;
+
+    public String getActivation_code() { return activation_code; }
+
+    public void setActivation_code(String activation_code) { this.activation_code = activation_code; }
 
     public int getId() {
         return id;

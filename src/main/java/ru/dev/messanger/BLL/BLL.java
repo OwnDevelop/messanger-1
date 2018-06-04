@@ -3,10 +3,12 @@ package ru.dev.messanger.BLL;
 import com.google.gson.Gson;
 import ru.dev.messanger.dll.Database;
 import ru.dev.messanger.entities.*;
+import ru.dev.messanger.service.UserSevice;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 public class BLL {
 
@@ -51,20 +53,23 @@ public class BLL {
         return false;
     }
 
+
     public void removeUsersToken(TUser user) {
         this.userToken.remove(user.getId());
     }
 
     public String authorization(String login, String password) {
-        if (loginAlreadyExists(login) == "false")
+        if (loginAlreadyExists(login) == "false") {
             return "No Such User"; //TODO: связана с ранним запросом ДО авторизации loginaleready exists И НЕ ТЕСТИТСЯ ИБО НИКАК чина давай
-        UserDTO user = Database.INSTANCE.authorization(login, password);
-        Object o = BLL.INSTANCE; //TODO: remove in prod
+        }
 
-        TUser tuser = new TUser(user);
-        //return new Gson().toJson(user); //old code
-        String str = new Gson().toJson(tuser); //TODO: remove in prod
-        return new Gson().toJson(tuser);
+        UserDTO user = Database.INSTANCE.authorization(login, Encoder.hash256(password));
+        if (user.getActivation_code() == null) {
+            TUser tuser = new TUser(user);
+            return new Gson().toJson(tuser);
+        }   else {
+            return new Gson().toJson("User is not activated"); //TODO: такое себе
+        }
     }
 
     public String emailAlreadyExists(String email) {
@@ -74,7 +79,9 @@ public class BLL {
     public String loginAlreadyExists(String login) {
         return new Gson().toJson(Database.INSTANCE.loginAlreadyExists(login));
     }
-
+    public Boolean setUser(NewUserDTO user) {
+            return Database.INSTANCE.setUser(user);
+        }
     public String setUser(
             String email,
             String login,
@@ -87,17 +94,24 @@ public class BLL {
         NewUserDTO user = new NewUserDTO();
         user.setEmail(email);
         user.setLogin(login);
-        user.setPassword(password);
+        user.setPassword(Encoder.hash256(password));
         user.setFirstName(first_name);
         user.setLastName(last_name);
         user.setSex(sex);
         user.setStatus(status);
         user.setAvatar_url(avatar);
+
+        user.setActivation_code(UUID.randomUUID().toString());
+        UserSevice.sendActivationEmail(user);
+
         return new Gson().toJson(Database.INSTANCE.setUser(user));
     }
 
     public String getUser(int id) {
         return new Gson().toJson(Database.INSTANCE.getUser(id));
+    }
+    public NewUserDTO getPUser(int id) {
+        return Database.INSTANCE.getPUser(id);
     }
 
     public String updateUser(
@@ -111,7 +125,7 @@ public class BLL {
     ) {
         NewUserDTO user = new NewUserDTO();
         user.setId(id);
-        user.setPassword(password);
+        user.setPassword(Encoder.hash256(password));
         user.setFirstName(first_name);
         user.setLastName(last_name);
         user.setSex(sex);
@@ -238,4 +252,5 @@ public class BLL {
     public String setStatusOnline(Integer id, Integer status) {
         return new Gson().toJson(Database.INSTANCE.setStatusOnline(id, status));
     }
+
 }
