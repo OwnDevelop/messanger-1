@@ -64,6 +64,9 @@ public class BLL {
         }
 
         UserDTO user = Database.INSTANCE.authorization(login, Encoder.hash256(password));
+        if (user == null) {
+            return new Gson().toJson("Bad Credentials");
+        }
         if (user.getActivation_code() == null) {
             TUser tuser = new TUser(user);
             return new Gson().toJson(tuser);

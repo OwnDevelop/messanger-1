@@ -113,7 +113,6 @@ public class Database implements AbstractDal {
             System.out.println("Connection problem.");
             e.printStackTrace();
         }
-
         return true;
     }
 
