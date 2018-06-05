@@ -102,7 +102,7 @@ public class BLL {
         user.setAvatar_url(avatar);
 
         user.setActivation_code(UUID.randomUUID().toString());
-        UserSevice.sendActivationEmail(user);
+        //UserSevice.sendActivationEmail(user);
 
         return new Gson().toJson(Database.INSTANCE.setUser(user));
     }

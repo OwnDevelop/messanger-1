@@ -100,7 +100,9 @@ $('document').ready(function () {
                         },
                         success: function (request) {
                             if (request) {
-                                location.replace('/singin');
+                                location.replace('/signin');
+                            } else {
+                                console.log('косяк с добавлением');
                             }
                         },
                         error: function (error) {

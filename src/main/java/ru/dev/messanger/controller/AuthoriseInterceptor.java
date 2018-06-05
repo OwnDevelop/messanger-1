@@ -28,7 +28,7 @@ public class AuthoriseInterceptor implements HandlerInterceptor {
 
     private Boolean isAllowed(String url){
         if (url.equals("/")) return true;
-        String[] allowed = {"/logout" ,"/signup", "/signin", "/css/", "/fonts/", "/img/", "/js/", "/psd/", "/activate/"};
+        String[] allowed = {"/logout" ,"/signup", "/signin", "/css/", "/fonts/", "/img/", "/js/", "/psd/", "/activate/", "/setUser"};
         for (String str: allowed) {
             if (url.indexOf(str) == 0){
                 return true;
