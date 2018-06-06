@@ -3,8 +3,6 @@ package ru.dev.messanger.entities;
 import ru.dev.messanger.BLL.BLL;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoField;
 import java.util.UUID;
 
 public class Token {

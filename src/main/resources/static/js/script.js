@@ -863,7 +863,7 @@ $("document").ready(function () {
     } else {
         $.ajaxSetup({
             headers: {
-                'token': entities.me.token,
+                'token':entities.me.token,
                 'Content-Type':'application/json' //TODO: ТЫ УВЕРЕН?
             },
             contentType: "application/json" //todo;

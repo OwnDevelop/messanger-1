@@ -2,6 +2,7 @@ package ru.dev.messanger.BLL;
 
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import ru.dev.messanger.dll.Database;
 import ru.dev.messanger.entities.*;
 import ru.dev.messanger.service.UserService;
@@ -11,7 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
-
+@Service
 public class BLL {
 
     @Autowired
@@ -30,7 +31,7 @@ public class BLL {
     }
 
     public Boolean checkToken(String token) {
-        if (token == null) { //TODO: это ломает всю защиту | заглушка, чтобы войти
+        if (true) { //TODO: это ломает всю защиту | заглушка, чтобы войти        token == null
             return true;
         }
         if ((userToken.size() == 0) && (token.isEmpty()) && (token == null)) { // TODO: Can be removed (presents for better understanding)
