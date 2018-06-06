@@ -191,6 +191,12 @@ button.btn {
     margin-right: 5px;
 }
 
+.empty-list{
+    text-align: center;
+    color: grey;
+    font-style: italic;
+}
+
 .conversation-name {
     color: #337ab7;
 }
