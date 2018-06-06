@@ -115,6 +115,7 @@ APP.utilities.actions = (function () {
         entities = APP.models.entities,
         buttons = APP.models.buttons,
         fields = APP.models.fields,
+        files = {},
         MESSEGE_MAX_LENGHT = 200;
 
     function showDialogsAndConversations() {
@@ -737,6 +738,22 @@ APP.utilities.actions = (function () {
             });
         });
 
+        $('input[type=file]').on('change', function () {
+            if (this.files[0].size > 1048576 ){
+                this.value = "";
+                alert('File must be less than 2MB');
+                return;
+            }
+
+            if(this.files[0].size < 10000){
+                this.value = "";
+                alert('Low size');
+                return;
+            }
+            files = this.files;
+            console.log(files);
+        });
+
         initializeScroll();
         initializeSearch();
 
@@ -764,23 +781,35 @@ APP.utilities.actions = (function () {
             }
         });
 
-        buttons.$btnSendMess.on("click", function (e) {
+        $('#sender').on('submit', function (e) {
             var text = fields.$sendField.val().trim(),
+                $that = $(this),
                 a = $('.activeted'),
+                data = new FormData($that.get(0)),
                 conversId = a[0].conversId;
 
-            if (text) {
+            e.preventDefault();
+
+            data.append('from_id', entities.me.id);
+            data.append('conversation_id', conversId);
+            data.append('attachment_url', "");
+
+            if (text || files) {
                 text = validation.htmlEscape(text);
+                data.set('message', text);
+
+                console.log(files);
+                console.log(data);
 
                 $.ajax({
                     url: '/setMessage',
-                    method: 'GET',
-                    data: {
-                        from_id: entities.me.id,
-                        conversation_id: conversId,
-                        message: text.toString(),
-                        attachment_url: "" //она ещё не будет загружена на сервер в момент отправки. урла нет
-                    },
+                    method: 'POST',
+                    data: data,
+                        // {from_id: entities.me.id,conversation_id: conversId,message: text.toString(),attachment_url: "" },
+                    cache: false,
+                    dataType: 'json',
+                    processData : false,
+                    contentType : false,
                     success: function (res) {
                         fields.$sendField.val('');
 
@@ -791,7 +820,7 @@ APP.utilities.actions = (function () {
                     },
                     error: function (error) {
                         console.log(error);
-                        alert('message error');
+                        alert('server error');
                     }
                 });
             }
@@ -799,6 +828,9 @@ APP.utilities.actions = (function () {
                 fields.$sendField.focus();
             }
         });
+        // buttons.$btnSendMess.on("click", function (e) {
+        //
+        // });
     }
 
     return {
