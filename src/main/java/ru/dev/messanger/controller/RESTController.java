@@ -45,7 +45,7 @@ public class RESTController {
         return BLL.INSTANCE.setUser(email, login, password, first_name, last_name, sex, status, avatar);
     }
 
-    @RequestMapping(value = "/getUser", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/getUser", method = RequestMethod.POST, produces = "application/json")
     public String getUser(@RequestParam int id) {
         return BLL.INSTANCE.getUser(id);
     }
@@ -68,22 +68,22 @@ public class RESTController {
         return BLL.INSTANCE.deleteUser(id);
     }
 
-    @RequestMapping(value = "/searchUsers", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/searchUsers", method = RequestMethod.POST, produces = "application/json")
     public String searchUsers(@RequestParam String searchQuery) {
         return BLL.INSTANCE.searchUsers(searchQuery);
     }
 
-    @RequestMapping(value = "/getConversations", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/getConversations", method = RequestMethod.POST, produces = "application/json")
     public String getConversations(@RequestParam int id) {
         return BLL.INSTANCE.getConversations(id);
     }
 
-    @RequestMapping(value = "/getDialogs", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/getDialogs", method = RequestMethod.POST, produces = "application/json")
     public String getDialogs(@RequestParam int id) {
         return BLL.INSTANCE.getDialogs(id);
     }
 
-    @RequestMapping(value = "/setConversation", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/setConversation", method = RequestMethod.POST, produces = "application/json")
     public String setConversation(
             @RequestParam int admin_id,
             @RequestParam String title,
@@ -92,7 +92,7 @@ public class RESTController {
         return BLL.INSTANCE.setConversation(admin_id, title, users);
     }
 
-    @RequestMapping(value = "/setMessage", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/setMessage", method = RequestMethod.POST, produces = "application/json")
     public String setMessage(
             @RequestParam int from_id,
             @RequestParam int conversation_id,
@@ -102,7 +102,7 @@ public class RESTController {
         return BLL.INSTANCE.setMessage(from_id, conversation_id, message, attachment_url);
     }
 
-    @RequestMapping(value = "/getMessages", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/getMessages", method = RequestMethod.POST, produces = "application/json")
     public String getMessages(
             @RequestParam Integer conversation_id,
             @RequestParam Integer id,
@@ -119,14 +119,14 @@ public class RESTController {
         return BLL.INSTANCE.searchInConversation(searchQuery, conversation_id);
     }
 
-    @RequestMapping(value = "/searchConversations", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/searchConversations", method = RequestMethod.POST, produces = "application/json")
     public String searchConversations(
             @RequestParam String searchQuery
     ) {
         return BLL.INSTANCE.searchConversations(searchQuery);
     }
 
-    @RequestMapping(value = "/joinTheConversation", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/joinTheConversation", method = RequestMethod.POST, produces = "application/json")
     public String joinTheConversation(
             @RequestParam Integer conversation_id,
             @RequestParam Integer id
@@ -142,7 +142,7 @@ public class RESTController {
         return BLL.INSTANCE.leaveTheConversation(conversation_id, id);
     }
 
-    @RequestMapping(value = "/setUnreadMessages", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/setUnreadMessages", method = RequestMethod.POST, produces = "application/json")
     public String setUnreadMessages(
             @RequestParam Integer conversation_id,
             @RequestParam Integer id,
@@ -159,7 +159,7 @@ public class RESTController {
         return BLL.INSTANCE.deleteConversation(conversation_id, id);
     }
 
-    @RequestMapping(value = "/changeStatus", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/changeStatus", method = RequestMethod.POST, produces = "application/json")
     public String setStatusOnline(
             @RequestParam Integer id,
             @RequestParam Integer status

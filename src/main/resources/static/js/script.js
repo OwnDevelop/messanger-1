@@ -126,6 +126,7 @@ APP.utilities.actions = (function () {
         $.ajax({
             url: "/getDialogs",
             data: {id: entities.me.id},
+            method: 'POST',
             success: function (request) {
                 dialogs = request;
                 console.log(request);
@@ -151,6 +152,7 @@ APP.utilities.actions = (function () {
         $.ajax({
             url: "/getConversations",
             data: {id: entities.me.id},
+            method: 'POST',
             success: function (request) {
                 html = "";
                 conversations = request;
@@ -185,6 +187,8 @@ APP.utilities.actions = (function () {
             $dialogs[i].lastMessId = dialogs[i].id;
             $dialogs[i].conversId = dialogs[i].conversation_id;
             $dialogs[i].countUnread = dialogs[i].countUnread;
+            $dialogs[i].url = dialogs[i].avatar_url;
+            $dialogs[i].name = dialogs[i].firstName + ' ' + dialogs[i].lastName;
             $dialogs[i].onclick = openDialog;
 
             $dialNames[i].current = i;
@@ -199,6 +203,8 @@ APP.utilities.actions = (function () {
             $convers[i].lastMessId = conversations[i].id;
             $convers[i].conversId = conversations[i].conversation_id;
             $convers[i].countUnread = conversations[i].countUnread;
+            $convers[i].name = conversations[i].title;
+            $convers[i].url = conversations[i].avatar_url;
             $convers[i].onclick = openDialog;
         }
 
@@ -206,27 +212,69 @@ APP.utilities.actions = (function () {
     }
 
     function openDialog() {
+        var url = this.url,
+            name = this.name,
+            conversationId = this.conversId,
+            lastMessageId = this.lastMessId,
+            unreadedMessages = this.countUnread;
+
+        $('.profile-photo.img-responsive').attr('src', entities.me.avatar_url);
+
         $.ajax({
             url: "/getMessages",
-            data: {id: entities.me.id, message_id: this.lastMessId, conversation_id: this.conversId},
+            method: 'POST',
+            data: {id: entities.me.id, message_id: lastMessageId, conversation_id: conversationId},
             success: function (request) {
                 var html = '', i = 0,
                     $messages = $('.messages > .jspContainer > .jspPane'),
                     $names = {},
                     elem = {};
 
+                html = '<img src="' + url + '" class="conversation-img profile-photo">' +
+                    '<div class="conversation-name">' + name + '</div>' +
+                    '<a class="search-messege btn"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></a>' +
+                    '<a class="leave btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>';
 
-                if (this.countUnread > 0) {
+                $('.dialog-actions').html(html);
+                html = '';
+
+                $('.leave').on('click', function () {
+                    var answer = confirm('Leave conversation?');
+
+                    if (answer) {
+                        $.ajax({
+                            url: '/leaveTheConversation',
+                            method: 'GET',
+                            data: {
+                                id: entities.me.id,
+                                conversation_id: conversationId
+                            },
+                            success: function (res) {
+                                console.log(res);
+                                fields.$searchField.val('');
+                                fields.$sendField.val('');
+                                showDialogsAndConversations();
+                            },
+                            error: function (error) {
+                                console.log(error);
+                                alert('message error');
+                            }
+                        });
+                    }
+                });
+
+                if (unreadedMessages > 0) {
                     $.ajax({
                         url: '/setUnreadMessages',
-                        method: 'GET',
+                        method: 'POST',
                         data: {
                             id: entities.me.id,
-                            conversation_id: this.conversId,
+                            conversation_id: conversationId,
                             count: 0
                         },
                         success: function (res) {
                             console.log('all mess were read');
+                            $('.activeted .badge').html('0');
                         },
                         error: function (error) {
                             console.log(error);
@@ -281,7 +329,7 @@ APP.utilities.actions = (function () {
         $.ajax({
             url: "/getUser",
             data: {id: id},
-            method: "GET",
+            method: 'POST',
             success: function (request) {
                 var user = request,
                     $btn = {};
@@ -316,8 +364,8 @@ APP.utilities.actions = (function () {
                             $btn.html('Start conversation');
 
                             $btn.on('click', function () {
-                                var participants = [entities.me.id,user.id];
-                                    index = dialogs.find(function (element) {
+                                var participants = [entities.me.id, user.id];
+                                index = dialogs.find(function (element) {
                                     return element.id === user.id;
                                 });
 
@@ -327,7 +375,7 @@ APP.utilities.actions = (function () {
                                 if (!index) {
                                     $.ajax({
                                         url: '/setConversation',
-                                        method: 'GET',
+                                        method: 'POST',
                                         data: {users: participants.join(), admin_id: entities.me.id, title: null},
                                         success: function (request) {
                                             console.log('joined');
@@ -399,7 +447,7 @@ APP.utilities.actions = (function () {
                         $.ajax({
                             url: "/changeStatus",
                             data: {id: entities.me.id, status: status},
-                            method: "GET",
+                            method: 'POST',
                             success: function (request) {
                                 console.log('status was changed');
                             },
@@ -474,8 +522,8 @@ APP.utilities.actions = (function () {
 
             $.ajax({
                 url: '/setConversation',
-                method: 'GET',
                 data: {admin_id: entities.me.id, title: title, users: participantsId.join()},
+                method: 'POST',
                 success: function (request) {
                     if (request) {
                         firstMessegeAJAX(request);
@@ -519,10 +567,14 @@ APP.utilities.actions = (function () {
 
         fields.$searchField.on('blur', function () {
             var value = this.value;
+
+            $('.jspPane:eq(0)').html('');
+
             if (value) {
                 $.ajax({
                     url: "/searchUsers",
                     data: {searchQuery: value},
+                    method: 'POST',
                     success: function (request) {
                         console.log(request);
 
@@ -540,6 +592,7 @@ APP.utilities.actions = (function () {
                 $.ajax({
                     url: "/searchConversations",
                     data: {searchQuery: value},
+                    method: 'POST',
                     success: function (request) {
                         console.log(request);
 
@@ -560,7 +613,7 @@ APP.utilities.actions = (function () {
     }
 
     function showSearchResults(arr) {
-        var $form = $('.jspPane:eq(0)'),
+        var messeges = $('.jspPane:eq(0)')[0],
             html = "", elem = {}, i = 0,
             className = '', dialogName = '',
             $dialogs = {},
@@ -582,7 +635,7 @@ APP.utilities.actions = (function () {
             }
         }
 
-        $form.html(html);
+        messeges.innerHTML += html;
 
         $dialogs = $('.dialog');
         $conversations = $('.conversation');
@@ -612,26 +665,29 @@ APP.utilities.actions = (function () {
                     if (answer) {
                         $.ajax({
                             url: '/joinTheConversation',
-                            method: 'GET',
                             data: {conversation_id: conversId, id: entities.me.id},
+                            method: 'POST',
                             success: function (request) {
                                 console.log('joined');
                                 showDialogsAndConversations();
                             },
                             error: function (error) {
                                 console.log(error);
+                                alert('server error');
                             }
                         });
                     }
                 }
             };
         }
+
+        initializeScroll();
     }
 
     function firstMessegeAJAX(conversationId) {
         $.ajax({
             url: '/setMessage',
-            method: 'GET',
+            method: 'POST',
             data: {
                 from_id: entities.me.id,
                 conversation_id: conversationId,
@@ -645,7 +701,7 @@ APP.utilities.actions = (function () {
             },
             error: function (error) {
                 console.log(error);
-                alert('message error');
+                alert('server error');
             }
         });
     }
