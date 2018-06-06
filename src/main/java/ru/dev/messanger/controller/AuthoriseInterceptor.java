@@ -18,14 +18,13 @@ public class AuthoriseInterceptor implements HandlerInterceptor {
         String url = request.getRequestURI();
         if (isAllowed(url)){
             return true;
-        } else if (BLL.INSTANCE.checkToken(request.getHeader("X_CSRF_TOKEN"))){
-            System.out.println(request.getHeader("X_CSRF_TOKEN"));
+        } else if (BLL.INSTANCE.checkToken(request.getHeader("token"))){
+            System.out.println(request.getHeader("token"));
             return true;
         } else {
             return false;
         }
     }
-
     private Boolean isAllowed(String url){
         if (url.equals("/")) return true;
         String[] allowed = {"/logout" ,"/signup", "/signin", "/css/", "/fonts/", "/img/", "/js/", "/psd/", "/activate/", "/setUser", "/loginAlreadyExists", "/authorization"};

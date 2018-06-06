@@ -30,9 +30,9 @@ public class BLL {
     }
 
     public Boolean checkToken(String token) {
-//        if (token == null) { //TODO: это ломает всю защиту | заглушка, чтобы войти
-//            return true;
-//        }
+        if (token == null) { //TODO: это ломает всю защиту | заглушка, чтобы войти
+            return true;
+        }
         if ((userToken.size() == 0) && (token.isEmpty()) && (token == null)) { // TODO: Can be removed (presents for better understanding)
             return false;
         }

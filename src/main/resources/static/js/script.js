@@ -840,9 +840,8 @@ $("document").ready(function () {
     } else {
         $.ajaxSetup({
             headers: {
-                X_CSRF_TOKEN: entities.me.token
-            },
-            contentType: "application/json"
+                'token': entities.me.token
+            }
         });
         actions = APP.utilities.actions;
         actions.initialization();
