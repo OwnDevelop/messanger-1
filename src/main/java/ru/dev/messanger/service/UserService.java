@@ -2,13 +2,14 @@ package ru.dev.messanger.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import ru.dev.messanger.BLL.BLL;
 import ru.dev.messanger.entities.NewUserDTO;
 
 @Service
-public class UserService {
+public class UserService{
 
     @Autowired
     private  MailSender mail;
@@ -32,11 +33,11 @@ public class UserService {
     }
 
     public boolean activateUser(String code) {
-        NewUserDTO user = BLL.INSTANCE.getUserByACode(code);
+        NewUserDTO user = BLL.getUserByACode(code);
         if (user == null) {
             return false;
         }
         user.setActivation_code(null);
-        return BLL.INSTANCE.updateActivation(user);
+        return BLL.updateActivation(user);
     }
 }

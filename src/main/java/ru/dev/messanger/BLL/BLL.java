@@ -1,7 +1,6 @@
 package ru.dev.messanger.BLL;
 
 import com.google.gson.Gson;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,16 +15,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+
 @Service
 public class BLL {
 
-    @Autowired
-    private UserService userService;  //TODO: НОРМАЛЬНО АВТОВАЙРИТЬ В ЛОГИКЕ?
+    private final UserService userService;  //TODO: НОРМАЛЬНО АВТОВАЙРИТЬ В ЛОГИКЕ?
+
+    public BLL(UserService userService) {
+        this.userService = userService;
+    }
 
     @Value("${upload.path}")
     private String uploadPath;
-
-    public static final BLL INSTANCE = new BLL();   // SINGLETONE
 
     private HashMap<Object, Token> userToken = new HashMap<>(); //Key(Object) is ID of User
 
@@ -38,20 +39,35 @@ public class BLL {
     }
 
     public Boolean checkToken(String token) {
-        if (true) { //TODO: это ломает всю защиту | заглушка, чтобы войти        token == null
+        System.out.println(token);
+        if (true) { //TODO: это ломает всю защиту | заглушка, чтобы войти   token == null
             return true;
         }
-        if ((userToken.size() == 0) && (token.isEmpty()) && (token == null)) { // TODO: Can be removed (presents for better understanding)
+
+        if ((userToken.size() == 0) || (token.isEmpty()) || (token == null)) { // TODO: Can be removed (presents for better understanding)
             return false;
         }
-        for (Token tkn : userToken.values()) {
-            if (token.equals(tkn.getToken())) {
+        Token storedToken = getToken(token);
+        if (storedToken != null) {
+            if (storedToken.getExpires().compareTo(Instant.now()) >= 0) {
+                storedToken.setExpires(Instant.now().plusSeconds(Token.LIFETIME));
                 return true;
             } else {
+                removeToken(storedToken);
                 return false;
             }
+        } else {
+            return false;
         }
-        return false;
+    }
+
+    private Token getToken(String token) {
+        for (Object key : userToken.keySet()) {
+            if (token.equals(userToken.get(key).getStringToken())) {
+                return userToken.get(key);
+            }
+        }
+        return null;
     }
 
     public Boolean removeToken(Token token) {
@@ -67,12 +83,12 @@ public class BLL {
     }
 
     public Boolean removeToken(String token) {
-            for (Object key : userToken.keySet()) {
-                if (userToken.get(key).getToken() == token) {
-                    userToken.remove(key);
-                    return true; //Tokens are unique, no need to continue iteration
-                }
+        for (Object key : userToken.keySet()) {
+            if (token.equals(userToken.get(key).getStringToken())) {
+                userToken.remove(key);
+                return true; //Tokens are unique, no need to continue iteration
             }
+        }
         return false;
     }
 
@@ -81,7 +97,7 @@ public class BLL {
     }
 
 
-    public NewUserDTO getUserByACode(String code) {
+    public static NewUserDTO getUserByACode(String code) {
         return Database.INSTANCE.getUserByACode(code);
     }
 
@@ -92,13 +108,14 @@ public class BLL {
 
         UserDTO user = Database.INSTANCE.authorization(login, Encoder.hash256(password));
         if (user == null) {
-            return new Gson().toJson( "not activated");
+            return new Gson().toJson("not activated");
         }
         if (user.getActivation_code() == null) {
             TUser tuser = new TUser(user);
+            addTokenToUser(tuser, tuser.getToken());
             return new Gson().toJson(tuser);
-        }   else {
-            return new Gson().toJson( "User is not activated yet"); //TODO: такое себе
+        } else {
+            return new Gson().toJson("User is not activated yet"); //TODO: такое себе
         }
     }
 
@@ -109,13 +126,15 @@ public class BLL {
     public String loginAlreadyExists(String login) {
         return new Gson().toJson(Database.INSTANCE.loginAlreadyExists(login));
     }
-    public Boolean setUser(NewUserDTO user) {
-            return Database.INSTANCE.setUser(user);
-        }
 
-    public Boolean updateActivation(NewUserDTO item) {
+    public Boolean setUser(NewUserDTO user) {
+        return Database.INSTANCE.setUser(user);
+    }
+
+    public static Boolean updateActivation(NewUserDTO item) {
         return Database.INSTANCE.updateActivation(item);
     }
+
     public String setUser(
             String email,
             String login,
@@ -145,6 +164,7 @@ public class BLL {
     public String getUser(int id) {
         return new Gson().toJson(Database.INSTANCE.getUser(id));
     }
+
     public NewUserDTO getPUser(int id) {
         return Database.INSTANCE.getPUser(id);
     }
@@ -227,12 +247,17 @@ public class BLL {
 
         if (file != null && !file.getOriginalFilename().isEmpty()) {
 
+            File uploadDir = new File("//" + uploadPath); //TODO:autowire this
+            if (!uploadDir.exists()) {
+                uploadDir.mkdir();
+            }
+
             String uuidFile = UUID.randomUUID().toString();
             resultFilename = uuidFile + "." + file.getOriginalFilename();
 
             try {
-              //  file.transferTo(new File(uploadPath + "\\" + resultFilename));
-                file.transferTo(new File("D:\Cloud\Programs\# Java\GIT\messanger\src\main\resources\uploads" + "\\" + resultFilename));
+                //  file.transferTo(new File(uploadPath + "\\" + resultFilename));
+                file.transferTo(new File(uploadPath + "\\" + resultFilename)); //TODO: move to properties
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -242,7 +267,7 @@ public class BLL {
         messageDTO.setFrom_id(from_id);
         messageDTO.setConversation_id(conversation_id);
         messageDTO.setMessage(message);
-        messageDTO.setAttachment_url(resultFilename);
+        messageDTO.setAttachment_url("img/uploads/" + resultFilename); //TODO: move to properties
         return new Gson().toJson(Database.INSTANCE.setMessage(messageDTO));
     }
 

@@ -9,6 +9,12 @@ import ru.dev.messanger.BLL.BLL;
 @Controller
 public class MappingController {
 
+    private final BLL bll;
+
+    public MappingController(BLL bll) {
+        this.bll = bll;
+    }
+
     @GetMapping("/")
     public String main() {
         return "redirect:/signin";
@@ -31,7 +37,7 @@ public class MappingController {
 
     @PostMapping("/logout")
     public String logout(@RequestParam String token) {
-        BLL.INSTANCE.removeToken(token);
+        bll.removeToken(token);
         return "redirect:/signin";
     }
 }

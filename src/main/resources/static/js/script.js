@@ -744,13 +744,13 @@ APP.utilities.actions = (function () {
         });
 
         $('input[type=file]').on('change', function () {
-            if (this.files[0].size > 8388608) {
+            if (this.files[0].size > 3388608) {
                 this.value = "";
                 alert('File must be less than 2MB');
                 return;
             }
 
-            if (this.files[0].size < 10000) {
+            if (this.files[0].size < 10) {
                 this.value = "";
                 alert('Low size');
                 return;

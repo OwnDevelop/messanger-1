@@ -10,6 +10,12 @@ import javax.servlet.http.HttpServletResponse;
 
 public class AuthoriseInterceptor implements HandlerInterceptor {
 
+    private final BLL bll;
+
+    public AuthoriseInterceptor(BLL bll) {
+        this.bll = bll;
+    }
+
     @Value("${upload.path}")
     private String uploadPath;
 
@@ -18,7 +24,7 @@ public class AuthoriseInterceptor implements HandlerInterceptor {
         String url = request.getRequestURI();
         if (isAllowed(url)){
             return true;
-        } else if (BLL.INSTANCE.checkToken(request.getHeader("token"))){
+        } else if (bll.checkToken(request.getHeader("token"))){
             System.out.println(request.getHeader("token"));
             return true;
         } else {

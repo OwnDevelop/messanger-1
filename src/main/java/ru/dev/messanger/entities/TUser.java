@@ -4,8 +4,9 @@ import com.google.gson.annotations.SerializedName;
 import ru.dev.messanger.BLL.BLL;
 
 public class TUser extends NewUserDTO {
+
     @SerializedName("token")
-    private String token;
+    private Token token;
 
     public TUser(UserDTO user) {
         setId(user.getId());
@@ -18,13 +19,10 @@ public class TUser extends NewUserDTO {
         setCreated_at(user.getCreated_at());
         setAvatar_url(user.getAvatar_url());
 
-        Token token = new Token();
-        BLL.INSTANCE.addTokenToUser(this, token);
-
-        this.token = token.getToken();
+        this.token = new Token();
     }
 
-    public String getToken() {
+    public Token getToken() {
         return this.token;
     }
 }
