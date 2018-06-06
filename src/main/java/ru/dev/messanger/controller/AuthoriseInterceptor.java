@@ -14,7 +14,7 @@ public class AuthoriseInterceptor implements HandlerInterceptor {
     private String uploadPath;
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         String url = request.getRequestURI();
         if (isAllowed(url)){
             return true;
