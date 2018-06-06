@@ -30,7 +30,6 @@ APP.createNamespace('APP.utilities.validation');
 APP.models.entities = {
     me: (function () {
         var user = JSON.parse(localStorage.getItem("user"));
-        // localStorage.clear();
         return user;
     }()),
     language: {
@@ -115,9 +114,13 @@ APP.utilities.actions = (function () {
                     elem = dialogs[i];
 
                     html += '<div class="dialog"><img class="profile-photo" src="' + elem.avatar_url + '" alt="user">' +
-                        '<a class="dial-name">' + elem.firstName + ' ' + elem.lastName + '</a>' +
-                        '<span class="last-message-time">' + lastMessageDate(elem.created_at.seconds) + '</span>' +
-                        '<div class="short-message ellipsis">' + elem.message + '</div>' +
+                        '<a class="dial-name">' + elem.firstName + ' ' + elem.lastName + '</a>';
+
+                    if (elem.created_at) {
+                        html += '<span class="last-message-time">' + lastMessageDate(elem.created_at.seconds) + '</span>';
+                    }
+
+                    html += '<div class="short-message ellipsis">' + elem.message + '</div>' +
                         '<span class="badge">' + elem.countUnread + '</span></div>';
                 }
 
@@ -126,13 +129,13 @@ APP.utilities.actions = (function () {
 
                 function lastMessageDate(date) {
                     var curDate = new Date(),
-                        messDate = new Date(date*1000);
+                        messDate = new Date(date * 1000);
 
-                    if (curDate.getDay() === messDate.getDay()){
-                        return messDate.toLocaleTimeString().substr(0,5);
+                    if (curDate.getDay() === messDate.getDay()) {
+                        return messDate.toLocaleTimeString().substr(0, 5);
                     }
 
-                    if (curDate.getDay()-1 === messDate.getDay()){
+                    if (curDate.getDay() - 1 === messDate.getDay()) {
                         return 'Yesterday';
                     }
 
@@ -178,6 +181,7 @@ APP.utilities.actions = (function () {
 
         for (i = 0; i < $dialogs.length; i += 1) {
             $dialogs[i].current = i;
+            $dialogs[i].isDialog = true;
             $dialogs[i].lastMessId = dialogs[i].id;
             $dialogs[i].conversId = dialogs[i].conversation_id;
             $dialogs[i].countUnread = dialogs[i].countUnread;
@@ -194,6 +198,7 @@ APP.utilities.actions = (function () {
 
         for (i = 0; i < $convers.length; i += 1) {
             $convers[i].current = i;
+            $convers[i].isDialog = false;
             $convers[i].lastMessId = conversations[i].id;
             $convers[i].conversId = conversations[i].conversation_id;
             $convers[i].countUnread = conversations[i].countUnread;
@@ -208,11 +213,14 @@ APP.utilities.actions = (function () {
     function openDialog() {
         var url = this.url,
             name = this.name,
+            isDialog = this.isDialog,
             conversationId = this.conversId,
             lastMessageId = this.lastMessId,
             unreadedMessages = this.countUnread;
 
-        $('.profile-photo.img-responsive').attr('src', entities.me.avatar_url);
+        console.log(entities.me.avatar_url);
+
+        $('#sender img').attr('src', entities.me.avatar_url);
 
         $.ajax({
             url: "/getMessages",
@@ -225,14 +233,18 @@ APP.utilities.actions = (function () {
                     date,
                     elem = {};
 
-                console.log(request);
+                if (isDialog) {
+                    html = '<img src="' + url + '" class="conversation-img profile-photo">';
+                } else {
+                    html = '<img src="img/defaults/conversation.jpg" class="conversation-img profile-photo">';
+                }
 
-                html = '<img src="' + url + '" class="conversation-img profile-photo">' +
-                    '<div class="conversation-name">' + name + '</div>' +
+                html += '<div class="conversation-name">' + name + '</div>' +
                     '<a class="search-messege btn"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></a>' +
                     '<a class="leave btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>';
 
                 $('.dialog-actions').html(html);
+                initializeScroll();
                 html = '';
 
                 $('.leave').on('click', function () {
@@ -282,7 +294,7 @@ APP.utilities.actions = (function () {
 
                 for (i = request.length - 1; i >= 0; i -= 1) {
                     elem = request[i];
-                    date = new Date(elem.created_at.seconds*1000);
+                    date = new Date(elem.created_at.seconds * 1000);
 
                     html += '<div class="message">' +
                         '<img src="' + elem.avatar_url + '" alt="user" class="profile-photo">\n' +
@@ -290,8 +302,8 @@ APP.utilities.actions = (function () {
                         '<div class="last-message-time">' + date.toLocaleTimeString() + '</div>' +
                         '<div class="full-message">' + elem.message + '</div>';
 
-                    if (elem.attachment_url){
-                        html += '<img src="'+elem.attachment_url+'" class="message-img">';
+                    if (elem.attachment_url) {
+                        html += '<img src="' + elem.attachment_url + '" class="message-img">';
                     }
 
                     html += '</div>';
@@ -340,7 +352,7 @@ APP.utilities.actions = (function () {
                     $btn = {};
 
                 if (user) {
-                    date = new Date(user.created_at.seconds*1000);
+                    date = new Date(user.created_at.seconds * 1000);
 
                     $('#myModalLabel').html('Profile Information');
 
