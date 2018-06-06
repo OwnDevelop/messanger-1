@@ -35,12 +35,12 @@ APP.models.entities = {
     }()),
     language: {
         logout: ['Logout', 'Выход'],
-        search: [],
-        settings: [],
-        startCnoversation: [],
-        information: [],
-        emptyConversation: [],
-        emptyDialogs: []
+        search: ['Search', 'Поиск'],
+        settings: ['Settings', ''],
+        startCnoversation: ['Start Conversation', ''],
+        information: ['Information', ''],
+        emptyConversation: ['Conversation isn\'t selected', ''],
+        emptyDialogs: ['No Conversations found', '']
     },
     dialogs: [],
     profiles: [],
@@ -116,13 +116,28 @@ APP.utilities.actions = (function () {
 
                     html += '<div class="dialog"><img class="profile-photo" src="' + elem.avatar_url + '" alt="user">' +
                         '<a class="dial-name">' + elem.firstName + ' ' + elem.lastName + '</a>' +
-                        '<span class="last-message-time">' + elem.created_at + '</span>' +
+                        '<span class="last-message-time">' + lastMessageDate(elem.created_at.seconds) + '</span>' +
                         '<div class="short-message ellipsis">' + elem.message + '</div>' +
                         '<span class="badge">' + elem.countUnread + '</span></div>';
                 }
 
                 $form[0].innerHTML = html;
                 setEventsForDialogs();
+
+                function lastMessageDate(date) {
+                    var curDate = new Date(),
+                        messDate = new Date(date*1000);
+
+                    if (curDate.getDay() === messDate.getDay()){
+                        return messDate.toLocaleTimeString().substr(0,5);
+                    }
+
+                    if (curDate.getDay()-1 === messDate.getDay()){
+                        return 'Yesterday';
+                    }
+
+                    return messDate.toLocaleDateString();
+                }
             },
             error: function (e) {
                 console.log(e);
@@ -207,7 +222,10 @@ APP.utilities.actions = (function () {
                 var html = '', i = 0,
                     $messages = $('.messages > .jspContainer > .jspPane'),
                     $names = {},
+                    date,
                     elem = {};
+
+                console.log(request);
 
                 html = '<img src="' + url + '" class="conversation-img profile-photo">' +
                     '<div class="conversation-name">' + name + '</div>' +
@@ -264,12 +282,19 @@ APP.utilities.actions = (function () {
 
                 for (i = request.length - 1; i >= 0; i -= 1) {
                     elem = request[i];
+                    date = new Date(elem.created_at.seconds*1000);
 
                     html += '<div class="message">' +
                         '<img src="' + elem.avatar_url + '" alt="user" class="profile-photo">\n' +
                         '<a href="#" class="name">' + elem.firstName + ' ' + elem.lastName + '</a>' +
-                        '<div class="last-message-time">' + timeConverter(elem.created_at) + '</div>' +
-                        '<div class="full-message">' + elem.message + '</div></div>';
+                        '<div class="last-message-time">' + date.toLocaleTimeString() + '</div>' +
+                        '<div class="full-message">' + elem.message + '</div>';
+
+                    if (elem.attachment_url){
+                        html += '<img src="'+elem.attachment_url+'" class="message-img">';
+                    }
+
+                    html += '</div>';
                 }
 
                 $messages.html(html);
@@ -298,21 +323,6 @@ APP.utilities.actions = (function () {
         $(this).addClass('activeted');
     }
 
-
-    function timeConverter(UNIX_timestamp) {
-        var a = new Date(UNIX_timestamp.seconds * 1000);
-        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        var year = a.getFullYear();
-        var month = months[a.getMonth()];
-        var date = a.getDate();
-        var hour = a.getHours();
-        var min = a.getMinutes();
-        var sec = a.getSeconds();
-        var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec;
-        return time;
-    }
-
-
     function showModalForUser(id, behavior) {
         var html = "",
             $modalBody = $('.modal-body'),
@@ -326,9 +336,12 @@ APP.utilities.actions = (function () {
             method: 'POST',
             success: function (request) {
                 var user = request,
+                    date,
                     $btn = {};
 
                 if (user) {
+                    date = new Date(user.created_at.seconds*1000);
+
                     $('#myModalLabel').html('Profile Information');
 
                     html = '<div class="row"><div class="col-xs-5"><img class="profile-img" src="' + user.avatar_url + '" alt="user photo"></div>' +
@@ -343,7 +356,7 @@ APP.utilities.actions = (function () {
                         '<div class="col-xs-7"><h4 class="profile-info text-left">' + user.email + '</h4>' +
                         '<h4 class="profile-info text-left">' + user.login + '</h4>' +
                         '<h4 class="profile-info text-left">' + user.sex + '</h4>' +
-                        '<h4 class="profile-info text-left">' + timeConverter(user.created_at) + '</h4 ></div ></div >';
+                        '<h4 class="profile-info text-left">' + date.toLocaleDateString() + '</h4 ></div ></div >';
 
                     $modalFooter.html(html);
 
