@@ -31,16 +31,11 @@ public class UserSevice {
     }
 
     public static boolean activateUser(String code) {
-        NewUserDTO user = BLL.INSTANCE.getPUser(1); //TODO: найти юзера по коду c паролем (почти готово)
-
+        NewUserDTO user = BLL.INSTANCE.getUserByACode(code);
         if (user == null) {
             return false;
         }
-
         user.setActivation_code(null);
-
-        BLL.INSTANCE.setUser(user);
-
-        return true;
+        return BLL.INSTANCE.updateActivation(user);
     }
 }

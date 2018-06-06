@@ -3,6 +3,8 @@ package ru.dev.messanger.entities;
 import com.google.gson.annotations.SerializedName;
 import ru.dev.messanger.BLL.BLL;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 public class UserDTO {
@@ -22,7 +24,7 @@ public class UserDTO {
     @SerializedName("status")
     private String status;
     @SerializedName("created_at")
-    private Date created_at;
+    private Instant created_at;
     @SerializedName("avatar_url")
     private String avatar_url;
     @SerializedName("activation_code")
@@ -32,9 +34,7 @@ public class UserDTO {
 
     public void setActivation_code(String activation_code) { this.activation_code = activation_code; }
 
-    public int getId() {
-        return id;
-    }
+    public int getId() { return id; }
 
     public void setId(int id) {
         this.id = id;
@@ -86,11 +86,9 @@ public class UserDTO {
         this.status = status;
     }
 
-    public Date getCreated_at() {
-        return created_at;
-    }
+    public Instant getCreated_at() { return created_at; }
 
-    public void setCreated_at(Date created_at) {
+    public void setCreated_at(Instant created_at) {
         this.created_at = created_at;
     }
 

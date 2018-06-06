@@ -11,8 +11,11 @@ public interface AbstractDal {
     Boolean setUser(NewUserDTO item);
     UserDTO getUser(int id);
     NewUserDTO getPUser(int id);
+
+    Boolean updateActivation(NewUserDTO item);
+
     Boolean updateUser(NewUserDTO item, Integer id);
-    Boolean deleteUser(UserDTO item);
+    Boolean deleteUser(int id);
     Iterable<UserDTO> searchUsers(String searchQuery);
     Iterable<MessageConversationDTO> getConversations(Integer id);
     Iterable<MessageWithUnreadDTO> getDialogs(Integer id);
@@ -26,4 +29,6 @@ public interface AbstractDal {
     Boolean setUnreadMessages(Integer conversation_id, Integer id, Integer count);
     Boolean deleteConversation(Integer conversation_id, Integer id);
     Boolean setStatusOnline(Integer id, Integer status);
+
+    NewUserDTO getUserByACode(String code);
 }

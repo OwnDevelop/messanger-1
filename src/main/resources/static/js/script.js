@@ -136,7 +136,7 @@ APP.utilities.actions = (function () {
 
                     html += '<div class="dialog"><img class="profile-photo" src="' + elem.avatar_url + '" alt="user">' +
                         '<a class="dial-name">' + elem.firstName + ' ' + elem.lastName + '</a>' +
-                        '<span class="last-message-time">' + elem.created_at + '</span>' +
+                        '<span class="last-message-time">' + timeConverter(elem.created_at) + '</span>' +
                         '<div class="short-message ellipsis">' + elem.message + '</div>' +
                         '<span class="badge">' + elem.countUnread + '</span></div>';
                 }
@@ -162,7 +162,7 @@ APP.utilities.actions = (function () {
 
                     html += '<div class="conversation"><img class="profile-photo" src="img/defaults/conversation.jpg" alt="user">' +
                         '<a class="convers-name">' + elem.title + '</a>' +
-                        '<span class="last-message-time">' + elem.created_at + '</span>' +
+                        '<span class="last-message-time">' + timeConverter(elem.created_at) + '</span>' +
                         '<div class="short-message ellipsis">' + elem.message + '</div>' +
                         '<span class="badge">' + elem.countUnread + '</span></div>';
                 }
@@ -289,7 +289,7 @@ APP.utilities.actions = (function () {
                     html += '<div class="message">' +
                         '<img src="' + elem.avatar_url + '" alt="user" class="profile-photo">\n' +
                         '<a href="#" class="name">' + elem.firstName + ' ' + elem.lastName + '</a>' +
-                        '<div class="last-message-time">' + elem.created_at + '</div>' +
+                        '<div class="last-message-time">' + timeConverter(elem.created_at) + '</div>' +
                         '<div class="full-message">' + elem.message + '</div></div>';
                 }
 
@@ -318,6 +318,23 @@ APP.utilities.actions = (function () {
         $('.conversation').removeClass('activeted');
         $(this).addClass('activeted');
     }
+
+
+
+    function timeConverter(UNIX_timestamp){
+        var a = new Date(UNIX_timestamp.seconds * 1000);
+        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        var year = a.getFullYear();
+        var month = months[a.getMonth()];
+        var date = a.getDate();
+        var hour = a.getHours();
+        var min = a.getMinutes();
+        var sec = a.getSeconds();
+        var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec ;
+        return time;
+    }
+
+
 
     function showModalForUser(id, behavior) {
         var html = "",
@@ -349,7 +366,7 @@ APP.utilities.actions = (function () {
                         '<div class="col-xs-7"><h4 class="profile-info text-left">' + user.email + '</h4>' +
                         '<h4 class="profile-info text-left">' + user.login + '</h4>' +
                         '<h4 class="profile-info text-left">' + user.sex + '</h4>' +
-                        '<h4 class="profile-info text-left">' + user.created_at + '</h4 ></div ></div >';
+                        '<h4 class="profile-info text-left">' + timeConverter(user.created_at) + '</h4 ></div ></div >';
 
                     $modalFooter.html(html);
 

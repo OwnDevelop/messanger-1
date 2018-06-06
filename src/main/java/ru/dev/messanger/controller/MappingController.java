@@ -2,11 +2,9 @@ package ru.dev.messanger.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.ModelAndView;
-
-import java.util.Map;
+import ru.dev.messanger.BLL.BLL;
 
 @Controller
 public class MappingController {
@@ -31,8 +29,9 @@ public class MappingController {
         return "registration";
     }
 
-    @GetMapping("/logout")
-    public String logout() {
+    @PostMapping("/logout")
+    public String logout(@RequestParam String token) {
+        BLL.INSTANCE.removeToken(token);
         return "redirect:/signin";
     }
 }
