@@ -33,40 +33,19 @@ APP.models.entities = {
         // localStorage.clear();
         return user;
     }()),
-    dialogs: [{
-        userId: 1,
-        avatar_url: "img/profiles/my.jpg",
-        firstName: "ivan",
-        lastName: "ivanov",
-        message: "last msg",
-        created_at: "9:05PM",
-        countUnread: 5
-    }],
-    profiles: [{
-        id: 1,
-        login: "boss",
-        url: "img/profiles/my.jpg",
-        name: "ivan",
-        lastName: "ivanov",
-        created_at: "5/19/2018",
-        status: "Offline",
-        email: "mail1@google.com",
-        sex: "male"
-    }],
-    foundConversations: [{
-        id: 1,
-        admin_id: 1,
-        title: "ivan",
-        created_at: "5/19/2018"
-    }],
-    conversations: [{
-        userId: 1,
-        from_id: 852,
-        title: "ivan",
-        message: "last msg",
-        created_at: "9:05PM",
-        countUnread: 5
-    }]
+    language: {
+        logout: ['Logout', 'Выход'],
+        search: [],
+        settings: [],
+        startCnoversation: [],
+        information: [],
+        emptyConversation: [],
+        emptyDialogs: []
+    },
+    dialogs: [],
+    profiles: [],
+    foundConversations: [],
+    conversations: []
 };
 
 APP.models.buttons = {
@@ -320,20 +299,18 @@ APP.utilities.actions = (function () {
     }
 
 
-
-    function timeConverter(UNIX_timestamp){
+    function timeConverter(UNIX_timestamp) {
         var a = new Date(UNIX_timestamp.seconds * 1000);
-        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         var year = a.getFullYear();
         var month = months[a.getMonth()];
         var date = a.getDate();
         var hour = a.getHours();
         var min = a.getMinutes();
         var sec = a.getSeconds();
-        var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec ;
+        var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec;
         return time;
     }
-
 
 
     function showModalForUser(id, behavior) {
@@ -754,13 +731,13 @@ APP.utilities.actions = (function () {
         });
 
         $('input[type=file]').on('change', function () {
-            if (this.files[0].size > 1048576 ){
+            if (this.files[0].size > 1048576) {
                 this.value = "";
                 alert('File must be less than 2MB');
                 return;
             }
 
-            if(this.files[0].size < 10000){
+            if (this.files[0].size < 10000) {
                 this.value = "";
                 alert('Low size');
                 return;
@@ -820,11 +797,11 @@ APP.utilities.actions = (function () {
                     url: '/setMessage',
                     method: 'POST',
                     data: data,
-                        // {from_id: entities.me.id,conversation_id: conversId,message: text.toString(),attachment_url: "" },
+                    // {from_id: entities.me.id,conversation_id: conversId,message: text.toString(),attachment_url: "" },
                     cache: false,
                     dataType: 'json',
-                    processData : false,
-                    contentType : false,
+                    processData: false,
+                    contentType: false,
                     success: function (res) {
                         fields.$sendField.val('');
 
@@ -863,9 +840,7 @@ $("document").ready(function () {
     } else {
         $.ajaxSetup({
             headers: {
-                'Authorization':'Basic xxxxxxxxxxxxx',
-                'X_CSRF_TOKEN':'xxxxxxxxxxxxxxxxxxxx',
-                'Content-Type':'application/json'
+                X_CSRF_TOKEN: entities.me.token
             },
             contentType: "application/json"
         });
