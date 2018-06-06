@@ -448,12 +448,14 @@ public class Database implements AbstractDal {
         return true;
     }
 
-    @Override
+     @Override
     public Boolean deleteConversation(Integer conversation_id, Integer id) {
         String SqlQuery;
         Boolean exist = false;
+        Integer deletedId=0;
 
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
+
             SqlQuery = "SELECT COUNT (id) FROM deleted_conversations WHERE conversation_id=" + conversation_id + " AND user_id= " + id;
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                 st.executeQuery();
@@ -465,6 +467,10 @@ public class Database implements AbstractDal {
                     }
                 }
             }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 50c829f9d1215b92ad03d07bdd1f900a5621270b
             if (exist) {
                 SqlQuery = "UPDATE deleted_conversations SET deleted_at=NOW()" +
                         "WHERE conversation_id=" + conversation_id + " AND user_id=" + id + ";";
@@ -472,9 +478,38 @@ public class Database implements AbstractDal {
                 SqlQuery = "INSERT INTO deleted_conversations (conversation_id, user_id) " +
                         "VALUES ('" + conversation_id + "', '" + id + "');";
             }
+<<<<<<< HEAD
+=======
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                 st.executeQuery();
             }
+            SqlQuery = "SELECT COUNT (user_id) FROM deleted_conversations WHERE conversation_id=" + conversation_id;
+>>>>>>> 50c829f9d1215b92ad03d07bdd1f900a5621270b
+            try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
+                st.executeQuery();
+                try (ResultSet rs = st.getResultSet()) {
+                    while (rs.next()) {
+                        deletedId=rs.getInt(1);
+                    }
+                }
+            }
+
+            SqlQuery = "SELECT COUNT (user_id) FROM participants WHERE conversation_id=" + conversation_id;
+            try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
+                st.executeQuery();
+                try (ResultSet rs = st.getResultSet()) {
+                    while (rs.next()) {
+                        if(rs.getInt(1)==deletedId){
+                            SqlQuery = "DELETE FROM conversations WHERE id="+conversation_id;
+                            try (PreparedStatement stm = connection.prepareStatement(SqlQuery)) {
+                                stm.executeQuery();
+                            }
+                        }
+                    }
+                }
+            }
+
+
         } catch (SQLException e) {
             System.out.println("Connection problem.");
             e.printStackTrace();

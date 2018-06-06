@@ -76,7 +76,8 @@ APP.models.buttons = {
     $btnSendMess: $('#send-message'),
     $btnSendPict: $('#add-image'),
     $btnRusLang: $('.dropdown-menu li:nth-child(1)'),
-    $btnRusLang: $('.dropdown-menu li:nth-child(2)')
+    $btnRusLang: $('.dropdown-menu li:nth-child(2)'),
+    $btnLogout: $('.logout-btn')
 };
 
 APP.models.fields = {
@@ -735,6 +736,22 @@ APP.utilities.actions = (function () {
 
         buttons.$btnCreateConvers.on('click', function () {
             showModalForConversation();
+        });
+
+        buttons.$btnLogout.on('click', function (e) {
+            $.ajax({
+                url: '/logout',
+                data: {token: entities.me.token},
+                method: 'POST',
+                success: function (request) {
+                    localStorage.removeItem('user');
+                    location.replace('/signin');
+                },
+                error: function (error) {
+                    console.log(error);
+                    alert('server error');
+                }
+            });
         });
 
         initializeScroll();
