@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import ru.dev.messanger.BLL.BLL;
 import ru.dev.messanger.dll.Database;
 import ru.dev.messanger.entities.ConversationDTO;
@@ -97,9 +98,11 @@ public class RESTController {
             @RequestParam int from_id,
             @RequestParam int conversation_id,
             @RequestParam String message,
-            @RequestParam String attachment_url
+            @RequestParam String attachment_url,
+            @RequestParam("file") MultipartFile file
+
     ) {
-        return BLL.INSTANCE.setMessage(from_id, conversation_id, message, attachment_url);
+        return BLL.INSTANCE.setMessage(from_id, conversation_id, message, attachment_url, file);
     }
 
     @RequestMapping(value = "/getMessages", method = RequestMethod.POST, produces = "application/json")
