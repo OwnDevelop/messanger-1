@@ -19,10 +19,8 @@ public class Token {
     }
 
     public String getToken() {
-        System.out.println(expires.getLong(ChronoField.NANO_OF_SECOND));
-        System.out.println(LocalDateTime.now().getLong(ChronoField.NANO_OF_SECOND));
-        if (expires.getLong(ChronoField.NANO_OF_SECOND) <=
-                LocalDateTime.now().getLong(ChronoField.NANO_OF_SECOND)) {
+        System.out.println(expires.compareTo(Instant.now()));
+        if (expires.compareTo(Instant.now()) >= 0) {
             this.expires = Instant.now().plusSeconds(LIFETIME);
             return STRING_VALUE;
         } else {

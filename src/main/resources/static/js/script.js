@@ -863,11 +863,10 @@ $("document").ready(function () {
     } else {
         $.ajaxSetup({
             headers: {
-                'Authorization':'Basic xxxxxxxxxxxxx',
-                'X_CSRF_TOKEN':'xxxxxxxxxxxxxxxxxxxx',
-                'Content-Type':'application/json'
+                'token': entities.me.token,
+                'Content-Type':'application/json' //TODO: ТЫ УВЕРЕН?
             },
-            contentType: "application/json"
+            contentType: "application/json" //todo;
         });
         actions = APP.utilities.actions;
         actions.initialization();
