@@ -124,7 +124,6 @@ APP.utilities.actions = (function () {
             i = 0,
             elem = {};
 
-        //получение диалогов из ajax
         $.ajax({
             url: "/getDialogs",
             data: {id: entities.me.id},
@@ -138,7 +137,7 @@ APP.utilities.actions = (function () {
 
                     html += '<div class="dialog"><img class="profile-photo" src="' + elem.avatar_url + '" alt="user">' +
                         '<a class="dial-name">' + elem.firstName + ' ' + elem.lastName + '</a>' +
-                        '<span class="last-message-time">' + timeConverter(elem.created_at) + '</span>' +
+                        '<span class="last-message-time">' + elem.created_at + '</span>' +
                         '<div class="short-message ellipsis">' + elem.message + '</div>' +
                         '<span class="badge">' + elem.countUnread + '</span></div>';
                 }
@@ -164,7 +163,6 @@ APP.utilities.actions = (function () {
 
                     html += '<div class="conversation"><img class="profile-photo" src="img/defaults/conversation.jpg" alt="user">' +
                         '<a class="convers-name">' + elem.title + '</a>' +
-                        '<span class="last-message-time">' + timeConverter(elem.created_at) + '</span>' +
                         '<div class="short-message ellipsis">' + elem.message + '</div>' +
                         '<span class="badge">' + elem.countUnread + '</span></div>';
                 }
@@ -863,9 +861,14 @@ $("document").ready(function () {
     if (!entities.me) {
         location.replace('/signin');
     } else {
-        // $.ajaxSetup({
-        //     headers: {'token': entities.me.token}
-        // });
+        $.ajaxSetup({
+            headers: {
+                'Authorization':'Basic xxxxxxxxxxxxx',
+                'X_CSRF_TOKEN':'xxxxxxxxxxxxxxxxxxxx',
+                'Content-Type':'application/json'
+            },
+            contentType: "application/json"
+        });
         actions = APP.utilities.actions;
         actions.initialization();
         actions.showDialogs();
