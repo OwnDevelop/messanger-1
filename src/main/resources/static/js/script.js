@@ -731,7 +731,7 @@ APP.utilities.actions = (function () {
         });
 
         $('input[type=file]').on('change', function () {
-            if (this.files[0].size > 1048576) {
+            if (this.files[0].size > 8388608) {
                 this.value = "";
                 alert('File must be less than 2MB');
                 return;

@@ -2,11 +2,15 @@ package ru.dev.messanger.BLL;
 
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import ru.dev.messanger.dll.Database;
 import ru.dev.messanger.entities.*;
 import ru.dev.messanger.service.UserService;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,6 +21,9 @@ public class BLL {
 
     @Autowired
     private UserService userService;  //TODO: НОРМАЛЬНО АВТОВАЙРИТЬ В ЛОГИКЕ?
+
+    @Value("${upload.path}")
+    private String uploadPath;
 
     public static final BLL INSTANCE = new BLL();   // SINGLETONE
 
@@ -213,14 +220,29 @@ public class BLL {
             int from_id,
             int conversation_id,
             String message,
-            String attachment_url
+            String attachment_url,
+            MultipartFile file
     ) {
+        String resultFilename = "";
+
+        if (file != null && !file.getOriginalFilename().isEmpty()) {
+
+            String uuidFile = UUID.randomUUID().toString();
+            resultFilename = uuidFile + "." + file.getOriginalFilename();
+
+            try {
+              //  file.transferTo(new File(uploadPath + "\\" + resultFilename));
+                file.transferTo(new File("D:\Cloud\Programs\# Java\GIT\messanger\src\main\resources\uploads" + "\\" + resultFilename));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
         SentMessageDTO messageDTO = new SentMessageDTO();
         messageDTO.setFrom_id(from_id);
         messageDTO.setConversation_id(conversation_id);
         messageDTO.setMessage(message);
-        messageDTO.setAttachment_url(attachment_url);
-
+        messageDTO.setAttachment_url(resultFilename);
         return new Gson().toJson(Database.INSTANCE.setMessage(messageDTO));
     }
 
