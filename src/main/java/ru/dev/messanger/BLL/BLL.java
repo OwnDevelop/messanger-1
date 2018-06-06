@@ -1,9 +1,10 @@
 package ru.dev.messanger.BLL;
 
 import com.google.gson.Gson;
+import org.springframework.beans.factory.annotation.Autowired;
 import ru.dev.messanger.dll.Database;
 import ru.dev.messanger.entities.*;
-import ru.dev.messanger.service.UserSevice;
+import ru.dev.messanger.service.UserService;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -12,6 +13,9 @@ import java.util.List;
 import java.util.UUID;
 
 public class BLL {
+
+    @Autowired
+    private UserService userService;  //TODO: НОРМАЛЬНО АВТОВАЙРИТЬ В ЛОГИКЕ?
 
     public static final BLL INSTANCE = new BLL();   // SINGLETONE
 
@@ -125,7 +129,7 @@ public class BLL {
         user.setCreated_at(Instant.now());
 
         user.setActivation_code(UUID.randomUUID().toString());
-        //UserSevice.sendActivationEmail(user);
+        userService.sendActivationEmail(user);
 
         return new Gson().toJson(Database.INSTANCE.setUser(user));
     }

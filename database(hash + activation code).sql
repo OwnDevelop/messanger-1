@@ -11,7 +11,26 @@
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 
--- Дамп данных таблицы messenger.conversations: ~13 rows (приблизительно)
+
+-- Дамп структуры базы данных messenger
+DROP DATABASE IF EXISTS `messenger`;
+CREATE DATABASE IF NOT EXISTS `messenger` /*!40100 DEFAULT CHARACTER SET utf8 */;
+USE `messenger`;
+
+-- Дамп структуры для таблица messenger.conversations
+DROP TABLE IF EXISTS `conversations`;
+CREATE TABLE IF NOT EXISTS `conversations` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `admin_id` int(11) DEFAULT NULL,
+  `title` varchar(40) DEFAULT NULL,
+  `participants_id` int(11) DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_conversations_admin_id` (`admin_id`),
+  CONSTRAINT `fk_conversations_users` FOREIGN KEY (`admin_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8;
+
+-- Дамп данных таблицы messenger.conversations: ~14 rows (приблизительно)
 DELETE FROM `conversations`;
 /*!40000 ALTER TABLE `conversations` DISABLE KEYS */;
 INSERT INTO `conversations` (`id`, `admin_id`, `title`, `participants_id`, `created_at`) VALUES
@@ -27,8 +46,21 @@ INSERT INTO `conversations` (`id`, `admin_id`, `title`, `participants_id`, `crea
 	(21, 9, 'dreamteam2', NULL, '2018-05-31 17:04:05'),
 	(22, 9, 'dreamteam3', NULL, '2018-05-31 17:05:06'),
 	(23, 9, 'dreamteam3', NULL, '2018-05-31 17:06:03'),
-	(25, 1, '', NULL, '2018-06-04 18:48:12');
+	(25, 1, '', NULL, '2018-06-04 18:48:12'),
+	(26, 9, '', NULL, '2018-06-06 18:08:20');
 /*!40000 ALTER TABLE `conversations` ENABLE KEYS */;
+
+-- Дамп структуры для таблица messenger.deleted_conversations
+DROP TABLE IF EXISTS `deleted_conversations`;
+CREATE TABLE IF NOT EXISTS `deleted_conversations` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `conversation_id` int(11) DEFAULT NULL,
+  `deleted_at` datetime DEFAULT current_timestamp(),
+  `user_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_deleted_conversations_conversation_id` (`conversation_id`),
+  CONSTRAINT `fk_deleted_conversations` FOREIGN KEY (`conversation_id`) REFERENCES `conversations` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 
 -- Дамп данных таблицы messenger.deleted_conversations: ~2 rows (приблизительно)
 DELETE FROM `deleted_conversations`;
@@ -38,7 +70,24 @@ INSERT INTO `deleted_conversations` (`id`, `conversation_id`, `deleted_at`, `use
 	(2, 1, '2018-05-19 15:26:57', 3);
 /*!40000 ALTER TABLE `deleted_conversations` ENABLE KEYS */;
 
--- Дамп данных таблицы messenger.messages: ~26 rows (приблизительно)
+-- Дамп структуры для таблица messenger.messages
+DROP TABLE IF EXISTS `messages`;
+CREATE TABLE IF NOT EXISTS `messages` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `conversation_id` int(11) DEFAULT NULL,
+  `from_id` int(11) DEFAULT NULL,
+  `to_id` int(11) DEFAULT NULL,
+  `message` longtext DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `attachment_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_messages_conversation_id` (`conversation_id`),
+  KEY `idx_messages_attachment_url` (`attachment_id`),
+  CONSTRAINT `fk_messages_photos` FOREIGN KEY (`attachment_id`) REFERENCES `photos` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `messages_conversations` FOREIGN KEY (`conversation_id`) REFERENCES `conversations` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=utf8;
+
+-- Дамп данных таблицы messenger.messages: ~27 rows (приблизительно)
 DELETE FROM `messages`;
 /*!40000 ALTER TABLE `messages` DISABLE KEYS */;
 INSERT INTO `messages` (`id`, `conversation_id`, `from_id`, `to_id`, `message`, `created_at`, `attachment_id`) VALUES
@@ -67,16 +116,29 @@ INSERT INTO `messages` (`id`, `conversation_id`, `from_id`, `to_id`, `message`, 
 	(28, 10, 9, 9, 'sdfgdf', '2018-06-03 18:16:15', 14),
 	(29, 10, 9, 9, 'dsgfgfd', '2018-06-03 18:17:52', 14),
 	(37, 25, 1, 1, 'Conversation has started', '2018-06-04 18:48:12', 14),
-	(38, 25, 1, 1, 'Здарова', '2018-06-04 18:48:19', 14);
+	(38, 25, 1, 1, 'Здарова', '2018-06-04 18:48:19', 14),
+	(39, 26, 9, 9, 'Conversation has started', '2018-06-06 18:08:23', 14);
 /*!40000 ALTER TABLE `messages` ENABLE KEYS */;
 
--- Дамп данных таблицы messenger.participants: ~35 rows (приблизительно)
+-- Дамп структуры для таблица messenger.participants
+DROP TABLE IF EXISTS `participants`;
+CREATE TABLE IF NOT EXISTS `participants` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `conversation_id` int(11) DEFAULT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `unread_messages` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_participants_conversation_id` (`conversation_id`),
+  CONSTRAINT `participants_conversations` FOREIGN KEY (`conversation_id`) REFERENCES `conversations` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=61 DEFAULT CHARSET=utf8;
+
+-- Дамп данных таблицы messenger.participants: ~37 rows (приблизительно)
 DELETE FROM `participants`;
 /*!40000 ALTER TABLE `participants` DISABLE KEYS */;
 INSERT INTO `participants` (`id`, `conversation_id`, `user_id`, `unread_messages`) VALUES
 	(1, 1, 2, 3),
 	(2, 1, 3, 5),
-	(3, 1, 5, 1),
+	(3, 1, 5, 0),
 	(4, 1, 6, 0),
 	(5, 1, 8, 0),
 	(6, 1, 7, 0),
@@ -91,7 +153,7 @@ INSERT INTO `participants` (`id`, `conversation_id`, `user_id`, `unread_messages
 	(27, 10, 9, 0),
 	(28, 10, 11, 4),
 	(29, 11, 9, 0),
-	(30, 11, 10, 2),
+	(30, 11, 10, 0),
 	(31, 12, 3, 0),
 	(32, 12, 5, 0),
 	(33, 1, 9, 0),
@@ -108,10 +170,20 @@ INSERT INTO `participants` (`id`, `conversation_id`, `user_id`, `unread_messages
 	(49, 23, 14, 0),
 	(50, 23, 17, 0),
 	(57, 25, 1, 0),
-	(58, 25, 8, 2);
+	(58, 25, 8, 2),
+	(59, 26, 9, 0),
+	(60, 26, 10, 1);
 /*!40000 ALTER TABLE `participants` ENABLE KEYS */;
 
--- Дамп данных таблицы messenger.photos: ~14 rows (приблизительно)
+-- Дамп структуры для таблица messenger.photos
+DROP TABLE IF EXISTS `photos`;
+CREATE TABLE IF NOT EXISTS `photos` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `url` varchar(64) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8;
+
+-- Дамп данных таблицы messenger.photos: ~17 rows (приблизительно)
 DELETE FROM `photos`;
 /*!40000 ALTER TABLE `photos` DISABLE KEYS */;
 INSERT INTO `photos` (`id`, `url`) VALUES
@@ -128,8 +200,19 @@ INSERT INTO `photos` (`id`, `url`) VALUES
 	(11, 'img/defaults/image011.jpg'),
 	(12, 'img/defaults/image012.jpg'),
 	(13, 'img/profiles/my.jpg'),
-	(14, '');
+	(14, ''),
+	(16, 'Online'),
+	(17, '10'),
+	(18, '17');
 /*!40000 ALTER TABLE `photos` ENABLE KEYS */;
+
+-- Дамп структуры для таблица messenger.status
+DROP TABLE IF EXISTS `status`;
+CREATE TABLE IF NOT EXISTS `status` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `value` enum('Online','Idle','Do Not Disturb','Offline') DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
 
 -- Дамп данных таблицы messenger.status: ~4 rows (приблизительно)
 DELETE FROM `status`;
@@ -141,7 +224,30 @@ INSERT INTO `status` (`id`, `value`) VALUES
 	(4, 'Offline');
 /*!40000 ALTER TABLE `status` ENABLE KEYS */;
 
--- Дамп данных таблицы messenger.users: ~15 rows (приблизительно)
+-- Дамп структуры для таблица messenger.users
+DROP TABLE IF EXISTS `users`;
+CREATE TABLE IF NOT EXISTS `users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `email` varchar(255) DEFAULT NULL,
+  `login` varchar(64) NOT NULL DEFAULT '',
+  `password` varchar(64) DEFAULT NULL,
+  `first_name` varchar(64) DEFAULT NULL,
+  `last_name` varchar(64) DEFAULT NULL,
+  `sex` enum('male','female','not specified') DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `status` int(11) DEFAULT NULL,
+  `avatar` int(11) DEFAULT NULL,
+  `activation_code` varchar(36) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `login` (`login`),
+  UNIQUE KEY `email` (`email`),
+  KEY `idx_users_avatar` (`avatar`),
+  KEY `idx_users_status` (`status`),
+  CONSTRAINT `fk_users_photos` FOREIGN KEY (`avatar`) REFERENCES `photos` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_users_status` FOREIGN KEY (`status`) REFERENCES `status` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8;
+
+-- Дамп данных таблицы messenger.users: ~17 rows (приблизительно)
 DELETE FROM `users`;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
 INSERT INTO `users` (`id`, `email`, `login`, `password`, `first_name`, `last_name`, `sex`, `created_at`, `status`, `avatar`, `activation_code`) VALUES
@@ -159,8 +265,18 @@ INSERT INTO `users` (`id`, `email`, `login`, `password`, `first_name`, `last_nam
 	(12, 'qkarzrtvb@emltmp.com', 'Metro1', '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8', 'Alexandr', 'Hvatov', 'male', '2018-05-28 18:16:00', 4, 3, NULL),
 	(13, 'faligi@l0real.net', 'asdasdasd', 'd8a928b2043db77e340b523547bf16cb4aa483f0645fe0a290ed1f20aab76257', 'asdasdasd', 'asdasdasd', 'male', '2018-06-05 18:45:11', 1, 5, NULL),
 	(14, 'asdasd@o3enzyme.com', 'asdasdasds', 'd8a928b2043db77e340b523547bf16cb4aa483f0645fe0a290ed1f20aab76257', 'asdasdasd', 'asdasdasd', 'male', '2018-06-05 18:48:43', 1, 11, NULL),
-	(15, 'asdasd@o3enzye.com', 'asdasdasda', '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8', 'asdasda', 'asdasda', 'male', '2018-06-05 18:51:19', 1, 8, NULL);
+	(15, 'asdasd@o3enzye.com', 'asdasdasda', '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8', 'asdasda', 'asdasda', 'male', '2018-06-05 18:51:19', 1, 8, NULL),
+	(23, 'asd@ASd.asda', 'asdasddsaa', 'd8a928b2043db77e340b523547bf16cb4aa483f0645fe0a290ed1f20aab76257', 'asdasddsaa', 'asdasdasda', 'male', '2018-06-06 16:34:00', 1, 3, NULL),
+	(24, 'asd@sASd.asda', 'asdassddsaa', 'd8a928b2043db77e340b523547bf16cb4aa483f0645fe0a290ed1f20aab76257', 'asdasddsaa', 'asdasdasda', 'male', '2018-06-06 17:03:12', 1, 12, '755a746c-0cef-4b00-89ab-2c11bdfdd39a');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
+
+-- Дамп структуры для триггер messenger.set_unread
+DROP TRIGGER IF EXISTS `set_unread`;
+SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
+DELIMITER //
+CREATE TRIGGER `set_unread` AFTER INSERT ON `messages` FOR EACH ROW update participants set unread_messages = unread_messages+1 where conversation_id=new.conversation_id and user_id!=new.from_id//
+DELIMITER ;
+SET SQL_MODE=@OLDTMP_SQL_MODE;
 
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
 /*!40014 SET FOREIGN_KEY_CHECKS=IF(@OLD_FOREIGN_KEY_CHECKS IS NULL, 1, @OLD_FOREIGN_KEY_CHECKS) */;

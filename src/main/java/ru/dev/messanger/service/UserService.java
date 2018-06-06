@@ -2,20 +2,21 @@ package ru.dev.messanger.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import ru.dev.messanger.BLL.BLL;
 import ru.dev.messanger.entities.NewUserDTO;
 
-public class UserSevice {
+@Service
+public class UserService {
 
     @Autowired
-    private static MailSender mailSender;
+    private  MailSender mail;
 
-    @Value("${host-url}")
-    private static String hostUrl;
+    @Value("${host.url}")
+    private String hostUrl;
 
-    public static boolean sendActivationEmail(NewUserDTO user) {
-
+    public boolean sendActivationEmail(NewUserDTO user) {
         if (!StringUtils.isEmpty(user.getEmail())) {
             String message = String.format(
                     "Hello, %s! \n" +
@@ -24,13 +25,13 @@ public class UserSevice {
                     user.getActivation_code()
             );
 
-            mailSender.send(user.getEmail(), "Activation code", message);
+            mail.send(user.getEmail(), "Activation code", message);
         }
 
         return true;
     }
 
-    public static boolean activateUser(String code) {
+    public boolean activateUser(String code) {
         NewUserDTO user = BLL.INSTANCE.getUserByACode(code);
         if (user == null) {
             return false;
