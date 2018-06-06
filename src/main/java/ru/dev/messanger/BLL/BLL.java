@@ -5,6 +5,7 @@ import ru.dev.messanger.dll.Database;
 import ru.dev.messanger.entities.*;
 import ru.dev.messanger.service.UserSevice;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -53,9 +54,23 @@ public class BLL {
         return false;
     }
 
+    public Boolean removeToken(String token) {
+            for (Object key : userToken.keySet()) {
+                if (userToken.get(key).getToken() == token) {
+                    userToken.remove(key);
+                    return true; //Tokens are unique, no need to continue iteration
+                }
+            }
+        return false;
+    }
 
     public void removeUsersToken(TUser user) {
         this.userToken.remove(user.getId());
+    }
+
+
+    public NewUserDTO getUserByACode(String code) {
+        return Database.INSTANCE.getUserByACode(code);
     }
 
     public String authorization(String login, String password) {
@@ -65,13 +80,13 @@ public class BLL {
 
         UserDTO user = Database.INSTANCE.authorization(login, Encoder.hash256(password));
         if (user == null) {
-            return new Gson().toJson("Bad Credentials");
+            return new Gson().toJson( "not activated");
         }
         if (user.getActivation_code() == null) {
             TUser tuser = new TUser(user);
             return new Gson().toJson(tuser);
         }   else {
-            return new Gson().toJson("User is not activated"); //TODO: такое себе
+            return new Gson().toJson( "User is not activated yet"); //TODO: такое себе
         }
     }
 
@@ -85,6 +100,10 @@ public class BLL {
     public Boolean setUser(NewUserDTO user) {
             return Database.INSTANCE.setUser(user);
         }
+
+    public Boolean updateActivation(NewUserDTO item) {
+        return Database.INSTANCE.updateActivation(item);
+    }
     public String setUser(
             String email,
             String login,
@@ -103,6 +122,7 @@ public class BLL {
         user.setSex(sex);
         user.setStatus(status);
         user.setAvatar_url(avatar);
+        user.setCreated_at(Instant.now());
 
         user.setActivation_code(UUID.randomUUID().toString());
         //UserSevice.sendActivationEmail(user);
@@ -134,16 +154,13 @@ public class BLL {
         user.setSex(sex);
         user.setStatus(status);
         user.setAvatar_url(avatar);
-
         return new Gson().toJson(Database.INSTANCE.updateUser(user, id));
     }
 
     public String deleteUser(
             int id
     ) {
-        NewUserDTO user = new NewUserDTO();
-        user.setId(id);
-        return new Gson().toJson(Database.INSTANCE.deleteUser(user));
+        return new Gson().toJson(Database.INSTANCE.deleteUser(id));
     }
 
     public String searchUsers(

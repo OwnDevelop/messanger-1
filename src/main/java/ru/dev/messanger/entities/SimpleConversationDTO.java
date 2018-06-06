@@ -2,6 +2,7 @@ package ru.dev.messanger.entities;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.time.Instant;
 import java.util.Date;
 
 public class SimpleConversationDTO {
@@ -11,7 +12,7 @@ public class SimpleConversationDTO {
     @SerializedName("title")
     private String title;
     @SerializedName("created_at")
-    private Date created_at;
+    private Instant created_at;
 
     public int getId() {
         return id;
@@ -29,11 +30,11 @@ public class SimpleConversationDTO {
         this.title = title;
     }
 
-    public Date getCreated_at() {
+    public Instant getCreated_at() {
         return created_at;
     }
 
-    public void setCreated_at(Date created_at) {
+    public void setCreated_at(Instant created_at) {
         this.created_at = created_at;
     }
 }

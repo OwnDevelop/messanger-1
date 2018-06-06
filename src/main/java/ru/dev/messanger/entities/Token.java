@@ -2,19 +2,20 @@ package ru.dev.messanger.entities;
 
 import ru.dev.messanger.BLL.BLL;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoField;
 import java.util.UUID;
 
 public class Token {
 
-    private final int LIFETIME = 1;
+    private final int LIFETIME = 60;
 
     private final String STRING_VALUE = UUID.randomUUID().toString();
-    private LocalDateTime expires;
+    private Instant expires;
 
     public Token() {
-        this.expires = LocalDateTime.now().plusMinutes(LIFETIME);
+        this.expires = Instant.now().plusSeconds(LIFETIME);
     }
 
     public String getToken() {
@@ -22,7 +23,7 @@ public class Token {
         System.out.println(LocalDateTime.now().getLong(ChronoField.NANO_OF_SECOND));
         if (expires.getLong(ChronoField.NANO_OF_SECOND) <=
                 LocalDateTime.now().getLong(ChronoField.NANO_OF_SECOND)) {
-            this.expires = LocalDateTime.now().plusMinutes(LIFETIME);
+            this.expires = Instant.now().plusSeconds(LIFETIME);
             return STRING_VALUE;
         } else {
             BLL.INSTANCE.removeToken(this);
