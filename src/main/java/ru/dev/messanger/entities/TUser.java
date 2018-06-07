@@ -6,9 +6,9 @@ import ru.dev.messanger.BLL.BLL;
 public class TUser extends NewUserDTO {
 
     @SerializedName("token")
-    private Token token;
+    private String token;
 
-    public TUser(UserDTO user) {
+    public TUser(UserDTO user, String tkn) {
         setId(user.getId());
         setLogin(user.getLogin());
         setEmail(user.getEmail());
@@ -19,10 +19,10 @@ public class TUser extends NewUserDTO {
         setCreated_at(user.getCreated_at());
         setAvatar_url(user.getAvatar_url());
 
-        this.token = new Token();
+        this.token = tkn;
     }
 
-    public Token getToken() {
+    public String getToken() {
         return this.token;
     }
 }

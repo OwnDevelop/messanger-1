@@ -16,7 +16,7 @@ public class MappingController {
     }
 
     @GetMapping("/")
-    public String main() {
+    public String root() {
         return "redirect:/signin";
     }
 
@@ -26,8 +26,8 @@ public class MappingController {
     }
 
     @GetMapping("/main")
-    public String application() {
-        return "main";
+    public String main(@RequestParam String token) {
+        return bll.checkToken(token) ? "redirect:/main" : "redirect:/signin";
     }
 
     @GetMapping("/signup")

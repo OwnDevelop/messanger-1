@@ -111,8 +111,9 @@ public class BLL {
             return new Gson().toJson("not activated");
         }
         if (user.getActivation_code() == null) {
-            TUser tuser = new TUser(user);
-            addTokenToUser(tuser, tuser.getToken());
+            Token tkn = new Token();
+            TUser tuser = new TUser(user, tkn.getStringToken());
+            addTokenToUser(tuser, tkn);
             return new Gson().toJson(tuser);
         } else {
             return new Gson().toJson("User is not activated yet"); //TODO: такое себе
