@@ -40,7 +40,7 @@ public class BLL {
 
     public Boolean checkToken(String token) {
         System.out.println(token);
-        if (true) { //TODO: это ломает всю защиту | заглушка, чтобы войти   token == null
+        if ((token == null) || ("[object Object]".equals(token))) { //TODO: это ломает всю защиту | заглушка, чтобы войти   token == null
             return true;
         }
 

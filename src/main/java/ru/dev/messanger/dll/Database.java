@@ -37,7 +37,7 @@ public class Database implements AbstractDal {
     public UserDTO authorization(String login, String password) {
         UserDTO user = null;
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
-            String SqlQuery = "SELECT users.id, email, login, first_name, last_name, sex, created_at, activation_code, avatar, status, value as status, url as avatar FROM users LEFT JOIN status ON users.status=status.id LEFT JOIN photos ON users.avatar=photos.id " +
+            String SqlQuery = "SELECT users.id, email, login, first_name, last_name, sex, created_at, activation_code, value as status, url as avatar FROM users LEFT JOIN status ON users.status=status.id LEFT JOIN photos ON users.avatar=photos.id " +
                     "WHERE (login='" + login + "' OR email='" + login + "') AND password='" + password + "';";
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                 st.executeQuery();
@@ -767,8 +767,8 @@ public class Database implements AbstractDal {
         user.setSex(rs.getString(6));
         user.setCreated_at(rs.getTimestamp(7).toInstant());
         user.setActivation_code(rs.getString(8));
-        user.setAvatar_url(rs.getString(9));
-        user.setStatus(rs.getString(10));
+        user.setStatus(rs.getString(9));
+        user.setAvatar_url(rs.getString(10));
 
         return user;
     }
