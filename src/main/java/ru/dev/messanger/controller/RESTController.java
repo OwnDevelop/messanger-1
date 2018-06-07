@@ -1,5 +1,6 @@
 package ru.dev.messanger.controller;
 
+import com.google.gson.Gson;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -16,6 +17,13 @@ public class RESTController {
     public RESTController(BLL bll) {
         this.bll = bll;
     }
+
+
+    @RequestMapping(value = "/enter", method = RequestMethod.GET, produces = "application/json")
+    public String enter(@RequestParam String token) {
+        return bll.checkToken(token) ? new Gson().toJson("main") : "signin"; //TODO: так же лучше?    return bll.checkToken(token) ? "redirect:/main" : "redirect:/signin";
+    }
+
 
     @RequestMapping(value = "/authorization", method = RequestMethod.GET, produces = "application/json")
     public String authorization(@RequestParam String login, @RequestParam String password) {

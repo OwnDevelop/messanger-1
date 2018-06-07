@@ -56,10 +56,13 @@ $('document').ready(function () {
                             if (answer) {
                                 localStorage.setItem("user", JSON.stringify(answer));
                                 $.ajax({
-                                    url: '/main',
+                                    url: '/enter',
                                     data: {token: b},
                                     method: "GET",
                                     // headers: {'token': b},
+                                    success: function(address) { //Если все нормально
+                                        document.location.href = address;
+                                        },
                                     error: function (a) {
                                         console.log(a);
                                         alert('server error');
