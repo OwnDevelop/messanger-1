@@ -13,7 +13,7 @@ $('#form').validate({
             minlength: 6,
             lettersDegitsOnly: true
         },
-        password:{
+        password: {
             required: true,
             minlength: 6,
             maxlength: 20
@@ -52,9 +52,19 @@ $('document').ready(function () {
                         data: {login: $login.val(), password: $password.val()},
                         success: function (answer) {
                             console.log(answer);
+                            var b = answer.token;
                             if (answer) {
                                 localStorage.setItem("user", JSON.stringify(answer));
-                                location.replace("/main");
+                                $.ajax({
+                                    url: '/main',
+                                    data: {token: b},
+                                    method: "GET",
+                                    // headers: {'token': b},
+                                    error: function (a) {
+                                        console.log(a);
+                                        alert('server error');
+                                    }
+                                });
                             } else {
                                 $password.addClass('invalid');
                                 $('#password').addClass('invalid');
