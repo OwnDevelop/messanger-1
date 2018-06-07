@@ -302,7 +302,7 @@ APP.utilities.actions = (function () {
                         '<div class="last-message-time">' + date.toLocaleTimeString() + '</div>' +
                         '<div class="full-message">' + elem.message + '</div>';
 
-                    if (elem.attachment_url) {
+                    if (elem.attachment_url && elem.attachment_url !== "null" && elem.attachment_url !== "img/uploads/") {
                         html += '<img src="' + elem.attachment_url + '" class="message-img">';
                     }
 

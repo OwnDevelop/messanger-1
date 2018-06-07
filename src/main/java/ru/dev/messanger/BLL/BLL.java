@@ -244,6 +244,7 @@ public class BLL {
             MultipartFile file
     ) {
         String resultFilename = "";
+        SentMessageDTO messageDTO = new SentMessageDTO();
 
         if (file != null && !file.getOriginalFilename().isEmpty()) {
 
@@ -258,16 +259,15 @@ public class BLL {
             try {
                 //  file.transferTo(new File(uploadPath + "\\" + resultFilename));
                 file.transferTo(new File(uploadPath + "\\" + resultFilename)); //TODO: move to properties
+                messageDTO.setAttachment_url("img/uploads/" + resultFilename); //TODO: move to properties
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
         }
-        SentMessageDTO messageDTO = new SentMessageDTO();
         messageDTO.setFrom_id(from_id);
         messageDTO.setConversation_id(conversation_id);
         messageDTO.setMessage(message);
-        messageDTO.setAttachment_url("img/uploads/" + resultFilename); //TODO: move to properties
         return new Gson().toJson(Database.INSTANCE.setMessage(messageDTO));
     }
 
