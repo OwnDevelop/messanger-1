@@ -222,13 +222,13 @@ button.btn {
     background-color: #fff;
 }
 
-.activeted, .activeted a {
+.activated, .activated a {
     /* background-color: rgb(88, 255, 82); */
     background-color: #6490B1;
     color: white;
 }
 
-.activeted:hover {
+.activated:hover {
     background-color: #6490B1;
     /* background-color: rgb(14, 143, 9); */
 }

@@ -35,11 +35,34 @@ APP.models.entities = {
     language: {
         logout: ['Logout', 'Выход'],
         search: ['Search', 'Поиск'],
-        settings: ['Settings', ''],
-        startCnoversation: ['Start Conversation', ''],
-        information: ['Information', ''],
-        emptyConversation: ['Conversation isn\'t selected', ''],
-        emptyDialogs: ['No Conversations found', '']
+        settings: ['Settings', 'Настройки'],
+        language: ['Language', 'Язык'],
+        startCnoversation: ['Start Conversation', 'Создать беседу'],
+        close: ['Close', 'Закрыть'],
+        emptyConversation: ['Conversation isn\'t selected', 'Диалог не выбран'],
+        emptyDialogs: ['No Conversations found', 'Беседы не найдены'],
+        userSearch: ['Search users or conversations', 'Поиск пользователей/бесед'],
+        messageSearch: ['Search message', 'Поиск сообщения'],
+        selectParticipants: ['Select participants', 'Выбрать участников'],
+        conversationName: ['Conversation name', 'Название беседы'],
+        title: ['Title', 'Название'],
+        profileInfo: ['Profile Information', 'Профиль пользователя'],
+        information: ['Information', 'Информация'],
+        email: ['E-mail', 'Почта'],
+        login: ['Login', 'Логин'],
+        registration: ['Registration', 'Регистрация'],
+        sex: ['Sex', 'Пол'],
+        changeStatus: ['Change Status', 'Изменить статус'],
+        statusOnline: ['Online', 'Онлайн'],
+        statusIdle: ['Idle', 'Отошёл'],
+        statusDoNotDisturb: ['Do Not Disturb', 'Не беспокоить'],
+        statusOffline: ['Offline', 'Оффлайн'],
+        yesterday: ['Yesterday', 'Вчера'],
+        leaveConversation: ['Leave Conversation?', 'Покинуть беседу?'],
+        continueWriting: ['Continue writing', 'Продолжить общаться'],
+        joinConversation: ['Join Conversation?', 'Присоединиться к беседе?'],
+        bigFile: ['File must be less than 2 MB', ''],
+        littleFile: ['Too small file', 'Слишком маленький файл']
     },
     dialogs: [],
     profiles: [],
@@ -93,6 +116,8 @@ APP.utilities.actions = (function () {
         entities = APP.models.entities,
         buttons = APP.models.buttons,
         fields = APP.models.fields,
+        lang = APP.models.entities.language,
+        lType = 1,
         files = {},
         MESSEGE_MAX_LENGHT = 200;
 
@@ -136,7 +161,7 @@ APP.utilities.actions = (function () {
                     }
 
                     if (curDate.getDay() - 1 === messDate.getDay()) {
-                        return 'Yesterday';
+                        return lang.yesterday[lType];
                     }
 
                     return messDate.toLocaleDateString();
@@ -248,7 +273,7 @@ APP.utilities.actions = (function () {
                 html = '';
 
                 $('.leave').on('click', function () {
-                    var answer = confirm('Leave conversation?');
+                    var answer = confirm(lang.leaveConversation[lType]);
 
                     if (answer) {
                         $.ajax({
@@ -266,7 +291,7 @@ APP.utilities.actions = (function () {
                             },
                             error: function (error) {
                                 console.log(error);
-                                alert('message error');
+                                alert('server error');
                             }
                         });
                     }
@@ -283,7 +308,7 @@ APP.utilities.actions = (function () {
                         },
                         success: function (res) {
                             console.log('all mess were read');
-                            $('.activeted .badge').html('0');
+                            $('.activated .badge').html('0');
                         },
                         error: function (error) {
                             console.log(error);
@@ -330,9 +355,9 @@ APP.utilities.actions = (function () {
             }
         });
 
-        $('.dialog').removeClass('activeted');
-        $('.conversation').removeClass('activeted');
-        $(this).addClass('activeted');
+        $('.dialog').removeClass('activated');
+        $('.conversation').removeClass('activated');
+        $(this).addClass('activated');
     }
 
     function showModalForUser(id, behavior) {
@@ -354,7 +379,7 @@ APP.utilities.actions = (function () {
                 if (user) {
                     date = new Date(user.created_at.seconds * 1000);
 
-                    $('#myModalLabel').html('Profile Information');
+                    $('.modal-title:eq(0)').html(lang.profileInfo[lType]);
 
                     html = '<div class="row"><div class="col-xs-5"><img class="profile-img" src="' + user.avatar_url + '" alt="user photo"></div>' +
                         '<div class="col-xs-7"><div class="name text-center">' + user.firstName + ' ' + user.lastName + '</div>' +
@@ -363,8 +388,8 @@ APP.utilities.actions = (function () {
 
                     $modalBody.html(html);
 
-                    html = '<div class="row"><div class="col-xs-5"><h4 class="profile-info text-right">E-mail:</h4>' +
-                        '<h4 class="profile-info text-right">Login:</h4><h4 class="profile-info text-right">Sex:</h4><h4 class="profile-info text-right">Registration:</h4></div>' +
+                    html = '<div class="row"><div class="col-xs-5"><h4 class="profile-info text-right">' + lang.email[lType] + ':</h4>' +
+                        '<h4 class="profile-info text-right">' + lang.login[lType] + ':</h4><h4 class="profile-info text-right">Sex:</h4><h4 class="profile-info text-right">' + lang.registration[lType] + ':</h4></div>' +
                         '<div class="col-xs-7"><h4 class="profile-info text-left">' + user.email + '</h4>' +
                         '<h4 class="profile-info text-left">' + user.login + '</h4>' +
                         '<h4 class="profile-info text-left">' + user.sex + '</h4>' +
@@ -380,7 +405,7 @@ APP.utilities.actions = (function () {
 
                     switch (behavior) {
                         case "open":
-                            $btn.html('Start conversation');
+                            $btn.html(lang.startCnoversation[lType]);
 
                             $btn.on('click', function () {
                                 var participants = [entities.me.id, user.id];
@@ -398,10 +423,10 @@ APP.utilities.actions = (function () {
                                         data: {users: participants.join(), admin_id: entities.me.id, title: null},
                                         success: function (request) {
                                             console.log('joined');
-                                            //firstMessegeAJAX(user.id); это
                                             firstMessegeAJAX(request);
                                         },
                                         error: function (error) {
+                                            alert('server error');
                                             console.log(error);
                                         }
                                     });
@@ -411,27 +436,27 @@ APP.utilities.actions = (function () {
                             });
                             break;
                         case "closeModal":
-                            $btn.html('Continue writing');
+                            $btn.html(lang.continueWriting[lType]);
                             $btn.on('click', function () {
                                 $('#Modal').modal('hide');
                                 fields.$sendField.focus();
                             });
                             break;
                         case "changeStatus":
-                            $btn.html('Change status');
+                            $btn.html(lang.changeStatus[lType]);
                             $btn.on('click', function () {
-                                var $status = $('.status'),
+                                var $status = $('.status:eq(0)'),
                                     value = $status.html();
 
                                 switch (value) {
-                                    case 'Online':
-                                        $status.html('Idle');
+                                    case lang.statusOnline[lType]:
+                                        $status.html(lang.statusIdle[lType]);
                                         break;
-                                    case 'Idle':
-                                        $status.html('Do Not Disturb');
+                                    case lang.statusIdle[lType]:
+                                        $status.html(lang.statusDoNotDisturb[lType]);
                                         break;
-                                    case 'Do Not Disturb':
-                                        $status.html('Online');
+                                    case lang.statusDoNotDisturb[lType]:
+                                        $status.html(lang.statusOnline[lType]);
                                         break;
                                 }
                             });
@@ -450,13 +475,13 @@ APP.utilities.actions = (function () {
                             status = 0;
 
                         switch (value) {
-                            case 'Online':
+                            case lang.statusOnline[lType]:
                                 status = 1;
                                 break;
-                            case 'Idle':
+                            case lang.statusIdle[lType]:
                                 status = 2;
                                 break;
-                            case 'Do Not Disturb':
+                            case lang.statusDoNotDisturb[lType]:
                                 status = 3;
                                 break;
                             default:
@@ -502,13 +527,14 @@ APP.utilities.actions = (function () {
                 '<div class="short-message ellipsis">' + elem.status + '</div></div>';
         }
 
-        $('#myModalLabel').html('Select participants<div class="input-group">\n' +
-            '  <span class="input-group-addon" id="sizing-addon2">Title</span>\n' +
-            '  <input type="text" class="form-control" placeholder="Conversation name" aria-describedby="sizing-addon2">\n' +
+        $('.modal-title:eq(0)').html(lang.selectParticipants[lType]);
+        $('.modal-title:eq(0)').after('<div class="input-group">' +
+            '<span class="input-group-addon" id="sizing-addon2">' + lang.title[lType] + '</span>' +
+            '<input type="text" class="form-control" placeholder="' + lang.conversationName[lType] + '" aria-describedby="sizing-addon2">' +
             '</div>');
         $modalBody.html(html);
-        $modalFooter.html('<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>' +
-            '<button type="button" class="btn btn-primary start-convers">Start Conversation</button>');
+        $modalFooter.html('<button type="button" class="btn btn-default" data-dismiss="modal">' + lang.close[lType] + '</button>' +
+            '<button type="button" class="btn btn-primary start-convers">' + lang.startCnoversation[lType] + '</button>');
 
         $participant = $('.participant');
 
@@ -521,11 +547,12 @@ APP.utilities.actions = (function () {
 
         $('.start-convers').on('click', function () {
             var $people = $('.selected'),
-                $title = $('#myModalLabel input'),
+                $title = $('.modal-title input'),
                 title = $title.val().trim(),
                 participantsId = [entities.me.id];
 
             if ($people.length == 0) {
+                $title.focus();
                 return;
             }
 
@@ -550,7 +577,7 @@ APP.utilities.actions = (function () {
                 },
                 error: function (err) {
                     console.log(err);
-                    alert('creation error');
+                    alert('server error');
                 }
             });
 
@@ -584,49 +611,53 @@ APP.utilities.actions = (function () {
     function initializeSearch() {
         foundConversations = [];
 
-        fields.$searchField.on('blur', function () {
+        fields.$searchField.on('onkeydown', function (e) {
             var value = this.value;
 
-            $('.jspPane:eq(0)').html('');
+            if (e.key === 'Enter') {
+                $('.jspPane:eq(0)').html('');
 
-            if (value) {
-                $.ajax({
-                    url: "/searchUsers",
-                    data: {searchQuery: value},
-                    method: 'POST',
-                    success: function (request) {
-                        console.log(request);
+                if (value) {
+                    $.ajax({
+                        url: "/searchUsers",
+                        data: {searchQuery: value},
+                        method: 'POST',
+                        success: function (request) {
+                            console.log(request);
 
-                        if (!request) {
-                            return;
+                            if (!request) {
+                                return;
+                            }
+                            profiles = request;
+                            showSearchResults(request);
+                        },
+                        error: function (e) {
+                            console.log(e);
+                            alert('server error');
                         }
-                        profiles = request;
-                        showSearchResults(request);
-                    },
-                    error: function (e) {
-                        console.log(e);
-                    }
-                });
+                    });
 
-                $.ajax({
-                    url: "/searchConversations",
-                    data: {searchQuery: value},
-                    method: 'POST',
-                    success: function (request) {
-                        console.log(request);
+                    $.ajax({
+                        url: "/searchConversations",
+                        data: {searchQuery: value},
+                        method: 'POST',
+                        success: function (request) {
+                            console.log(request);
 
-                        if (!request) {
-                            return;
+                            if (!request) {
+                                return;
+                            }
+                            foundConversations = request;
+                            showSearchResults(request);
+                        },
+                        error: function (error) {
+                            console.log(error);
+                            alert('server error');
                         }
-                        foundConversations = request;
-                        showSearchResults(request);
-                    },
-                    error: function (error) {
-                        console.log(error);
-                    }
-                });
-            } else {
-                showDialogsAndConversations();
+                    });
+                } else {
+                    showDialogsAndConversations();
+                }
             }
         });
     }
@@ -679,7 +710,7 @@ APP.utilities.actions = (function () {
                 });
 
                 if (!index) {
-                    answer = confirm('Join conversation?');
+                    answer = confirm(lang.joinConversation[lType]);
 
                     if (answer) {
                         $.ajax({
@@ -758,13 +789,13 @@ APP.utilities.actions = (function () {
         $('input[type=file]').on('change', function () {
             if (this.files[0].size > 3388608) {
                 this.value = "";
-                alert('File must be less than 2MB');
+                alert(lang.bigFile[lType]);
                 return;
             }
 
-            if (this.files[0].size < 10) {
+            if (this.files[0].size < 1000) {
                 this.value = "";
-                alert('Low size');
+                alert(lang.littleFile[lType]);
                 return;
             }
             files = this.files;
@@ -801,7 +832,7 @@ APP.utilities.actions = (function () {
         $('#sender').on('submit', function (e) {
             var text = fields.$sendField.val().trim(),
                 $that = $(this),
-                a = $('.activeted'),
+                a = $('.activated'), //TODO: fix
                 data = new FormData($that.get(0)),
                 conversId = a[0].conversId;
 
@@ -822,7 +853,6 @@ APP.utilities.actions = (function () {
                     url: '/setMessage',
                     method: 'POST',
                     data: data,
-                    // {from_id: entities.me.id,conversation_id: conversId,message: text.toString(),attachment_url: "" },
                     cache: false,
                     dataType: 'json',
                     processData: false,
@@ -845,9 +875,6 @@ APP.utilities.actions = (function () {
                 fields.$sendField.focus();
             }
         });
-        // buttons.$btnSendMess.on("click", function (e) {
-        //
-        // });
     }
 
     return {
