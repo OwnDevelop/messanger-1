@@ -1,4 +1,4 @@
-var APP = APP || {};
+;var APP = APP || {};
 APP.createNamespace = function (path) {
     var parts = path.split('.'),
         parent = APP,
@@ -22,9 +22,7 @@ APP.createNamespace = function (path) {
 APP.createNamespace('APP.models.buttons');
 APP.createNamespace('APP.models.fields');
 APP.createNamespace('APP.models.entities');
-APP.createNamespace('APP.models.identeties');
 APP.createNamespace('APP.utilities.actions');
-APP.createNamespace('APP.utilities.ajax');
 APP.createNamespace('APP.utilities.validation');
 
 APP.models.entities = {
@@ -121,6 +119,21 @@ APP.utilities.actions = (function () {
         files = {},
         MESSEGE_MAX_LENGHT = 200;
 
+    function lastMessageDate(date) {
+        var curDate = new Date(),
+            messDate = new Date(date * 1000);
+
+        if (curDate.getDay() === messDate.getDay()) {
+            return messDate.toLocaleTimeString().substr(0, 5);
+        }
+
+        if (curDate.getDay() - 1 === messDate.getDay()) {
+            return lang.yesterday[lType];
+        }
+
+        return messDate.toLocaleDateString();
+    }
+
     function showDialogsAndConversations() {
         var $form = $('.jspPane:eq(0)'),
             html = "",
@@ -133,6 +146,10 @@ APP.utilities.actions = (function () {
             method: 'POST',
             success: function (request) {
                 dialogs = request;
+                dialogs.sort(function (a, b) {
+                    return a.firstName < b.firstName;
+                });
+
                 console.log(request);
 
                 for (i = 0; i < dialogs.length; i += 1) {
@@ -151,21 +168,6 @@ APP.utilities.actions = (function () {
 
                 $form[0].innerHTML = html;
                 setEventsForDialogs();
-
-                function lastMessageDate(date) {
-                    var curDate = new Date(),
-                        messDate = new Date(date * 1000);
-
-                    if (curDate.getDay() === messDate.getDay()) {
-                        return messDate.toLocaleTimeString().substr(0, 5);
-                    }
-
-                    if (curDate.getDay() - 1 === messDate.getDay()) {
-                        return lang.yesterday[lType];
-                    }
-
-                    return messDate.toLocaleDateString();
-                }
             },
             error: function (e) {
                 console.log(e);
@@ -233,6 +235,96 @@ APP.utilities.actions = (function () {
         }
 
         initializeScroll();
+    }
+
+    function updateDialogsAndConversations() {
+        var $form = $('.jspPane:eq(0)');
+
+        $.ajax({
+            url: "/getDialogs",
+            data: {id: entities.me.id},
+            method: 'POST',
+            success: function (request) {
+                console.log(request);
+
+                update(request, dialogs, '.dialog', 'firstName');
+            },
+            error: function (error) {
+                console.log(error);
+                alert('server error');
+            }
+        });
+
+        $.ajax({
+            url: "/getConversations",
+            data: {id: entities.me.id},
+            method: 'POST',
+            success: function (request) {
+                console.log(request);
+
+                update(request, conversations, '.conversation', 'title');
+            },
+            error: function (error) {
+                console.log(error);
+                alert('server error');
+            }
+        });
+    }
+
+    function update(newArr, arr, classSelector, orderBy) {
+        var i = 0, j = 0,
+            html = '',
+            elem = {};
+
+        newArr.sort(function (a, b) {
+            return a[orderBy] < b[orderBy];
+        });
+
+        for (i = 0; i < arr.length; i += 1) {
+            if (arr[i].id === newArr[j].id) {
+                $(classSelector + ':eq(' + i + ') .badge').html(newArr[j].countUnread);
+                $(classSelector + ':eq(' + i + ') .short-message').html(newArr[j].message);
+                $(classSelector + ':eq(' + i + ') .last-message-time').html(lastMessageDate(newArr[j].created_at.seconds));
+                newArr.shift();
+            } else {
+                while (arr[i].id !== newArr[j].id) {
+                    j++;
+                }
+                $('.dialog:eq(' + i + ') .badge').html(newArr[j].countUnread);
+                $('.dialog:eq(' + i + ') .short-message').html(newArr[j].message);
+                $('.dialog:eq(' + i + ') .last-message-time').html(lastMessageDate(newArr[j].created_at.seconds));
+                newArr.splice(j, 1);
+                j = 0;
+            }
+        }
+
+        //если добавился новый диалог/беседа
+        if (newArr.length > 0) {
+            console.log(newArr);
+
+            for (i = 0; i < newArr.length; i += 1) {
+                elem = arr[i];
+
+                html += '<div class="dialog"><img class="profile-photo" src="' + elem.avatar_url + '" alt="user">';
+
+                if (elem.hasOwnProperty('firstName')) {
+                    html += '<a class="dial-name">' + elem.firstName + ' ' + elem.lastName + '</a>';
+                } else {
+                    html += '<a class="dial-name">' + elem.title + '</a>';
+                }
+
+                if (elem.created_at) {
+                    html += '<span class="last-message-time">' + lastMessageDate(elem.created_at.seconds) + '</span>';
+                }
+
+                html += '<div class="short-message ellipsis">' + elem.message + '</div>' +
+                    '<span class="badge">' + elem.countUnread + '</span></div>';
+            }
+
+            //добавляем их в конец после диалогов/бесед
+            //TODO: подумать, как повесить событие на эти элементы
+            $(classSelector + ':last').after(html);
+        }
     }
 
     function openDialog() {
@@ -516,6 +608,7 @@ APP.utilities.actions = (function () {
         var html = "", i = 0,
             $modalBody = $('.modal-body'),
             $modalFooter = $('.modal-footer'),
+            elem = {},
             $participant = {};
 
         for (i = 0; i < dialogs.length; i += 1) {
@@ -757,6 +850,30 @@ APP.utilities.actions = (function () {
     }
 
     function initialization() {
+        $('input[type=file]').on('change', function () {
+            if (this.files[0].size > 3388608) {
+                this.value = "";
+                alert(lang.bigFile[lType]);
+                return;
+            }
+
+            if (this.files[0].size < 1000) {
+                this.value = "";
+                alert(lang.littleFile[lType]);
+                return;
+            }
+            files = this.files;
+            console.log(files);
+        });
+
+        initializeScroll();
+        initializeButtons();
+        initializeSearch();
+
+        initializeMesseges();
+    }
+
+    function initializeButtons(){
         buttons.$btnSearch.on('click', function () {
             fields.$searchField.focus();
             fields.$searchField.val("");
@@ -785,27 +902,6 @@ APP.utilities.actions = (function () {
                 }
             });
         });
-
-        $('input[type=file]').on('change', function () {
-            if (this.files[0].size > 3388608) {
-                this.value = "";
-                alert(lang.bigFile[lType]);
-                return;
-            }
-
-            if (this.files[0].size < 1000) {
-                this.value = "";
-                alert(lang.littleFile[lType]);
-                return;
-            }
-            files = this.files;
-            console.log(files);
-        });
-
-        initializeScroll();
-        initializeSearch();
-
-        initializeMesseges();
     }
 
     function initializeMesseges() {
@@ -863,7 +959,7 @@ APP.utilities.actions = (function () {
                         a[0].lastMessId = res;
                         openDialog.apply(a[0], arguments);
 
-                        showDialogsAndConversations();
+                        a.find('.short-message').text(text);
                     },
                     error: function (error) {
                         console.log(error);
