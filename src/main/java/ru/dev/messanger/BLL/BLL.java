@@ -74,6 +74,15 @@ public class BLL {
         return null;
     }
 
+    public int getUserIdByToken(String token) {
+        for (Object key : userToken.keySet()) {
+            if (token.equals(userToken.get(key).getStringToken())) {
+                return (int)key;
+            }
+        }
+        return -1;
+    }
+
     public Boolean removeToken(Token token) {
         if (userToken.containsValue(token)) {
             for (Object key : userToken.keySet()) {
@@ -118,6 +127,7 @@ public class BLL {
             Token tkn = new Token();
             TUser tuser = new TUser(user, tkn.getStringToken());
             addTokenToUser(tuser, tkn);
+            setStatusOnline(tuser.getId(), 1);
             return new Gson().toJson(tuser);
         } else {
             return new Gson().toJson("User is not activated yet"); //TODO: такое себе

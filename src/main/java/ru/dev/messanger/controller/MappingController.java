@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.dev.messanger.BLL.BLL;
+import ru.dev.messanger.entities.NewUserDTO;
 
 @Controller
 public class MappingController {
@@ -43,6 +44,7 @@ public class MappingController {
 
     @PostMapping("/logout")
     public String logout(@RequestParam String token) {
+        bll.setStatusOnline(bll.getUserIdByToken(token), 4);
         bll.removeToken(token);
         return "redirect:/signin";
     }
