@@ -35,7 +35,7 @@ APP.models.entities = {
         search: ['Search', 'Поиск'],
         settings: ['Settings', 'Настройки'],
         language: ['Language', 'Язык'],
-        startCnoversation: ['Start Conversation', 'Создать беседу'],
+        startConversation: ['Start Conversation', 'Создать беседу'],
         close: ['Close', 'Закрыть'],
         emptyConversation: ['Conversation isn\'t selected', 'Диалог не выбран'],
         emptyDialogs: ['No Conversations found', 'Беседы не найдены'],
@@ -74,9 +74,10 @@ APP.models.buttons = {
     $btnCreateConvers: $('.create-conversation'),
     $btnSendMess: $('#send-message'),
     $btnSendPict: $('#add-image'),
+    $btnEngLang: $('.dropdown-menu li:nth-child(2)'),
     $btnRusLang: $('.dropdown-menu li:nth-child(1)'),
-    $btnRusLang: $('.dropdown-menu li:nth-child(2)'),
-    $btnLogout: $('.logout-btn')
+    $btnLogout: $('.logout-btn'),
+    $btnLang: $('.dropdown-toggle')
 };
 
 APP.models.fields = {
@@ -627,7 +628,7 @@ APP.utilities.actions = (function () {
             '</div>');
         $modalBody.html(html);
         $modalFooter.html('<button type="button" class="btn btn-default" data-dismiss="modal">' + lang.close[lType] + '</button>' +
-            '<button type="button" class="btn btn-primary start-convers">' + lang.startCnoversation[lType] + '</button>');
+            '<button type="button" class="btn btn-primary start-convers">' + lang.startConversation[lType] + '</button>');
 
         $participant = $('.participant');
 
@@ -849,7 +850,32 @@ APP.utilities.actions = (function () {
         });
     }
 
-    function initialization() {
+    function initializeLanguage() {
+        $('.empty-list:eq(0)').html(lang.emptyDialogs[lType]);
+        $('.empty-list:eq(1)').html(lang.emptyConversation[lType]);
+
+        buttons.$btnLogout.html(lang.logout[lType]);
+        buttons.$btnSettings.html(lang.settings[lType]);
+        buttons.$btnSearch.html(lang.search[lType]);
+        buttons.$btnLang.text(lang.language[lType]);
+        buttons.$btnCreateConvers.text(lang.startConversation[lType]);
+        fields.$searchField.attr('placeholder', lang.userSearch[lType]);
+        initializeSearch();
+    }
+
+    function initialization(type) {
+        if (type !== undefined) {
+            if (type == 1 || type == 0) {
+                lType = type;
+            } else {
+                lType = 0;
+            }
+        } else {
+            lType = 0;
+        }
+
+        initializeLanguage();
+
         $('input[type=file]').on('change', function () {
             if (this.files[0].size > 3388608) {
                 this.value = "";
@@ -873,7 +899,7 @@ APP.utilities.actions = (function () {
         initializeMesseges();
     }
 
-    function initializeButtons(){
+    function initializeButtons() {
         buttons.$btnSearch.on('click', function () {
             fields.$searchField.focus();
             fields.$searchField.val("");
@@ -901,6 +927,18 @@ APP.utilities.actions = (function () {
                     alert('server error');
                 }
             });
+        });
+
+        buttons.$btnEngLang.on('click', function () {
+            lType = 0;
+            localStorage.setItem('lType', 0);
+            initializeLanguage();
+        });
+
+        buttons.$btnRusLang.on('click', function () {
+            lType = 1;
+            localStorage.setItem('lType', 1);
+            initializeLanguage();
         });
     }
 
@@ -981,18 +1019,26 @@ APP.utilities.actions = (function () {
 
 $("document").ready(function () {
     var actions = {},
+        lType = 0,
         entities = APP.models.entities;
 
     if (!entities.me) {
         location.replace('/signin');
-    } else {
-        $.ajaxSetup({
-            headers: {
-                'token': entities.me.token
-            }
-        });
-        actions = APP.utilities.actions;
-        actions.initialization();
-        actions.showDialogs();
     }
+
+    if (!localStorage.hasOwnProperty("lType")) {
+        localStorage.setItem('lType', 0);
+    } else {
+        lType = JSON.parse(localStorage.getItem('lType'));
+    }
+
+    $.ajaxSetup({
+        headers: {
+            'token': entities.me.token
+        }
+    });
+    actions = APP.utilities.actions;
+    actions.initialization(lType);
+    actions.showDialogs();
+
 });
