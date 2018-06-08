@@ -119,6 +119,7 @@ APP.utilities.actions = (function () {
         lang = APP.models.entities.language,
         lType = 1,
         files = {},
+        canUpdate = true,
         MESSEGE_MAX_LENGHT = 200;
 
     function lastMessageDate(date) {
@@ -253,35 +254,37 @@ APP.utilities.actions = (function () {
     function updateDialogsAndConversations() {
         var $form = $('.jspPane:eq(0)');
 
-        $.ajax({
-            url: "/getDialogs",
-            data: {id: entities.me.id},
-            method: 'POST',
-            success: function (request) {
-                console.log(request);
+        if (canUpdate) {
+            $.ajax({
+                url: "/getDialogs",
+                data: {id: entities.me.id},
+                method: 'POST',
+                success: function (request) {
+                    console.log(request);
 
-                update(request, dialogs, '.dialog', 'firstName');
-            },
-            error: function (error) {
-                console.log(error);
-                alert('server error');
-            }
-        });
+                    update(request, dialogs, '.dialog', 'firstName');
+                },
+                error: function (error) {
+                    console.log(error);
+                    alert('server error');
+                }
+            });
 
-        $.ajax({
-            url: "/getConversations",
-            data: {id: entities.me.id},
-            method: 'POST',
-            success: function (request) {
-                console.log(request);
+            $.ajax({
+                url: "/getConversations",
+                data: {id: entities.me.id},
+                method: 'POST',
+                success: function (request) {
+                    console.log(request);
 
-                update(request, conversations, '.conversation', 'title');
-            },
-            error: function (error) {
-                console.log(error);
-                alert('server error');
-            }
-        });
+                    update(request, conversations, '.conversation', 'title');
+                },
+                error: function (error) {
+                    console.log(error);
+                    alert('server error');
+                }
+            });
+        }
     }
 
     function update(newArr, arr, classSelector, orderBy) {
@@ -303,9 +306,12 @@ APP.utilities.actions = (function () {
                 while (arr[i].id !== newArr[j].id) {
                     j++;
                 }
-                $('.dialog:eq(' + i + ') .badge').html(newArr[j].countUnread);
-                $('.dialog:eq(' + i + ') .short-message').html(newArr[j].message);
-                $('.dialog:eq(' + i + ') .last-message-time').html(lastMessageDate(newArr[j].created_at.seconds));
+                $(classSelector + ':eq(' + i + ') .badge').html(newArr[j].countUnread);
+                if (newArr[j].message) {
+
+                }
+                $(classSelector + ':eq(' + i + ') .short-message').html(newArr[j].message);
+                $(classSelector + ':eq(' + i + ') .last-message-time').html(lastMessageDate(newArr[j].created_at.seconds));
                 newArr.splice(j, 1);
                 j = 0;
             }
@@ -330,13 +336,18 @@ APP.utilities.actions = (function () {
                     html += '<span class="last-message-time">' + lastMessageDate(elem.created_at.seconds) + '</span>';
                 }
 
-                html += '<div class="short-message ellipsis">' + elem.message + '</div>' +
-                    '<span class="badge">' + elem.countUnread + '</span></div>';
+                if (elem.message) {
+                    html += '<div class="short-message ellipsis">' + elem.message + '</div>';
+                } else {
+                    html += '<div class="short-message ellipsis">' + lang.picture[lType] + '</div>';
+                }
+                html += '<span class="badge">' + elem.countUnread + '</span></div>';
             }
 
             //добавляем их в конец после диалогов/бесед
-            //TODO: подумать, как повесить событие на эти элементы
             $(classSelector + ':last').after(html);
+
+            setEventsForDialogs();
         }
     }
 
@@ -653,8 +664,8 @@ APP.utilities.actions = (function () {
 
         $('.modal-title:eq(0)').html(lang.selectParticipants[lType]);
         $('.modal-title:eq(0)').after('<div class="input-group">' +
-            '<span class="input-group-addon" id="sizing-addon2">' + lang.title[lType] + '</span>' +
-            '<input type="text" class="form-control" placeholder="' + lang.conversationName[lType] + '" aria-describedby="sizing-addon2">' +
+            '<span class="input-group-addon" id="convers-party">' + lang.title[lType] + '</span>' +
+            '<input type="text" class="form-control" placeholder="' + lang.conversationName[lType] + '" aria-describedby="convers-party">' +
             '</div>');
         $modalBody.html(html);
         $modalFooter.html('<button type="button" class="btn btn-default" data-dismiss="modal">' + lang.close[lType] + '</button>' +
@@ -783,6 +794,7 @@ APP.utilities.actions = (function () {
         var value = this.value;
 
         if (e.key === 'Enter') {
+            canUpdate = false;
             $('.jspPane:eq(0)').html('');
 
             if (value) {
@@ -825,6 +837,7 @@ APP.utilities.actions = (function () {
                 });
             } else {
                 showDialogsAndConversations();
+                canUpdate = true;
             }
         }
     }
@@ -990,6 +1003,8 @@ APP.utilities.actions = (function () {
         initializeSearch();
 
         initializeMesseges();
+
+        setInterval(updateDialogsAndConversations, 5000);
     }
 
     function initializeButtons() {
@@ -1133,6 +1148,14 @@ $("document").ready(function () {
         headers: {
             'token': entities.me.token
         }
+    });
+
+    $('#Modal').on('hidden.bs.modal', function (e) {
+        $('.modal-title').html('');
+        $('.modal-body').html('');
+        $('.modal-footer').html('');
+        $('#convers-party').remove();
+        $('#Modal input').remove();
     });
 
     actions = APP.utilities.actions;
