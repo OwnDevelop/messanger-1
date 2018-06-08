@@ -19,10 +19,10 @@ public class RESTController {
     }
 
 
-    @RequestMapping(value = "/enter", method = RequestMethod.GET, produces = "application/json")
-    public String enter(@RequestParam String token) {
-        return bll.checkToken(token) ? new Gson().toJson("main") : "signin"; //TODO: так же лучше?    return bll.checkToken(token) ? "redirect:/main" : "redirect:/signin";
-    }
+//    @RequestMapping(value = "/enter", method = RequestMethod.GET, produces = "application/json")
+//    public String enter(@RequestParam String token) {
+//        return bll.checkToken(token) ? new Gson().toJson("main") : "signin"; //TODO: так же лучше?    return bll.checkToken(token) ? "redirect:/main" : "redirect:/signin";
+//    }
 
 
     @RequestMapping(value = "/authorization", method = RequestMethod.GET, produces = "application/json")

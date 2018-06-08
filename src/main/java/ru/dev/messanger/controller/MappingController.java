@@ -26,6 +26,10 @@ public class MappingController {
         return "EnterPage";
     }
 
+    @PostMapping("/enter")
+    public String enter(@RequestParam String token) {
+        return bll.checkToken(token) ? "redirect:/main" : "redirect:/signin";
+    }
 
     @GetMapping("/main")
     public String main() {

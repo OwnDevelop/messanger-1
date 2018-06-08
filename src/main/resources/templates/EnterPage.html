@@ -30,7 +30,7 @@
                         </div>
                         <div class="col-xs-12 col-sm-5 col-sm-offset-2">
                             <div class="tab">
-                                <form class="form-horizontal" id="form">
+                                <form class="form-horizontal" id="form" action="/enter" method="post">
                                     <div class="form-group">
                                         <label for="login">Login</label>
                                         <input type="text" class="form-control" id="login" maxlength="35" name="login">
@@ -39,6 +39,7 @@
                                     <div class="form-group">
                                         <label for="password">Password</label>
                                         <input type="password" class="form-control" id="password" maxlength="20" name="password">
+                                        <input type="hidden" id="token" name="token">
                                         <label id="password-error" class="invalid" for="password"></label>
                                     </div>
                                     <div class="form-group">

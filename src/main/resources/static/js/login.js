@@ -51,23 +51,13 @@ $('document').ready(function () {
                         url: '/authorization',
                         data: {login: $login.val(), password: $password.val()},
                         success: function (answer) {
+                            var $input = $('#token');
                             console.log(answer);
-                            var b = answer.token;
+
                             if (answer) {
                                 localStorage.setItem("user", JSON.stringify(answer));
-                                $.ajax({
-                                    url: '/enter',
-                                    data: {token: b},
-                                    method: "GET",
-                                    // headers: {'token': b},
-                                    success: function(address) { //Если все нормально
-                                        document.location.href = address;
-                                        },
-                                    error: function (a) {
-                                        console.log(a);
-                                        alert('server error');
-                                    }
-                                });
+                                $input.val(answer.token);
+                                $('#form').submit();
                             } else {
                                 $password.addClass('invalid');
                                 $('#password').addClass('invalid');
@@ -75,8 +65,9 @@ $('document').ready(function () {
                                 $passError.css('display', 'block');
                             }
                         },
-                        error: function (a) {
-                            console.log(a);
+                        error: function (error) {
+                            console.log(error);
+                            alert('server error');
                         }
                     });
                 } else {
@@ -86,6 +77,7 @@ $('document').ready(function () {
             },
             error: function (error) {
                 console.log(error);
+                alert('server error');
             }
         });
     });
