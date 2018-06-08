@@ -1,4 +1,4 @@
-var APP = APP || {};
+;var APP = APP || {};
 APP.createNamespace = function (path) {
     var parts = path.split('.'),
         parent = APP,
@@ -22,9 +22,7 @@ APP.createNamespace = function (path) {
 APP.createNamespace('APP.models.buttons');
 APP.createNamespace('APP.models.fields');
 APP.createNamespace('APP.models.entities');
-APP.createNamespace('APP.models.identeties');
 APP.createNamespace('APP.utilities.actions');
-APP.createNamespace('APP.utilities.ajax');
 APP.createNamespace('APP.utilities.validation');
 
 APP.models.entities = {
@@ -37,7 +35,7 @@ APP.models.entities = {
         search: ['Search', 'Поиск'],
         settings: ['Settings', 'Настройки'],
         language: ['Language', 'Язык'],
-        startCnoversation: ['Start Conversation', 'Создать беседу'],
+        startConversation: ['Start Conversation', 'Создать беседу'],
         close: ['Close', 'Закрыть'],
         emptyConversation: ['Conversation isn\'t selected', 'Диалог не выбран'],
         emptyDialogs: ['No Conversations found', 'Беседы не найдены'],
@@ -62,7 +60,8 @@ APP.models.entities = {
         continueWriting: ['Continue writing', 'Продолжить общаться'],
         joinConversation: ['Join Conversation?', 'Присоединиться к беседе?'],
         bigFile: ['File must be less than 2 MB', ''],
-        littleFile: ['Too small file', 'Слишком маленький файл']
+        littleFile: ['Too small file', 'Слишком маленький файл'],
+        picture: ['picture', 'картинка']
     },
     dialogs: [],
     profiles: [],
@@ -76,9 +75,10 @@ APP.models.buttons = {
     $btnCreateConvers: $('.create-conversation'),
     $btnSendMess: $('#send-message'),
     $btnSendPict: $('#add-image'),
+    $btnEngLang: $('.dropdown-menu li:nth-child(2)'),
     $btnRusLang: $('.dropdown-menu li:nth-child(1)'),
-    $btnRusLang: $('.dropdown-menu li:nth-child(2)'),
-    $btnLogout: $('.logout-btn')
+    $btnLogout: $('.logout-btn'),
+    $btnLang: $('.dropdown-toggle')
 };
 
 APP.models.fields = {
@@ -121,6 +121,21 @@ APP.utilities.actions = (function () {
         files = {},
         MESSEGE_MAX_LENGHT = 200;
 
+    function lastMessageDate(date) {
+        var curDate = new Date(),
+            messDate = new Date(date * 1000);
+
+        if (curDate.getDay() === messDate.getDay()) {
+            return messDate.toLocaleTimeString().substr(0, 5);
+        }
+
+        if (curDate.getDay() - 1 === messDate.getDay()) {
+            return lang.yesterday[lType];
+        }
+
+        return messDate.toLocaleDateString();
+    }
+
     function showDialogsAndConversations() {
         var $form = $('.jspPane:eq(0)'),
             html = "",
@@ -133,6 +148,10 @@ APP.utilities.actions = (function () {
             method: 'POST',
             success: function (request) {
                 dialogs = request;
+                dialogs.sort(function (a, b) {
+                    return a.firstName < b.firstName;
+                });
+
                 console.log(request);
 
                 for (i = 0; i < dialogs.length; i += 1) {
@@ -145,27 +164,16 @@ APP.utilities.actions = (function () {
                         html += '<span class="last-message-time">' + lastMessageDate(elem.created_at.seconds) + '</span>';
                     }
 
-                    html += '<div class="short-message ellipsis">' + elem.message + '</div>' +
-                        '<span class="badge">' + elem.countUnread + '</span></div>';
+                    if (elem.message) {
+                        html += '<div class="short-message ellipsis">' + elem.message + '</div>';
+                    } else {
+                        html += '<div class="short-message ellipsis">' + lang.picture[lType] + '</div>';
+                    }
+                    html += '<span class="badge">' + elem.countUnread + '</span></div>';
                 }
 
                 $form[0].innerHTML = html;
                 setEventsForDialogs();
-
-                function lastMessageDate(date) {
-                    var curDate = new Date(),
-                        messDate = new Date(date * 1000);
-
-                    if (curDate.getDay() === messDate.getDay()) {
-                        return messDate.toLocaleTimeString().substr(0, 5);
-                    }
-
-                    if (curDate.getDay() - 1 === messDate.getDay()) {
-                        return lang.yesterday[lType];
-                    }
-
-                    return messDate.toLocaleDateString();
-                }
             },
             error: function (e) {
                 console.log(e);
@@ -184,9 +192,16 @@ APP.utilities.actions = (function () {
                     elem = conversations[i];
 
                     html += '<div class="conversation"><img class="profile-photo" src="img/defaults/conversation.jpg" alt="user">' +
-                        '<a class="convers-name">' + elem.title + '</a>' +
-                        '<div class="short-message ellipsis">' + elem.message + '</div>' +
-                        '<span class="badge">' + elem.countUnread + '</span></div>';
+                        '<a class="convers-name">' + elem.title + '</a>';
+                    if (elem.created_at) {
+                        html += '<span class="last-message-time">' + lastMessageDate(elem.created_at.seconds) + '</span>';
+                    }
+                    if (elem.message) {
+                        html += '<div class="short-message ellipsis">' + elem.message + '</div>';
+                    } else {
+                        html += '<div class="short-message ellipsis">' + lang.picture[lType] + '</div>';
+                    }
+                    html += '<span class="badge">' + elem.countUnread + '</span></div>';
                 }
 
                 $form[0].innerHTML += html;
@@ -235,6 +250,96 @@ APP.utilities.actions = (function () {
         initializeScroll();
     }
 
+    function updateDialogsAndConversations() {
+        var $form = $('.jspPane:eq(0)');
+
+        $.ajax({
+            url: "/getDialogs",
+            data: {id: entities.me.id},
+            method: 'POST',
+            success: function (request) {
+                console.log(request);
+
+                update(request, dialogs, '.dialog', 'firstName');
+            },
+            error: function (error) {
+                console.log(error);
+                alert('server error');
+            }
+        });
+
+        $.ajax({
+            url: "/getConversations",
+            data: {id: entities.me.id},
+            method: 'POST',
+            success: function (request) {
+                console.log(request);
+
+                update(request, conversations, '.conversation', 'title');
+            },
+            error: function (error) {
+                console.log(error);
+                alert('server error');
+            }
+        });
+    }
+
+    function update(newArr, arr, classSelector, orderBy) {
+        var i = 0, j = 0,
+            html = '',
+            elem = {};
+
+        newArr.sort(function (a, b) {
+            return a[orderBy] < b[orderBy];
+        });
+
+        for (i = 0; i < arr.length; i += 1) {
+            if (arr[i].id === newArr[j].id) {
+                $(classSelector + ':eq(' + i + ') .badge').html(newArr[j].countUnread);
+                $(classSelector + ':eq(' + i + ') .short-message').html(newArr[j].message);
+                $(classSelector + ':eq(' + i + ') .last-message-time').html(lastMessageDate(newArr[j].created_at.seconds));
+                newArr.shift();
+            } else {
+                while (arr[i].id !== newArr[j].id) {
+                    j++;
+                }
+                $('.dialog:eq(' + i + ') .badge').html(newArr[j].countUnread);
+                $('.dialog:eq(' + i + ') .short-message').html(newArr[j].message);
+                $('.dialog:eq(' + i + ') .last-message-time').html(lastMessageDate(newArr[j].created_at.seconds));
+                newArr.splice(j, 1);
+                j = 0;
+            }
+        }
+
+        //если добавился новый диалог/беседа
+        if (newArr.length > 0) {
+            console.log(newArr);
+
+            for (i = 0; i < newArr.length; i += 1) {
+                elem = arr[i];
+
+                html += '<div class="dialog"><img class="profile-photo" src="' + elem.avatar_url + '" alt="user">';
+
+                if (elem.hasOwnProperty('firstName')) {
+                    html += '<a class="dial-name">' + elem.firstName + ' ' + elem.lastName + '</a>';
+                } else {
+                    html += '<a class="dial-name">' + elem.title + '</a>';
+                }
+
+                if (elem.created_at) {
+                    html += '<span class="last-message-time">' + lastMessageDate(elem.created_at.seconds) + '</span>';
+                }
+
+                html += '<div class="short-message ellipsis">' + elem.message + '</div>' +
+                    '<span class="badge">' + elem.countUnread + '</span></div>';
+            }
+
+            //добавляем их в конец после диалогов/бесед
+            //TODO: подумать, как повесить событие на эти элементы
+            $(classSelector + ':last').after(html);
+        }
+    }
+
     function openDialog() {
         var url = this.url,
             name = this.name,
@@ -271,6 +376,10 @@ APP.utilities.actions = (function () {
                 $('.dialog-actions').html(html);
                 initializeScroll();
                 html = '';
+
+                $('.search-messege').on('click', function () {
+                    searchInConversation(conversationId);
+                });
 
                 $('.leave').on('click', function () {
                     var answer = confirm(lang.leaveConversation[lType]);
@@ -317,24 +426,7 @@ APP.utilities.actions = (function () {
                     });
                 }
 
-                for (i = request.length - 1; i >= 0; i -= 1) {
-                    elem = request[i];
-                    date = new Date(elem.created_at.seconds * 1000);
-
-                    html += '<div class="message">' +
-                        '<img src="' + elem.avatar_url + '" alt="user" class="profile-photo">\n' +
-                        '<a href="#" class="name">' + elem.firstName + ' ' + elem.lastName + '</a>' +
-                        '<div class="last-message-time">' + date.toLocaleTimeString() + '</div>' +
-                        '<div class="full-message">' + elem.message + '</div>';
-
-                    if (elem.attachment_url && elem.attachment_url !== "null" && elem.attachment_url !== "img/uploads/") {
-                        html += '<img src="' + elem.attachment_url + '" class="message-img">';
-                    }
-
-                    html += '</div>';
-                }
-
-                $messages.html(html);
+                printMessages(request, true);
 
                 $names = $('.name');
 
@@ -358,6 +450,37 @@ APP.utilities.actions = (function () {
         $('.dialog').removeClass('activated');
         $('.conversation').removeClass('activated');
         $(this).addClass('activated');
+    }
+
+    function printMessages(arr, isInversed) {
+        var i = 0, html = '', elem = {},
+            date,
+            $messages = $('.messages > .jspContainer > .jspPane');
+
+        isInversed = isInversed || false;
+
+        if (isInversed) {
+            arr.reverse();
+        }
+
+        for (i = 0; i < arr.length; i += 1) {
+            elem = arr[i];
+            date = new Date(elem.created_at.seconds * 1000);
+
+            html += '<div class="message">' +
+                '<img src="' + elem.avatar_url + '" alt="user" class="profile-photo">\n' +
+                '<a href="#" class="name">' + elem.firstName + ' ' + elem.lastName + '</a>' +
+                '<div class="last-message-time">' + date.toLocaleTimeString() + '</div>' +
+                '<div class="full-message">' + elem.message + '</div>';
+
+            if (elem.attachment_url && elem.attachment_url !== "null" && elem.attachment_url !== "img/uploads/") {
+                html += '<img src="' + elem.attachment_url + '" class="message-img">';
+            }
+
+            html += '</div>';
+        }
+
+        $messages.html(html);
     }
 
     function showModalForUser(id, behavior) {
@@ -516,6 +639,7 @@ APP.utilities.actions = (function () {
         var html = "", i = 0,
             $modalBody = $('.modal-body'),
             $modalFooter = $('.modal-footer'),
+            elem = {},
             $participant = {};
 
         for (i = 0; i < dialogs.length; i += 1) {
@@ -534,7 +658,7 @@ APP.utilities.actions = (function () {
             '</div>');
         $modalBody.html(html);
         $modalFooter.html('<button type="button" class="btn btn-default" data-dismiss="modal">' + lang.close[lType] + '</button>' +
-            '<button type="button" class="btn btn-primary start-convers">' + lang.startCnoversation[lType] + '</button>');
+            '<button type="button" class="btn btn-primary start-convers">' + lang.startConversation[lType] + '</button>');
 
         $participant = $('.participant');
 
@@ -608,58 +732,101 @@ APP.utilities.actions = (function () {
         };
     }
 
-    function initializeSearch() {
-        foundConversations = [];
+    function searchInConversation(conversId) {
+        var foundMessages = [];
+        fields.$searchField.val('');
+        fields.$searchField.focus();
+        fields.$searchField[0].conversId = conversId;
 
-        fields.$searchField.on('onkeydown', function (e) {
-            var value = this.value;
+        fields.$searchField[0].removeEventListener('keyup', userSearchListener);
+        fields.$searchField[0].removeEventListener('keyup', messageSearchListener);
+        fields.$searchField[0].addEventListener('keyup', messageSearchListener);
+    }
 
-            if (e.key === 'Enter') {
-                $('.jspPane:eq(0)').html('');
+    function messageSearchListener(e) {
+        var value = this.value,
+            conversId = this.conversId;
 
-                if (value) {
-                    $.ajax({
-                        url: "/searchUsers",
-                        data: {searchQuery: value},
+        if (e.key === "Enter") {
+            if (value) {
+                $.ajax({
+                        url: '/searchInConversation',
                         method: 'POST',
+                        data: {searchQuery: value, conversation_id: conversId},
                         success: function (request) {
                             console.log(request);
-
-                            if (!request) {
-                                return;
+                            if (request) {
+                                printMessages(request);
                             }
-                            profiles = request;
-                            showSearchResults(request);
-                        },
-                        error: function (e) {
-                            console.log(e);
-                            alert('server error');
-                        }
-                    });
-
-                    $.ajax({
-                        url: "/searchConversations",
-                        data: {searchQuery: value},
-                        method: 'POST',
-                        success: function (request) {
-                            console.log(request);
-
-                            if (!request) {
-                                return;
-                            }
-                            foundConversations = request;
-                            showSearchResults(request);
                         },
                         error: function (error) {
                             console.log(error);
-                            alert('server error');
+                            alert('error');
                         }
-                    });
-                } else {
-                    showDialogsAndConversations();
-                }
+                    }
+                );
             }
-        });
+        }
+    }
+
+    function initializeSearch() {
+        foundConversations = [];
+
+        fields.$searchField.val('');
+
+        fields.$searchField[0].removeEventListener('keyup', userSearchListener);
+        fields.$searchField[0].removeEventListener('keyup', messageSearchListener);
+        fields.$searchField[0].addEventListener('keyup', userSearchListener);
+    }
+
+    function userSearchListener(e) {
+        var value = this.value;
+
+        if (e.key === 'Enter') {
+            $('.jspPane:eq(0)').html('');
+
+            if (value) {
+                $.ajax({
+                    url: "/searchUsers",
+                    data: {searchQuery: value},
+                    method: 'POST',
+                    success: function (request) {
+                        console.log(request);
+
+                        if (!request) {
+                            return;
+                        }
+                        profiles = request;
+                        showSearchResults(request);
+                    },
+                    error: function (e) {
+                        console.log(e);
+                        alert('server error');
+                    }
+                });
+
+                $.ajax({
+                    url: "/searchConversations",
+                    data: {searchQuery: value},
+                    method: 'POST',
+                    success: function (request) {
+                        console.log(request);
+
+                        if (!request) {
+                            return;
+                        }
+                        foundConversations = request;
+                        showSearchResults(request);
+                    },
+                    error: function (error) {
+                        console.log(error);
+                        alert('server error');
+                    }
+                });
+            } else {
+                showDialogsAndConversations();
+            }
+        }
     }
 
     function showSearchResults(arr) {
@@ -756,7 +923,76 @@ APP.utilities.actions = (function () {
         });
     }
 
-    function initialization() {
+    function initializeLanguage() {
+        var $messages = $('.short-message'),
+            $time = $('.last-message-time'),
+            i = 0;
+
+        for (i = 0; i < $messages.length; i += 1) {
+            if ($messages[i].innerHTML === lang.picture[0] || $messages[i].innerHTML === lang.picture[1]) {
+                $messages[i].innerHTML = lang.picture[lType];
+            }
+
+            if ($time[i].innerHTML === lang.yesterday[0] || $time[i].innerHTML === lang.yesterday[1]) {
+                $time[i].innerHTML = lang.yesterday[lType];
+            }
+        }
+
+        $('.empty-list:eq(0)').html(lang.emptyDialogs[lType]);
+        $('.empty-list:eq(1)').html(lang.emptyConversation[lType]);
+
+        buttons.$btnLogout.html(lang.logout[lType]);
+        buttons.$btnSettings.html(lang.settings[lType]);
+        buttons.$btnSearch.html(lang.search[lType]);
+        buttons.$btnLang.text(lang.language[lType]);
+        buttons.$btnCreateConvers.text(lang.startConversation[lType]);
+        fields.$searchField.attr('placeholder', lang.userSearch[lType]);
+        initializeSearch();
+    }
+
+    function initialization(type) {
+        if (type !== undefined) {
+            if (type == 1 || type == 0) {
+                lType = type;
+            } else {
+                lType = 0;
+            }
+        } else {
+            lType = 0;
+        }
+
+        if (lType === 0) {
+            buttons.$btnEngLang.addClass('active');
+        } else {
+            buttons.$btnRusLang.addClass('active');
+        }
+
+        initializeLanguage();
+
+        $('input[type=file]').on('change', function () {
+            if (this.files[0].size > 3388608) {
+                this.value = "";
+                alert(lang.bigFile[lType]);
+                return;
+            }
+
+            if (this.files[0].size < 1000) {
+                this.value = "";
+                alert(lang.littleFile[lType]);
+                return;
+            }
+            files = this.files;
+            console.log(files);
+        });
+
+        initializeScroll();
+        initializeButtons();
+        initializeSearch();
+
+        initializeMesseges();
+    }
+
+    function initializeButtons() {
         buttons.$btnSearch.on('click', function () {
             fields.$searchField.focus();
             fields.$searchField.val("");
@@ -786,26 +1022,21 @@ APP.utilities.actions = (function () {
             });
         });
 
-        $('input[type=file]').on('change', function () {
-            if (this.files[0].size > 3388608) {
-                this.value = "";
-                alert(lang.bigFile[lType]);
-                return;
-            }
-
-            if (this.files[0].size < 1000) {
-                this.value = "";
-                alert(lang.littleFile[lType]);
-                return;
-            }
-            files = this.files;
-            console.log(files);
+        buttons.$btnEngLang.on('click', function () {
+            lType = 0;
+            localStorage.setItem('lType', 0);
+            buttons.$btnRusLang.removeClass('active');
+            $(this).addClass('active');
+            initializeLanguage();
         });
 
-        initializeScroll();
-        initializeSearch();
-
-        initializeMesseges();
+        buttons.$btnRusLang.on('click', function () {
+            lType = 1;
+            localStorage.setItem('lType', 1);
+            buttons.$btnEngLang.removeClass('active');
+            $(this).addClass('active');
+            initializeLanguage();
+        });
     }
 
     function initializeMesseges() {
@@ -832,7 +1063,7 @@ APP.utilities.actions = (function () {
         $('#sender').on('submit', function (e) {
             var text = fields.$sendField.val().trim(),
                 $that = $(this),
-                a = $('.activated'), //TODO: fix
+                a = $('.activated'),
                 data = new FormData($that.get(0)),
                 conversId = a[0].conversId;
 
@@ -863,7 +1094,7 @@ APP.utilities.actions = (function () {
                         a[0].lastMessId = res;
                         openDialog.apply(a[0], arguments);
 
-                        showDialogsAndConversations();
+                        a.find('.short-message').text(text);
                     },
                     error: function (error) {
                         console.log(error);
@@ -885,18 +1116,26 @@ APP.utilities.actions = (function () {
 
 $("document").ready(function () {
     var actions = {},
+        lType = 0,
         entities = APP.models.entities;
 
     if (!entities.me) {
         location.replace('/signin');
-    } else {
-        $.ajaxSetup({
-            headers: {
-                'token': entities.me.token
-            }
-        });
-        actions = APP.utilities.actions;
-        actions.initialization();
-        actions.showDialogs();
     }
+
+    if (!localStorage.hasOwnProperty("lType")) {
+        localStorage.setItem('lType', 0);
+    } else {
+        lType = JSON.parse(localStorage.getItem('lType'));
+    }
+
+    $.ajaxSetup({
+        headers: {
+            'token': entities.me.token
+        }
+    });
+
+    actions = APP.utilities.actions;
+    actions.initialization(lType);
+    actions.showDialogs();
 });
