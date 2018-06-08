@@ -121,7 +121,7 @@ public class RESTController {
         return bll.getMessages(conversation_id, id, message_id);
     }
 
-    @RequestMapping(value = "/searchInConversation", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/searchInConversation", method = RequestMethod.POST, produces = "application/json")
     public String searchInConversation(
             @RequestParam String searchQuery,
             @RequestParam Integer conversation_id

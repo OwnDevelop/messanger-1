@@ -365,6 +365,10 @@ APP.utilities.actions = (function () {
                 initializeScroll();
                 html = '';
 
+                $('.search-messege').on('click', function () {
+                    searchInConversation(conversationId);
+                });
+
                 $('.leave').on('click', function () {
                     var answer = confirm(lang.leaveConversation[lType]);
 
@@ -410,24 +414,7 @@ APP.utilities.actions = (function () {
                     });
                 }
 
-                for (i = request.length - 1; i >= 0; i -= 1) {
-                    elem = request[i];
-                    date = new Date(elem.created_at.seconds * 1000);
-
-                    html += '<div class="message">' +
-                        '<img src="' + elem.avatar_url + '" alt="user" class="profile-photo">\n' +
-                        '<a href="#" class="name">' + elem.firstName + ' ' + elem.lastName + '</a>' +
-                        '<div class="last-message-time">' + date.toLocaleTimeString() + '</div>' +
-                        '<div class="full-message">' + elem.message + '</div>';
-
-                    if (elem.attachment_url && elem.attachment_url !== "null" && elem.attachment_url !== "img/uploads/") {
-                        html += '<img src="' + elem.attachment_url + '" class="message-img">';
-                    }
-
-                    html += '</div>';
-                }
-
-                $messages.html(html);
+                printMessages(request, true);
 
                 $names = $('.name');
 
@@ -451,6 +438,38 @@ APP.utilities.actions = (function () {
         $('.dialog').removeClass('activated');
         $('.conversation').removeClass('activated');
         $(this).addClass('activated');
+    }
+
+    function printMessages(arr, isInversed) {
+        var i = 0, html = '', elem = {},
+            date,
+            $messages = $('.messages > .jspContainer > .jspPane');
+
+        isInversed = isInversed || false;
+
+        if (isInversed) {
+
+            arr.reverse();
+        }
+
+        for (i = 0; i < arr.length; i += 1) {
+            elem = arr[i];
+            date = new Date(elem.created_at.seconds * 1000);
+
+            html += '<div class="message">' +
+                '<img src="' + elem.avatar_url + '" alt="user" class="profile-photo">\n' +
+                '<a href="#" class="name">' + elem.firstName + ' ' + elem.lastName + '</a>' +
+                '<div class="last-message-time">' + date.toLocaleTimeString() + '</div>' +
+                '<div class="full-message">' + elem.message + '</div>';
+
+            if (elem.attachment_url && elem.attachment_url !== "null" && elem.attachment_url !== "img/uploads/") {
+                html += '<img src="' + elem.attachment_url + '" class="message-img">';
+            }
+
+            html += '</div>';
+        }
+
+        $messages.html(html);
     }
 
     function showModalForUser(id, behavior) {
@@ -702,58 +721,101 @@ APP.utilities.actions = (function () {
         };
     }
 
-    function initializeSearch() {
-        foundConversations = [];
+    function searchInConversation(conversId) {
+        var foundMessages = [];
+        fields.$searchField.val('');
+        fields.$searchField.focus();
+        fields.$searchField[0].conversId = conversId;
 
-        fields.$searchField.on('onkeydown', function (e) {
-            var value = this.value;
+        fields.$searchField[0].removeEventListener('keyup', userSearchListener);
+        fields.$searchField[0].removeEventListener('keyup', messageSearchListener);
+        fields.$searchField[0].addEventListener('keyup', messageSearchListener);
+    }
 
-            if (e.key === 'Enter') {
-                $('.jspPane:eq(0)').html('');
+    function messageSearchListener(e) {
+        var value = this.value,
+            conversId = this.conversId;
 
-                if (value) {
-                    $.ajax({
-                        url: "/searchUsers",
-                        data: {searchQuery: value},
+        if (e.key === "Enter") {
+            if (value) {
+                $.ajax({
+                        url: '/searchInConversation',
                         method: 'POST',
+                        data: {searchQuery: value, conversation_id: conversId},
                         success: function (request) {
                             console.log(request);
-
-                            if (!request) {
-                                return;
+                            if (request) {
+                                printMessages(request);
                             }
-                            profiles = request;
-                            showSearchResults(request);
-                        },
-                        error: function (e) {
-                            console.log(e);
-                            alert('server error');
-                        }
-                    });
-
-                    $.ajax({
-                        url: "/searchConversations",
-                        data: {searchQuery: value},
-                        method: 'POST',
-                        success: function (request) {
-                            console.log(request);
-
-                            if (!request) {
-                                return;
-                            }
-                            foundConversations = request;
-                            showSearchResults(request);
                         },
                         error: function (error) {
                             console.log(error);
-                            alert('server error');
+                            alert('error');
                         }
-                    });
-                } else {
-                    showDialogsAndConversations();
-                }
+                    }
+                );
             }
-        });
+        }
+    }
+
+    function initializeSearch() {
+        foundConversations = [];
+
+        fields.$searchField.val('');
+
+        fields.$searchField[0].removeEventListener('keyup', userSearchListener);
+        fields.$searchField[0].removeEventListener('keyup', messageSearchListener);
+        fields.$searchField[0].addEventListener('keyup', userSearchListener);
+    }
+
+    function userSearchListener(e) {
+        var value = this.value;
+
+        if (e.key === 'Enter') {
+            $('.jspPane:eq(0)').html('');
+
+            if (value) {
+                $.ajax({
+                    url: "/searchUsers",
+                    data: {searchQuery: value},
+                    method: 'POST',
+                    success: function (request) {
+                        console.log(request);
+
+                        if (!request) {
+                            return;
+                        }
+                        profiles = request;
+                        showSearchResults(request);
+                    },
+                    error: function (e) {
+                        console.log(e);
+                        alert('server error');
+                    }
+                });
+
+                $.ajax({
+                    url: "/searchConversations",
+                    data: {searchQuery: value},
+                    method: 'POST',
+                    success: function (request) {
+                        console.log(request);
+
+                        if (!request) {
+                            return;
+                        }
+                        foundConversations = request;
+                        showSearchResults(request);
+                    },
+                    error: function (error) {
+                        console.log(error);
+                        alert('server error');
+                    }
+                });
+            } else {
+                showDialogsAndConversations();
+            }
+        }
     }
 
     function showSearchResults(arr) {
@@ -1015,7 +1077,8 @@ APP.utilities.actions = (function () {
         showDialogs: showDialogsAndConversations,
         initialization: initialization
     };
-})();
+})
+();
 
 $("document").ready(function () {
     var actions = {},
