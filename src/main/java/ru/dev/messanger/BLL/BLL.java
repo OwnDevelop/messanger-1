@@ -29,6 +29,9 @@ public class BLL {
     @Value("${upload.path}")
     private String uploadPath;
 
+    @Value("${image.profile.path}")
+    private String uploadProfilePath;
+
     private HashMap<Object, Token> userToken = new HashMap<>(); //Key(Object) is ID of User
 
     public HashMap<Object, Token> getUserToken() {
@@ -323,4 +326,23 @@ public class BLL {
         return new Gson().toJson(Database.INSTANCE.setStatusOnline(id, status));
     }
 
+    public String setAvatar(NewUserDTO user, MultipartFile file) {
+        String resultFilename;
+
+        if (file != null && !file.getOriginalFilename().isEmpty()) {
+            String uuidFile = UUID.randomUUID().toString();
+            resultFilename = uuidFile + "." + file.getOriginalFilename();
+            try {
+                File uploadDir = new File("//" + uploadProfilePath); //TODO:autowire this
+                if (!uploadDir.exists()) {
+                    uploadDir.mkdir();
+                }
+                file.transferTo(new File(uploadProfilePath + "\\" + resultFilename));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            user.setAvatar_url("img/profiles/" + resultFilename);
+        }
+        return new Gson().toJson(Database.INSTANCE.setUser(user));
+    }
 }

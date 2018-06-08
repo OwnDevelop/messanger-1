@@ -6,7 +6,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import ru.dev.messanger.BLL.BLL;
+import ru.dev.messanger.entities.NewUserDTO;
 import ru.dev.messanger.entities.SentMessageDTO;
+import ru.dev.messanger.entities.UserDTO;
 
 import javax.validation.Valid;
 
@@ -93,6 +95,14 @@ public class RESTController {
             @RequestParam String users
     ) {
         return bll.setConversation(admin_id, title, users);
+    }
+
+    @RequestMapping(value = "/setAvatar", method = RequestMethod.POST, produces = "application/json")
+    public String setAvatar(
+            @Valid NewUserDTO user,
+            @RequestParam("file") MultipartFile file
+    ) {
+        return bll.setAvatar(user, file);
     }
 
     @RequestMapping(value = "/setMessage", method = RequestMethod.POST, produces = "application/json")

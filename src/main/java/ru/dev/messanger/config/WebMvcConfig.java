@@ -19,6 +19,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Value("${upload.path}")
     private String uploadPath;
 
+    @Value("${image.profile.path}")
+    private String uploadProfilePath;
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new AuthoriseInterceptor(bll));
@@ -28,6 +31,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/img/uploads/**")
                 .addResourceLocations("file://" + uploadPath + "/");
+        registry.addResourceHandler("/img/profiles/**")
+                .addResourceLocations("file://" + uploadProfilePath + "/");
         registry.addResourceHandler("/static/**") //TODO: ВРОДЕ КАК НЕ ОБЯЗАТЕЛЬНО
                 .addResourceLocations("classpath:/static/");   //
     }
