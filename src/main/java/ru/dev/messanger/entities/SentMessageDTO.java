@@ -2,18 +2,28 @@ package ru.dev.messanger.entities;
 
 import com.google.gson.annotations.SerializedName;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.PositiveOrZero;
+import javax.validation.constraints.Size;
 import java.time.Instant;
-import java.util.Date;
 
 public class SentMessageDTO {
     @SerializedName("id")
     private int id;
+
+    @PositiveOrZero
     @SerializedName("from_id")
     private int from_id;
+
+    @PositiveOrZero
     @SerializedName("conversation_id")
     private int conversation_id;
+
+    @NotBlank
+    @Size(min = 10, max = 200, message = "About Me must be between 10 and 200 characters")
     @SerializedName("message")
     private String message;
+
     @SerializedName("attachment_url")
     private String attachment_url;
     @SerializedName("created_at")

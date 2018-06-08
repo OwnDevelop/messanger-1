@@ -16,9 +16,6 @@ public class AuthoriseInterceptor implements HandlerInterceptor {
         this.bll = bll;
     }
 
-    @Value("${upload.path}")
-    private String uploadPath;
-
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         String url = request.getRequestURI();
@@ -26,6 +23,10 @@ public class AuthoriseInterceptor implements HandlerInterceptor {
             return true;
         } else if (bll.checkToken(request.getHeader("token"))){
             System.out.println(request.getHeader("token"));
+            if (request.getHeader("token") == null)
+            {
+                return true;
+            }
             return true;
         } else {
             return false;
@@ -33,7 +34,7 @@ public class AuthoriseInterceptor implements HandlerInterceptor {
     }
     private Boolean isAllowed(String url){
         if (url.equals("/")) return true;
-        String[] allowed = {"/logout" ,"/signup", "/signin", "/css/", "/fonts/", "/img/", "/js/", "/psd/", "/activate/", "/setUser", "/loginAlreadyExists", "/authorization", "/main"};
+        String[] allowed = {"/enter", "/logout" ,"/signup", "/signin", "/css/", "/fonts/", "/img/", "/js/", "/psd/", "/activate/", "/setUser", "/loginAlreadyExists", "/authorization", "/main"};
         for (String str: allowed) {
             if (url.indexOf(str) == 0){
                 return true;

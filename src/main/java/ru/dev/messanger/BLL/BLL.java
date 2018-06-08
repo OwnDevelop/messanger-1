@@ -3,6 +3,7 @@ package ru.dev.messanger.BLL;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import ru.dev.messanger.dll.Database;
 import ru.dev.messanger.entities.*;
@@ -39,10 +40,10 @@ public class BLL {
     }
 
     public Boolean checkToken(String token) {
-        System.out.println(token);
-        if ((token == null) || ("[object Object]".equals(token))) { //TODO: это ломает всю защиту | заглушка, чтобы войти   token == null
-            return true;
-        }
+//        System.out.println(token);
+//        if ((token == null) || ("[object Object]".equals(token))) { //TODO: это ломает всю защиту | заглушка, чтобы войти   token == null
+//            return true;
+//        }
 
         if ((userToken.size() == 0) || (token.isEmpty()) || (token == null)) { // TODO: Can be removed (presents for better understanding)
             return false;
@@ -103,7 +104,7 @@ public class BLL {
 
     public String authorization(String login, String password) {
         if (loginAlreadyExists(login) == "false") {
-            return "No Such User"; //TODO: связана с ранним запросом ДО авторизации loginaleready exists И НЕ ТЕСТИТСЯ ИБО НИКАК чина давай
+            return new Gson().toJson("No Such User"); //TODO: связана с ранним запросом ДО авторизации loginaleready exists И НЕ ТЕСТИТСЯ ИБО НИКАК чина давай
         }
 
         UserDTO user = Database.INSTANCE.authorization(login, Encoder.hash256(password));
@@ -193,19 +194,28 @@ public class BLL {
     public String deleteUser(
             int id
     ) {
-        return new Gson().toJson(Database.INSTANCE.deleteUser(id));
+        if (id >= 0) {
+            return new Gson().toJson(Database.INSTANCE.deleteUser(id));
+        }
+        return "Bad ID";
     }
 
     public String searchUsers(
             String searchQuery
     ) {
-        return new Gson().toJson(Database.INSTANCE.searchUsers(searchQuery));
+        if (!StringUtils.isEmpty(searchQuery)) {
+            return new Gson().toJson(Database.INSTANCE.searchUsers(searchQuery));
+        }
+        return "Bad Query";
     }
 
     public String getConversations(
             int id
     ) {
-        return new Gson().toJson(Database.INSTANCE.getConversations(id));
+        if (id >= 0) {
+            return new Gson().toJson(Database.INSTANCE.getConversations(id));
+        }
+        return "Bad ID";
     }
 
     public String getDialogs(
@@ -237,39 +247,26 @@ public class BLL {
         return new Gson().toJson(Database.INSTANCE.setConversation(conversation));
     }
 
-    public String setMessage(
-            int from_id,
-            int conversation_id,
-            String message,
-            String attachment_url,
-            MultipartFile file
+    public String setMessage(SentMessageDTO message, MultipartFile file
     ) {
-        String resultFilename = "";
-        SentMessageDTO messageDTO = new SentMessageDTO();
 
         if (file != null && !file.getOriginalFilename().isEmpty()) {
-
-            File uploadDir = new File("//" + uploadPath); //TODO:autowire this
-            if (!uploadDir.exists()) {
-                uploadDir.mkdir();
-            }
+            String resultFilename;
 
             String uuidFile = UUID.randomUUID().toString();
             resultFilename = uuidFile + "." + file.getOriginalFilename();
-
             try {
-                //  file.transferTo(new File(uploadPath + "\\" + resultFilename));
-                file.transferTo(new File(uploadPath + "\\" + resultFilename)); //TODO: move to properties
-                messageDTO.setAttachment_url("img/uploads/" + resultFilename); //TODO: move to properties
+                File uploadDir = new File("//" + uploadPath); //TODO:autowire this
+                if (!uploadDir.exists()) {
+                    uploadDir.mkdir();
+                }
+                file.transferTo(new File(uploadPath + "\\" + resultFilename));
+                message.setAttachment_url("img/uploads/" + resultFilename);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
         }
-        messageDTO.setFrom_id(from_id);
-        messageDTO.setConversation_id(conversation_id);
-        messageDTO.setMessage(message);
-        return new Gson().toJson(Database.INSTANCE.setMessage(messageDTO));
+        return new Gson().toJson(Database.INSTANCE.setMessage(message));
     }
 
     public String getMessages(
