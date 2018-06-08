@@ -60,7 +60,8 @@ APP.models.entities = {
         continueWriting: ['Continue writing', 'Продолжить общаться'],
         joinConversation: ['Join Conversation?', 'Присоединиться к беседе?'],
         bigFile: ['File must be less than 2 MB', ''],
-        littleFile: ['Too small file', 'Слишком маленький файл']
+        littleFile: ['Too small file', 'Слишком маленький файл'],
+        picture: ['picture', 'картинка']
     },
     dialogs: [],
     profiles: [],
@@ -163,8 +164,12 @@ APP.utilities.actions = (function () {
                         html += '<span class="last-message-time">' + lastMessageDate(elem.created_at.seconds) + '</span>';
                     }
 
-                    html += '<div class="short-message ellipsis">' + elem.message + '</div>' +
-                        '<span class="badge">' + elem.countUnread + '</span></div>';
+                    if (elem.message) {
+                        html += '<div class="short-message ellipsis">' + elem.message + '</div>';
+                    } else {
+                        html += '<div class="short-message ellipsis">' + lang.picture[lType] + '</div>';
+                    }
+                    html += '<span class="badge">' + elem.countUnread + '</span></div>';
                 }
 
                 $form[0].innerHTML = html;
@@ -187,9 +192,16 @@ APP.utilities.actions = (function () {
                     elem = conversations[i];
 
                     html += '<div class="conversation"><img class="profile-photo" src="img/defaults/conversation.jpg" alt="user">' +
-                        '<a class="convers-name">' + elem.title + '</a>' +
-                        '<div class="short-message ellipsis">' + elem.message + '</div>' +
-                        '<span class="badge">' + elem.countUnread + '</span></div>';
+                        '<a class="convers-name">' + elem.title + '</a>';
+                    if (elem.created_at) {
+                        html += '<span class="last-message-time">' + lastMessageDate(elem.created_at.seconds) + '</span>';
+                    }
+                    if (elem.message) {
+                        html += '<div class="short-message ellipsis">' + elem.message + '</div>';
+                    } else {
+                        html += '<div class="short-message ellipsis">' + lang.picture[lType] + '</div>';
+                    }
+                    html += '<span class="badge">' + elem.countUnread + '</span></div>';
                 }
 
                 $form[0].innerHTML += html;
@@ -448,7 +460,6 @@ APP.utilities.actions = (function () {
         isInversed = isInversed || false;
 
         if (isInversed) {
-
             arr.reverse();
         }
 
@@ -913,6 +924,20 @@ APP.utilities.actions = (function () {
     }
 
     function initializeLanguage() {
+        var $messages = $('.short-message'),
+            $time = $('.last-message-time'),
+            i = 0;
+
+        for (i = 0; i < $messages.length; i += 1) {
+            if ($messages[i].innerHTML === lang.picture[0] || $messages[i].innerHTML === lang.picture[1]) {
+                $messages[i].innerHTML = lang.picture[lType];
+            }
+
+            if ($time[i].innerHTML === lang.yesterday[0] || $time[i].innerHTML === lang.yesterday[1]) {
+                $time[i].innerHTML = lang.yesterday[lType];
+            }
+        }
+
         $('.empty-list:eq(0)').html(lang.emptyDialogs[lType]);
         $('.empty-list:eq(1)').html(lang.emptyConversation[lType]);
 
@@ -934,6 +959,12 @@ APP.utilities.actions = (function () {
             }
         } else {
             lType = 0;
+        }
+
+        if (lType === 0) {
+            buttons.$btnEngLang.addClass('active');
+        } else {
+            buttons.$btnRusLang.addClass('active');
         }
 
         initializeLanguage();
@@ -994,12 +1025,16 @@ APP.utilities.actions = (function () {
         buttons.$btnEngLang.on('click', function () {
             lType = 0;
             localStorage.setItem('lType', 0);
+            buttons.$btnRusLang.removeClass('active');
+            $(this).addClass('active');
             initializeLanguage();
         });
 
         buttons.$btnRusLang.on('click', function () {
             lType = 1;
             localStorage.setItem('lType', 1);
+            buttons.$btnEngLang.removeClass('active');
+            $(this).addClass('active');
             initializeLanguage();
         });
     }
@@ -1028,7 +1063,7 @@ APP.utilities.actions = (function () {
         $('#sender').on('submit', function (e) {
             var text = fields.$sendField.val().trim(),
                 $that = $(this),
-                a = $('.activated'), //TODO: fix
+                a = $('.activated'),
                 data = new FormData($that.get(0)),
                 conversId = a[0].conversId;
 
@@ -1077,8 +1112,7 @@ APP.utilities.actions = (function () {
         showDialogs: showDialogsAndConversations,
         initialization: initialization
     };
-})
-();
+})();
 
 $("document").ready(function () {
     var actions = {},
@@ -1100,8 +1134,8 @@ $("document").ready(function () {
             'token': entities.me.token
         }
     });
+
     actions = APP.utilities.actions;
     actions.initialization(lType);
     actions.showDialogs();
-
 });
