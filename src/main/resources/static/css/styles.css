@@ -168,6 +168,19 @@ body {
     border-bottom: 2px blue solid;
 }
 
+.file-upload{
+    overflow: hidden;
+}
+
+/*.file-upload:hover {*/
+    /*background-color: #31b0d5;*/
+    /*border-color: #269abc;*/
+/*}*/
+
+.file-upload input[type="file"]{
+    display: none;
+}
+
 textarea.scroll-pane {
     display: inline-block;
 }

@@ -74,7 +74,7 @@ APP.models.buttons = {
     $btnSearch: $('.search-btn'),
     $btnCreateConvers: $('.create-conversation'),
     $btnSendMess: $('#send-message'),
-    $btnSendPict: $('#add-image'),
+    $btnSendPict: $('#add-images'),
     $btnEngLang: $('.dropdown-menu li:nth-child(2)'),
     $btnRusLang: $('.dropdown-menu li:nth-child(1)'),
     $btnLogout: $('.logout-btn'),
@@ -349,8 +349,8 @@ APP.utilities.actions = (function () {
             $(classSelector + '.activated').click();
         }
 
-        function updateDialog(){
-            var div = $(classSelector+':eq(' + i + ')')[0];
+        function updateDialog() {
+            var div = $(classSelector + ':eq(' + i + ')')[0];
             $(classSelector + ':eq(' + i + ') .badge').html(newArr[j].countUnread);
             if (newArr[j].message) {
                 $(classSelector + ':eq(' + i + ') .short-message').html(newArr[j].message);
@@ -370,11 +370,10 @@ APP.utilities.actions = (function () {
             isDialog = this.isDialog,
             conversationId = this.conversId,
             lastMessageId = this.lastMessId,
-            unreadedMessages = this.countUnread;
+            unreadedMessages = this.countUnread,
+            formHtml = '';
 
         console.log(entities.me.avatar_url);
-
-        $('#sender img').attr('src', entities.me.avatar_url);
 
         $.ajax({
             url: "/getMessages",
@@ -469,6 +468,47 @@ APP.utilities.actions = (function () {
             error: function (error) {
                 console.log(error);
             }
+        });
+
+        if ($('.sender').length < 1) {
+            formHtml = '<form class="row sender" method="POST" enctype="multipart/form-data" id="sender">' +
+                '<img src="img/profiles/my.jpg" alt="user" class="col-xs-2 col-xs-offset-1 profile-photo img-responsive">' +
+                '<textarea class="col-xs-7 send-field form-control" contenteditable="true" aria-multiline="true" max-length="6" name="message"> </textarea>' +
+                '<button type="button" class="btn btn-info file-upload col-xs-1" id="add-images">' +
+                '<input class="glyphicon glyphicon-picture" type="file" name="file" id="add-image">' +
+                '<span class="glyphicon glyphicon-picture" aria-hidden="true"></span></button>' +
+                '<button type="submit" class="btn btn-info col-xs-1" id="send-message">' +
+                '<span class="glyphicon glyphicon-share-alt" aria-hidden="true"></span></button></form>';
+
+            $('.messages').after(formHtml);
+        }
+
+        $('#sender img').attr('src', entities.me.avatar_url);
+
+        initializeMesseges();
+
+        buttons.$btnSendPict = $('#add-images')[0];
+
+        fields.$sendField =  $('.send-field');
+
+        buttons.$btnSendPict.onclick = function (e) {
+            $('input#add-image')[0].click();
+        };
+
+        $('input[type=file]').on('change', function () {
+            if (this.files[0].size > 3388608) {
+                this.value = "";
+                alert(lang.bigFile[lType]);
+                return;
+            }
+
+            if (this.files[0].size < 1000) {
+                this.value = "";
+                alert(lang.littleFile[lType]);
+                return;
+            }
+            files = this.files;
+            console.log(files);
         });
 
         $('.dialog').removeClass('activated');
@@ -995,27 +1035,27 @@ APP.utilities.actions = (function () {
 
         initializeLanguage();
 
-        $('input[type=file]').on('change', function () {
-            if (this.files[0].size > 3388608) {
-                this.value = "";
-                alert(lang.bigFile[lType]);
-                return;
-            }
-
-            if (this.files[0].size < 1000) {
-                this.value = "";
-                alert(lang.littleFile[lType]);
-                return;
-            }
-            files = this.files;
-            console.log(files);
-        });
+        // $('input[type=file]').on('change', function () {
+        //     if (this.files[0].size > 3388608) {
+        //         this.value = "";
+        //         alert(lang.bigFile[lType]);
+        //         return;
+        //     }
+        //
+        //     if (this.files[0].size < 1000) {
+        //         this.value = "";
+        //         alert(lang.littleFile[lType]);
+        //         return;
+        //     }
+        //     files = this.files;
+        //     console.log(files);
+        // });
 
         initializeScroll();
         initializeButtons();
         initializeSearch();
 
-        initializeMesseges();
+        //initializeMesseges();
 
         setInterval(updateDialogsAndConversations, 5000);
     }
