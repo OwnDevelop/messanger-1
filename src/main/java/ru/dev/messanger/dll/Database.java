@@ -3,9 +3,9 @@ package ru.dev.messanger.dll;
 import ru.dev.messanger.entities.*;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
+
+import static java.sql.DriverManager.getConnection;
 
 public class Database implements AbstractDal {
 
@@ -32,24 +32,40 @@ public class Database implements AbstractDal {
             e.printStackTrace();
         }
     }
+    
+    //-------------------------------
+    private static final String NAMEUSER = "root";
+    private static final String PASSWORD = "root";
+    private static final String URL = "jdbc:mariadb://localhost:3306/messenger?useUnicode=yes&characterEncoding=UTF-8";
+
+    //-------------------------------
+    /// Создаёт конекшн
+    public static ResultSet getResult(String statement) throws SQLException {
+        Connection connection = null;
+        connection = getConnection(URL, NAMEUSER, PASSWORD);
+        if (!connection.isClosed()) {
+            System.out.println("Connected!");
+            try (PreparedStatement st = connection.prepareStatement(statement)) {
+                st.executeQuery();
+                return st.getResultSet();
+            }
+        }
+        return null;
+    }
+
 
     @Override
     public UserDTO authorization(String login, String password) {
         UserDTO user = null;
-        try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
-            String SqlQuery = "SELECT users.id, email, login, first_name, last_name, sex, created_at, activation_code, value as status, url as avatar FROM users LEFT JOIN status ON users.status=status.id LEFT JOIN photos ON users.avatar=photos.id " +
-                    "WHERE (login='" + login + "' OR email='" + login + "') AND password='" + password + "';";
-            try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
-                st.executeQuery();
-                try (ResultSet rs = st.getResultSet()) {
-                    user = new UserDTO();
-                    while (rs.next()) {
-                        user = getAUser(rs);
-                    }
-                }
+        String SqlQuery = "SELECT users.id, email, login, first_name, last_name, sex, created_at, activation_code, value as status, url as avatar FROM users LEFT JOIN status ON users.status=status.id LEFT JOIN photos ON users.avatar=photos.id " +
+                "WHERE (login='" + login + "' OR email='" + login + "') AND password='" + password + "';";
+        user = new UserDTO();
+        try {
+            ResultSet rs = getResult(SqlQuery);
+            while (rs.next()) {
+                user = getAUser(rs);
             }
         } catch (SQLException e) {
-            System.out.println("Connection problem.");
             e.printStackTrace();
         }
         if (user != null && user.getId() == 0) {
@@ -60,20 +76,16 @@ public class Database implements AbstractDal {
 
     @Override
     public Boolean emailAlreadyExists(String email) {
-        try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
-            String SqlQuery = "SELECT  COUNT(id) FROM users WHERE email='" + email + "'";
-            try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
-                st.executeQuery();
-                try (ResultSet rs = st.getResultSet()) {
-                    while (rs.next()) {
-                        if (rs.getInt(1) > 0) {
-                            return true;
-                        }
-                    }
+        String SqlQuery = "SELECT  COUNT(id) FROM users WHERE email='" + email + "'";
+        try {
+            ResultSet rs = getResult(SqlQuery);
+            assert rs != null;
+            while (rs.next()) {
+                if (rs.getInt(1) > 0) {
+                    return true;
                 }
             }
         } catch (SQLException e) {
-            System.out.println("Connection problem.");
             e.printStackTrace();
         }
         return false;
@@ -81,20 +93,16 @@ public class Database implements AbstractDal {
 
     @Override
     public Boolean loginAlreadyExists(String login) {
-        try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
-            String SqlQuery = "SELECT COUNT (id) FROM users WHERE login='" + login + "'";
-            try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
-                st.executeQuery();
-                try (ResultSet rs = st.getResultSet()) {
-                    while (rs.next()) {
-                        if (rs.getInt(1) > 0) {
-                            return true;
-                        }
-                    }
+        String SqlQuery = "SELECT COUNT (id) FROM users WHERE login='" + login + "'";
+        try {
+            ResultSet rs = getResult(SqlQuery);
+            assert rs != null;
+            while (rs.next()) {
+                if (rs.getInt(1) > 0) {
+                    return true;
                 }
             }
         } catch (SQLException e) {
-            System.out.println("Connection problem.");
             e.printStackTrace();
         }
         return false;
@@ -103,18 +111,13 @@ public class Database implements AbstractDal {
     @Override
     public Boolean setUser(NewUserDTO item) {
         Integer avatar_id = this.addImage(item.getAvatar_url());
-        try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
-            String SqlQuery = "INSERT INTO users (email, login, password, first_name, last_name, sex, status, avatar, activation_code) " +
-                    "VALUES ('" + item.getEmail() + "', '" + item.getLogin() + "', '" + item.getPassword() + "', '" + item.getFirstName() + "', '" + item.getLastName() +
-                    "', '" + item.getSex() + "', '" +
-                    DEFAULT_STATUS + "', '" + avatar_id + "', '" + item.getActivation_code() + "');";
-            try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
-                st.executeQuery();
-            } catch (SQLException e) {
-                return false;
-            }
+        String SqlQuery = "INSERT INTO users (email, login, password, first_name, last_name, sex, status, avatar, activation_code) " +
+                "VALUES ('" + item.getEmail() + "', '" + item.getLogin() + "', '" + item.getPassword() + "', '" + item.getFirstName() + "', '" + item.getLastName() +
+                "', '" + item.getSex() + "', '" +
+                DEFAULT_STATUS + "', '" + avatar_id + "', '" + item.getActivation_code() + "');";
+        try {
+            getResult(SqlQuery);
         } catch (SQLException e) {
-            System.out.println("Connection problem.");
             e.printStackTrace();
         }
         return true;
@@ -123,60 +126,44 @@ public class Database implements AbstractDal {
     @Override
     public UserDTO getUser(int id) {
         UserDTO user = null;
-        try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
-            String SqlQuery = "SELECT users.id, email, login, first_name, last_name, sex, created_at, value as status, url as avatar FROM users LEFT JOIN status ON users.status=status.id LEFT JOIN photos ON users.avatar=photos.id " +
-                    "WHERE users.id=" + id;
-            try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
-                st.executeQuery();
-                try (ResultSet rs = st.getResultSet()) {
-                    while (rs.next()) {
-                        user = getUser(rs);
-                    }
-                }
+        String SqlQuery = "SELECT users.id, email, login, first_name, last_name, sex, created_at, value as status, url as avatar FROM users LEFT JOIN status ON users.status=status.id LEFT JOIN photos ON users.avatar=photos.id " +
+                "WHERE users.id=" + id;
+        try {
+            ResultSet rs = getResult(SqlQuery);
+            while (rs.next()) {
+                user = getUser(rs);
             }
         } catch (SQLException e) {
-            System.out.println("Connection problem.");
             e.printStackTrace();
         }
-
         return user;
     }
 
     @Override
     public NewUserDTO getPUser(int id) {
         NewUserDTO user = null;
-        try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
-            String SqlQuery = "SELECT users.id, email, login, password, first_name, last_name, sex, created_at, activation_code, value as status, url as avatar FROM users LEFT JOIN status ON users.status=status.id LEFT JOIN photos ON users.avatar=photos.id " +
-                    "WHERE users.id=" + id;
-            try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
-                st.executeQuery();
-                try (ResultSet rs = st.getResultSet()) {
-                    while (rs.next()) {
-                        user = getPUser(rs);
-                    }
-                }
+        String SqlQuery = "SELECT users.id, email, login, password, first_name, last_name, sex, created_at, activation_code, value as status, url as avatar FROM users LEFT JOIN status ON users.status=status.id LEFT JOIN photos ON users.avatar=photos.id " +
+                "WHERE users.id=" + id;
+        try {
+            ResultSet rs = getResult(SqlQuery);
+            while (rs.next()) {
+                user = getPUser(rs);
             }
         } catch (SQLException e) {
-            System.out.println("Connection problem.");
             e.printStackTrace();
         }
-
         return user;
     }
 
     @Override
     public Boolean updateActivation(NewUserDTO item) {
-        try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
-            String SqlQuery = "UPDATE users LEFT JOIN status ON users.status=status.id LEFT JOIN photos ON users.avatar=photos.id " +
-                    "SET activation_code = " + item.getActivation_code() + " WHERE users.id='" + item.getId() + "';";
-            try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
-                st.executeQuery();
-            } catch (SQLException e) {
-                return false;
-            }
+        String SqlQuery = "UPDATE users LEFT JOIN status ON users.status=status.id LEFT JOIN photos ON users.avatar=photos.id " +
+                "SET activation_code = " + item.getActivation_code() + " WHERE users.id='" + item.getId() + "';";
+        try {
+            ResultSet rs = getResult(SqlQuery);
         } catch (SQLException e) {
-            System.out.println("Connection problem.");
             e.printStackTrace();
+            return false;
         }
         return true;
     }
@@ -184,35 +171,27 @@ public class Database implements AbstractDal {
     @Override
     public Boolean updateUser(NewUserDTO item, Integer id) {
         Integer avatar_id = this.addImage(item.getAvatar_url());
-        System.out.println(String.valueOf(item.getStatusInt()));
-        try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
-            String SqlQuery = "UPDATE users LEFT JOIN status ON users.status=status.id LEFT JOIN photos ON users.avatar=photos.id " +
-                    "SET password='" + item.getPassword() + "', first_name='" + item.getFirstName() + "', last_name='" + item.getLastName() +
-                    "', sex='" + item.getSex() + "', status='" + item.getStatusInt() + "', avatar='" + avatar_id +
-                    "' WHERE users.id='" + id + "';";
-            try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
-                st.executeQuery();
-            } catch (SQLException e) {
-                e.printStackTrace();
-                return false;
-            }
+        String SqlQuery = "UPDATE users LEFT JOIN status ON users.status=status.id LEFT JOIN photos ON users.avatar=photos.id " +
+                "SET password='" + item.getPassword() + "', first_name='" + item.getFirstName() + "', last_name='" + item.getLastName() +
+                "', sex='" + item.getSex() + "', status='" + item.getStatusInt() + "', avatar='" + avatar_id +
+                "' WHERE users.id='" + id + "';";
+        try {
+            getResult(SqlQuery);
         } catch (SQLException e) {
-            System.out.println("Connection problem.");
             e.printStackTrace();
+            return false;
         }
         return true;
     }
 
     @Override
     public Boolean deleteUser(int id) {
-        try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
-            String SqlQuery = "DELETE FROM users WHERE id=" + id;
-            try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
-                st.executeQuery();
-            }
+        String SqlQuery = "DELETE FROM users WHERE id=" + id;
+        try {
+            getResult(SqlQuery);
         } catch (SQLException e) {
-            System.out.println("Connection problem.");
             e.printStackTrace();
+            return false;
         }
         return true;
     }
@@ -220,21 +199,16 @@ public class Database implements AbstractDal {
     @Override
     public Iterable<UserDTO> searchUsers(String searchQuery) {
         List<UserDTO> users = null;
-        try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
-            String SqlQuery = "SELECT users.id, email, login, first_name, last_name, sex, created_at, VALUE AS status, url AS avatar " +
-                    "FROM users LEFT JOIN status ON users.status=status.id LEFT JOIN photos ON users.avatar=photos.id " +
-                    "WHERE login LIKE '%" + searchQuery + "%'";
-            try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
-                st.executeQuery();
-                try (ResultSet rs = st.getResultSet()) { //Что получаем
-                    users = new ArrayList<>();
-                    while (rs.next()) {
-                        users.add(getUser(rs));
-                    }
-                }
+        String SqlQuery = "SELECT users.id, email, login, first_name, last_name, sex, created_at, VALUE AS status, url AS avatar " +
+                "FROM users LEFT JOIN status ON users.status=status.id LEFT JOIN photos ON users.avatar=photos.id " +
+                "WHERE login LIKE '%" + searchQuery + "%'";
+        try {
+            ResultSet rs = getResult(SqlQuery);
+            users = new ArrayList<>();
+            while (rs.next()) {
+                users.add(getUser(rs));
             }
         } catch (SQLException e) {
-            System.out.println("Connection problem.");
             e.printStackTrace();
         }
         return users;
@@ -243,33 +217,25 @@ public class Database implements AbstractDal {
     @Override
     public Integer setConversation(ConversationDTO item) {
         int conversation_id = 0;
-        try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
-            String SqlQuery = "INSERT INTO conversations (admin_id, title) " +
-                    "VALUES ('" + item.getAdmin_id() + "', '" + item.getTitle() + "');";
-            try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
-                st.executeQuery();
-            } catch (SQLException e) {
-                System.out.println("Connection problem.");
-                e.printStackTrace();
-            }
-            SqlQuery = "SELECT id FROM conversations WHERE admin_id='" + item.getAdmin_id() + "' ORDER BY id DESC LIMIT 1";
-            try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
-                st.executeQuery();
-                try (ResultSet rs = st.getResultSet()) {
-                    while (rs.next()) {
-                        conversation_id = rs.getInt(1);
-                    }
-                }
-            } catch (SQLException e) {
-                System.out.println("Connection problem.");
-                e.printStackTrace();
-            }
-
-            addParticipants(conversation_id, item.getParticipants_id());
+        String SqlQuery = "INSERT INTO conversations (admin_id, title) " +
+                "VALUES ('" + item.getAdmin_id() + "', '" + item.getTitle() + "');";
+        try {
+            ResultSet rs = getResult(SqlQuery);
         } catch (SQLException e) {
-            System.out.println("Connection problem.");
             e.printStackTrace();
         }
+        SqlQuery = "SELECT id FROM conversations WHERE admin_id='" + item.getAdmin_id() + "' ORDER BY id DESC LIMIT 1";
+        try {
+            ResultSet rs = getResult(SqlQuery);
+            while (rs.next()) {
+                conversation_id = rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        addParticipants(conversation_id, item.getParticipants_id());
+
         return conversation_id;
     }
 
