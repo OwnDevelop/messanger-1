@@ -119,7 +119,7 @@ APP.utilities.actions = (function () {
         lang = APP.models.entities.language,
         lType = 1,
         files = {},
-        canUpdate = true,
+        canUpdate = false,
         MESSEGE_MAX_LENGHT = 200;
 
     function lastMessageDate(date) {
@@ -475,7 +475,7 @@ APP.utilities.actions = (function () {
                 '<img src="img/profiles/my.jpg" alt="user" class="col-xs-2 col-xs-offset-1 profile-photo img-responsive">' +
                 '<textarea class="col-xs-7 send-field form-control" contenteditable="true" aria-multiline="true" max-length="6" name="message"> </textarea>' +
                 '<button type="button" class="btn btn-info file-upload col-xs-1" id="add-images">' +
-                '<input class="glyphicon glyphicon-picture" type="file" name="file" id="add-image">' +
+                '<input type="file" name="file" id="add-image">' +
                 '<span class="glyphicon glyphicon-picture" aria-hidden="true"></span></button>' +
                 '<button type="submit" class="btn btn-info col-xs-1" id="send-message">' +
                 '<span class="glyphicon glyphicon-share-alt" aria-hidden="true"></span></button></form>';
@@ -489,7 +489,7 @@ APP.utilities.actions = (function () {
 
         buttons.$btnSendPict = $('#add-images')[0];
 
-        fields.$sendField =  $('.send-field');
+        fields.$sendField = $('.send-field');
 
         buttons.$btnSendPict.onclick = function (e) {
             $('input#add-image')[0].click();
@@ -568,7 +568,7 @@ APP.utilities.actions = (function () {
 
                     $('.modal-title:eq(0)').html(lang.profileInfo[lType]);
 
-                    html = '<div class="row"><div class="col-xs-5"><img class="profile-img" src="' + user.avatar_url + '" alt="user photo"></div>' +
+                    html = '<div class="row"><div class="col-xs-5"><img class="profile-img" src="' + user.avatar_url + '" alt="user photo" id="avatar"></div>' +
                         '<div class="col-xs-7"><div class="name text-center">' + user.firstName + ' ' + user.lastName + '</div>' +
                         '<div class="status text-center" >' + user.status + '</div>' +
                         '<button type="button" class="btn btn-default btn-write">Open dialog</button></div></div></div>';
@@ -630,6 +630,11 @@ APP.utilities.actions = (function () {
                             });
                             break;
                         case "changeStatus":
+                            $modalBody.after('<form class="hide" method="POST" enctype="multipart/form-data" id="avatarForm"><input type="file" name="file" id="change-avatar"><button type="submit" class="btn btn-info col-xs-1" id="send-message">submit</button></form>');
+                            $('#avatar').on('click', function () {
+                                $('#change-avatar')[0].click();
+                            });
+
                             $btn.html(lang.changeStatus[lType]);
                             $btn.on('click', function () {
                                 var $status = $('.status:eq(0)'),
@@ -659,7 +664,8 @@ APP.utilities.actions = (function () {
 
                     function listener() {
                         var value = $('.status').html(),
-                            status = 0;
+                            status = 0,
+                            formData;
 
                         switch (value) {
                             case lang.statusOnline[lType]:
@@ -687,6 +693,29 @@ APP.utilities.actions = (function () {
                                 alert('server error');
                             }
                         });
+
+                        if (behavior === 'changeStatus'){
+                            var a = $('#avatarForm');
+                            formData = new FormData(a.get(0));
+                            formData.append('user', entities.me.id);
+
+                            $.ajax({
+                                url: "/setAvatar",
+                                data: formData,
+                                method: 'POST',
+                                cache: false,
+                                dataType: 'json',
+                                processData: false,
+                                contentType: false,
+                                success: function (request) {
+                                    console.log('picture changed');
+                                },
+                                error: function (error) {
+                                    console.log(error);
+                                    alert('server error');
+                                }
+                            });
+                        }
 
                         $('.close')[0].removeEventListener('click', listener);
                     }
@@ -1034,28 +1063,9 @@ APP.utilities.actions = (function () {
         }
 
         initializeLanguage();
-
-        // $('input[type=file]').on('change', function () {
-        //     if (this.files[0].size > 3388608) {
-        //         this.value = "";
-        //         alert(lang.bigFile[lType]);
-        //         return;
-        //     }
-        //
-        //     if (this.files[0].size < 1000) {
-        //         this.value = "";
-        //         alert(lang.littleFile[lType]);
-        //         return;
-        //     }
-        //     files = this.files;
-        //     console.log(files);
-        // });
-
         initializeScroll();
         initializeButtons();
         initializeSearch();
-
-        //initializeMesseges();
 
         setInterval(updateDialogsAndConversations, 5000);
     }
