@@ -1,6 +1,7 @@
 package ru.dev.messanger.BLL;
 
 import com.google.gson.Gson;
+import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.*;
 
 @Service
 public class BLL {
@@ -43,10 +45,10 @@ public class BLL {
     }
 
     public Boolean checkToken(String token) {
-//        System.out.println(token);
-//        if ((token == null) || ("[object Object]".equals(token))) { //TODO: это ломает всю защиту | заглушка, чтобы войти   token == null
-//            return true;
-//        }
+        System.out.println(token);
+        if ((token == null) || ("[object Object]".equals(token))) { //TODO: это ломает всю защиту | заглушка, чтобы войти   token == null
+            return true;
+        }
 
         if ((userToken.size() == 0) || (token.isEmpty()) || (token == null)) { // TODO: Can be removed (presents for better understanding)
             return false;
@@ -77,7 +79,7 @@ public class BLL {
     public int getUserIdByToken(String token) {
         for (Object key : userToken.keySet()) {
             if (token.equals(userToken.get(key).getStringToken())) {
-                return (int)key;
+                return (int) key;
             }
         }
         return -1;
@@ -262,7 +264,6 @@ public class BLL {
 
     public String setMessage(SentMessageDTO message, MultipartFile file
     ) {
-
         if (file != null && !file.getOriginalFilename().isEmpty()) {
             String resultFilename;
 
@@ -347,12 +348,28 @@ public class BLL {
                 if (!uploadDir.exists()) {
                     uploadDir.mkdir();
                 }
-                file.transferTo(new File(uploadProfilePath + "\\" + resultFilename));
+                file.transferTo(new File("//" + uploadProfilePath + "\\" + resultFilename));
+
+                //Delete old File
+                Pattern p = Pattern.compile("([\\w\\d]*/)*");
+                Matcher m = p.matcher(user.getAvatar_url());
+                String filename = m.replaceFirst("");
+
+                File old = new File(uploadProfilePath + "\\" + filename);
+
+                if (!filename.contains("image0") && old.delete()) {
+                    System.out.println(filename + " deleted");
+                } else {
+                    System.out.println(filename + " not deleted");
+                }
+                //----
+
+                user.setAvatar_url("img/profiles/" + resultFilename);
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            user.setAvatar_url("img/profiles/" + resultFilename);
         }
-        return new Gson().toJson(Database.INSTANCE.setUser(user));
+        return new Gson().toJson(Database.INSTANCE.updateUser(user, user.getId()));
     }
 }

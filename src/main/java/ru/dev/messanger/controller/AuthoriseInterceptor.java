@@ -23,10 +23,6 @@ public class AuthoriseInterceptor implements HandlerInterceptor {
             return true;
         } else if (bll.checkToken(request.getHeader("token"))){
             System.out.println(request.getHeader("token"));
-            if (request.getHeader("token") == null)
-            {
-                return true;
-            }
             return true;
         } else {
             return false;

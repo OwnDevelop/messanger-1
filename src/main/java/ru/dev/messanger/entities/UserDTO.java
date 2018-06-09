@@ -98,5 +98,17 @@ public class UserDTO {
         this.avatar_url = avatar_url;
     }
 
+    public int getStatusInt() {
+        switch (status){
+            case "Online": return 1;
+            case "Idle": return 2;
+            case "Do Not Disturb": return 3;
+            case "Offline": return 4;
+        }
+        return 1;
+    }
+    public void setStatusInt(int status) {
+        this.status = String.valueOf(status);
+    }
 
 }

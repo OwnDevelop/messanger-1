@@ -97,14 +97,6 @@ public class RESTController {
         return bll.setConversation(admin_id, title, users);
     }
 
-    @RequestMapping(value = "/setAvatar", method = RequestMethod.POST, produces = "application/json")
-    public String setAvatar(
-            @Valid NewUserDTO user,
-            @RequestParam("file") MultipartFile file
-    ) {
-        return bll.setAvatar(user, file);
-    }
-
     @RequestMapping(value = "/setMessage", method = RequestMethod.POST, produces = "application/json")
     public String setMessage(
             @Valid SentMessageDTO message,
@@ -177,5 +169,13 @@ public class RESTController {
             @RequestParam Integer status
     ) {
         return bll.setStatusOnline(id, status);
+    }
+
+    @RequestMapping(value = "/setAvatar", method = RequestMethod.POST, produces = "application/json")
+    public String setAvatar(
+            @Valid NewUserDTO user,
+            @RequestParam("file") MultipartFile file
+    ) {
+        return bll.setAvatar(user, file);
     }
 }

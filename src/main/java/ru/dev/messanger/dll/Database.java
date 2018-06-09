@@ -146,7 +146,7 @@ public class Database implements AbstractDal {
     public NewUserDTO getPUser(int id) {
         NewUserDTO user = null;
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
-            String SqlQuery = "SELECT users.id, email, login, password, first_name, last_name, sex, created_at, activation_code value as status, url as avatar FROM users LEFT JOIN status ON users.status=status.id LEFT JOIN photos ON users.avatar=photos.id " +
+            String SqlQuery = "SELECT users.id, email, login, password, first_name, last_name, sex, created_at, activation_code, value as status, url as avatar FROM users LEFT JOIN status ON users.status=status.id LEFT JOIN photos ON users.avatar=photos.id " +
                     "WHERE users.id=" + id;
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                 st.executeQuery();
@@ -184,14 +184,16 @@ public class Database implements AbstractDal {
     @Override
     public Boolean updateUser(NewUserDTO item, Integer id) {
         Integer avatar_id = this.addImage(item.getAvatar_url());
+        System.out.println(String.valueOf(item.getStatusInt()));
         try (Connection connection = DriverManager.getConnection(properties.getProperty("url"), properties)) {
             String SqlQuery = "UPDATE users LEFT JOIN status ON users.status=status.id LEFT JOIN photos ON users.avatar=photos.id " +
                     "SET password='" + item.getPassword() + "', first_name='" + item.getFirstName() + "', last_name='" + item.getLastName() +
-                    "', sex='" + item.getSex() + "', status='" + item.getStatus() + "', avatar='" + avatar_id +
+                    "', sex='" + item.getSex() + "', status='" + item.getStatusInt() + "', avatar='" + avatar_id +
                     "' WHERE users.id='" + id + "';";
             try (PreparedStatement st = connection.prepareStatement(SqlQuery)) {
                 st.executeQuery();
             } catch (SQLException e) {
+                e.printStackTrace();
                 return false;
             }
         } catch (SQLException e) {
@@ -813,8 +815,9 @@ public class Database implements AbstractDal {
         user.setLastName(rs.getString(6));
         user.setSex(rs.getString(7));
         user.setCreated_at(rs.getTimestamp(8).toInstant());
-        user.setStatus(rs.getString(9));
-        user.setAvatar_url(rs.getString(10));
+        user.setActivation_code(rs.getString(9));
+        user.setStatus(rs.getString(10));
+        user.setAvatar_url(rs.getString(11));
         return user;
     }
 
