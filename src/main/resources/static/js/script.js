@@ -74,7 +74,7 @@ APP.models.buttons = {
     $btnSearch: $('.search-btn'),
     $btnCreateConvers: $('.create-conversation'),
     $btnSendMess: $('#send-message'),
-    $btnSendPict: $('#add-image'),
+    $btnSendPict: $('#add-images'),
     $btnEngLang: $('.dropdown-menu li:nth-child(2)'),
     $btnRusLang: $('.dropdown-menu li:nth-child(1)'),
     $btnLogout: $('.logout-btn'),
@@ -119,7 +119,7 @@ APP.utilities.actions = (function () {
         lang = APP.models.entities.language,
         lType = 1,
         files = {},
-        canUpdate = true,
+        canUpdate = false,
         MESSEGE_MAX_LENGHT = 200;
 
     function lastMessageDate(date) {
@@ -173,6 +173,8 @@ APP.utilities.actions = (function () {
                     html += '<span class="badge">' + elem.countUnread + '</span></div>';
                 }
 
+                canUpdate = true;
+
                 $form[0].innerHTML = html;
                 setEventsForDialogs();
             },
@@ -204,6 +206,8 @@ APP.utilities.actions = (function () {
                     }
                     html += '<span class="badge">' + elem.countUnread + '</span></div>';
                 }
+
+                canUpdate = true;
 
                 $form[0].innerHTML += html;
                 setEventsForDialogs();
@@ -298,20 +302,13 @@ APP.utilities.actions = (function () {
 
         for (i = 0; i < arr.length; i += 1) {
             if (arr[i].id === newArr[j].id) {
-                $(classSelector + ':eq(' + i + ') .badge').html(newArr[j].countUnread);
-                $(classSelector + ':eq(' + i + ') .short-message').html(newArr[j].message);
-                $(classSelector + ':eq(' + i + ') .last-message-time').html(lastMessageDate(newArr[j].created_at.seconds));
+                updateDialog();
                 newArr.shift();
             } else {
                 while (arr[i].id !== newArr[j].id) {
                     j++;
                 }
-                $(classSelector + ':eq(' + i + ') .badge').html(newArr[j].countUnread);
-                if (newArr[j].message) {
-
-                }
-                $(classSelector + ':eq(' + i + ') .short-message').html(newArr[j].message);
-                $(classSelector + ':eq(' + i + ') .last-message-time').html(lastMessageDate(newArr[j].created_at.seconds));
+                updateDialog();
                 newArr.splice(j, 1);
                 j = 0;
             }
@@ -348,6 +345,22 @@ APP.utilities.actions = (function () {
             $(classSelector + ':last').after(html);
 
             setEventsForDialogs();
+
+            $(classSelector + '.activated').click();
+        }
+
+        function updateDialog() {
+            var div = $(classSelector + ':eq(' + i + ')')[0];
+            $(classSelector + ':eq(' + i + ') .badge').html(newArr[j].countUnread);
+            if (newArr[j].message) {
+                $(classSelector + ':eq(' + i + ') .short-message').html(newArr[j].message);
+            } else {
+                $(classSelector + ':eq(' + i + ') .short-message').html(lang.picture[lType]);
+            }
+            $(classSelector + ':eq(' + i + ') .last-message-time').html(lastMessageDate(newArr[j].created_at.seconds));
+
+            div.lastMessId = newArr[j].id;
+            div.countUnread = newArr[j].countUnread;
         }
     }
 
@@ -357,11 +370,10 @@ APP.utilities.actions = (function () {
             isDialog = this.isDialog,
             conversationId = this.conversId,
             lastMessageId = this.lastMessId,
-            unreadedMessages = this.countUnread;
+            unreadedMessages = this.countUnread,
+            formHtml = '';
 
         console.log(entities.me.avatar_url);
-
-        $('#sender img').attr('src', entities.me.avatar_url);
 
         $.ajax({
             url: "/getMessages",
@@ -369,7 +381,7 @@ APP.utilities.actions = (function () {
             data: {id: entities.me.id, message_id: lastMessageId, conversation_id: conversationId},
             success: function (request) {
                 var html = '', i = 0,
-                    $messages = $('.messages > .jspContainer > .jspPane'),
+                    $messages = $('.jspPane:eq(1)'),
                     $names = {},
                     date,
                     elem = {};
@@ -458,6 +470,47 @@ APP.utilities.actions = (function () {
             }
         });
 
+        if ($('.sender').length < 1) {
+            formHtml = '<form class="row sender" method="POST" enctype="multipart/form-data" id="sender">' +
+                '<img src="img/profiles/my.jpg" alt="user" class="col-xs-2 col-xs-offset-1 profile-photo img-responsive">' +
+                '<textarea class="col-xs-7 send-field form-control" contenteditable="true" aria-multiline="true" max-length="6" name="message"> </textarea>' +
+                '<button type="button" class="btn btn-info file-upload col-xs-1" id="add-images">' +
+                '<input type="file" name="file" id="add-image">' +
+                '<span class="glyphicon glyphicon-picture" aria-hidden="true"></span></button>' +
+                '<button type="submit" class="btn btn-info col-xs-1" id="send-message">' +
+                '<span class="glyphicon glyphicon-share-alt" aria-hidden="true"></span></button></form>';
+
+            $('.messages').after(formHtml);
+        }
+
+        $('#sender img').attr('src', entities.me.avatar_url);
+
+        initializeMesseges();
+
+        buttons.$btnSendPict = $('#add-images')[0];
+
+        fields.$sendField = $('.send-field');
+
+        buttons.$btnSendPict.onclick = function (e) {
+            $('input#add-image')[0].click();
+        };
+
+        $('input[type=file]').on('change', function () {
+            if (this.files[0].size > 3388608) {
+                this.value = "";
+                alert(lang.bigFile[lType]);
+                return;
+            }
+
+            if (this.files[0].size < 1000) {
+                this.value = "";
+                alert(lang.littleFile[lType]);
+                return;
+            }
+            files = this.files;
+            console.log(files);
+        });
+
         $('.dialog').removeClass('activated');
         $('.conversation').removeClass('activated');
         $(this).addClass('activated');
@@ -515,7 +568,7 @@ APP.utilities.actions = (function () {
 
                     $('.modal-title:eq(0)').html(lang.profileInfo[lType]);
 
-                    html = '<div class="row"><div class="col-xs-5"><img class="profile-img" src="' + user.avatar_url + '" alt="user photo"></div>' +
+                    html = '<div class="row"><div class="col-xs-5"><img class="profile-img" src="' + user.avatar_url + '" alt="user photo" id="avatar"></div>' +
                         '<div class="col-xs-7"><div class="name text-center">' + user.firstName + ' ' + user.lastName + '</div>' +
                         '<div class="status text-center" >' + user.status + '</div>' +
                         '<button type="button" class="btn btn-default btn-write">Open dialog</button></div></div></div>';
@@ -539,7 +592,7 @@ APP.utilities.actions = (function () {
 
                     switch (behavior) {
                         case "open":
-                            $btn.html(lang.startCnoversation[lType]);
+                            $btn.html(lang.startConversation[lType]);
 
                             $btn.on('click', function () {
                                 var participants = [entities.me.id, user.id];
@@ -577,6 +630,11 @@ APP.utilities.actions = (function () {
                             });
                             break;
                         case "changeStatus":
+                            $modalBody.after('<form class="hide" method="POST" enctype="multipart/form-data" id="avatarForm"><input type="file" name="file" id="change-avatar"><button type="submit" class="btn btn-info col-xs-1" id="send-message">submit</button></form>');
+                            $('#avatar').on('click', function () {
+                                $('#change-avatar')[0].click();
+                            });
+
                             $btn.html(lang.changeStatus[lType]);
                             $btn.on('click', function () {
                                 var $status = $('.status:eq(0)'),
@@ -606,7 +664,8 @@ APP.utilities.actions = (function () {
 
                     function listener() {
                         var value = $('.status').html(),
-                            status = 0;
+                            status = 0,
+                            formData;
 
                         switch (value) {
                             case lang.statusOnline[lType]:
@@ -634,6 +693,29 @@ APP.utilities.actions = (function () {
                                 alert('server error');
                             }
                         });
+
+                        if (behavior === 'changeStatus'){
+                            var a = $('#avatarForm');
+                            formData = new FormData(a.get(0));
+                            formData.append('user', entities.me.id);
+
+                            $.ajax({
+                                url: "/setAvatar",
+                                data: formData,
+                                method: 'POST',
+                                cache: false,
+                                dataType: 'json',
+                                processData: false,
+                                contentType: false,
+                                success: function (request) {
+                                    console.log('picture changed');
+                                },
+                                error: function (error) {
+                                    console.log(error);
+                                    alert('server error');
+                                }
+                            });
+                        }
 
                         $('.close')[0].removeEventListener('click', listener);
                     }
@@ -792,9 +874,9 @@ APP.utilities.actions = (function () {
 
     function userSearchListener(e) {
         var value = this.value;
+        canUpdate = false;
 
         if (e.key === 'Enter') {
-            canUpdate = false;
             $('.jspPane:eq(0)').html('');
 
             if (value) {
@@ -981,28 +1063,9 @@ APP.utilities.actions = (function () {
         }
 
         initializeLanguage();
-
-        $('input[type=file]').on('change', function () {
-            if (this.files[0].size > 3388608) {
-                this.value = "";
-                alert(lang.bigFile[lType]);
-                return;
-            }
-
-            if (this.files[0].size < 1000) {
-                this.value = "";
-                alert(lang.littleFile[lType]);
-                return;
-            }
-            files = this.files;
-            console.log(files);
-        });
-
         initializeScroll();
         initializeButtons();
         initializeSearch();
-
-        initializeMesseges();
 
         setInterval(updateDialogsAndConversations, 5000);
     }

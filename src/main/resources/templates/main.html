@@ -43,15 +43,14 @@
                 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                     <ul class="nav navbar-nav nav-pills navbar-right">
                         <li class="">
-                            <a class="search-btn" role="button">Search</a>
+                            <a class="search-btn" role="button"></a>
                         </li>
                         <li>
-                            <a class="settings-btn" role="button">Settings</a>
+                            <a class="settings-btn" role="button"></a>
                         </li>
                         <li class="dropdown">
-                            <a class="dropdown-toggle" data-toggle="dropdown" role="button"
-                               aria-haspopup="true" aria-expanded="false">Language
-                                <span class="caret"></span>
+                            <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                               aria-expanded="false"><span class="caret"></span>
                             </a>
                             <ul class="dropdown-menu">
                                 <li>
@@ -63,7 +62,7 @@
                             </ul>
                         </li>
                         <li>
-                            <a class="logout-btn" role="button">Logout</a>
+                            <a class="logout-btn" role="button"></a>
                         </li>
                     </ul>
                 </div>
@@ -81,10 +80,10 @@
                         <input type="text" class="form-control" placeholder="Search" maxlength="40">
                     </div>
                 </div>
-                <button class="btn btn-default create-conversation">Start Conversation</button>
+                <button class="btn btn-default create-conversation"></button>
             </div>
             <div class="dialogs scroll-pane">
-                <div class="empty-list">No Conversations found</div>
+                <div class="empty-list"></div>
             </div>
         </div>
         <!-- messages here -->
@@ -92,28 +91,9 @@
             <div class="dialog-actions"></div>
             <div class="messages scroll-pane">
                 <div class="message">
-                    <div class="empty-list">Conversation isn't selected</div>
+                    <div class="empty-list"></div>
                 </div>
             </div>
-            <!--Actions here-->
-            <form class="row sender" method="POST" enctype="multipart/form-data" id="sender">
-                <img src="img/profiles/my.jpg" alt="user" class="col-xs-2 col-xs-offset-1 profile-photo img-responsive">
-                <textarea class="col-xs-7 send-field form-control" contenteditable="true" aria-multiline="true"
-                          max-length="6" name="message"> </textarea>
-                <!--<button type="button" class="btn btn-info col-xs-1" id="add-image">-->
-                <input class="glyphicon glyphicon-picture" type="file" name="file" id="add-image">
-                <!--<span class="glyphicon glyphicon-picture" aria-hidden="true"></span>-->
-                <!--</button>-->
-                <button type="submit" class="btn btn-info col-xs-1" id="send-message">
-                    <span class="glyphicon glyphicon-share-alt" aria-hidden="true"></span>
-                </button>
-                <!--форма загрузки картинок-->
-                <!--<form method="post" action="/upload" enctype="multipart/form-data">-->
-                    <!--<input type="file" name="file">-->
-                    <!--<button type="submit">Добавить</button>-->
-                <!--</form>-->
-                <!--форма загрузки картинок-->
-            </form>
         </div>
     </div>
     <!-- Modal -->
