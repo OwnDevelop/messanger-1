@@ -173,6 +173,8 @@ APP.utilities.actions = (function () {
                     html += '<span class="badge">' + elem.countUnread + '</span></div>';
                 }
 
+                canUpdate = true;
+
                 $form[0].innerHTML = html;
                 setEventsForDialogs();
             },
@@ -204,6 +206,8 @@ APP.utilities.actions = (function () {
                     }
                     html += '<span class="badge">' + elem.countUnread + '</span></div>';
                 }
+
+                canUpdate = true;
 
                 $form[0].innerHTML += html;
                 setEventsForDialogs();
@@ -298,20 +302,13 @@ APP.utilities.actions = (function () {
 
         for (i = 0; i < arr.length; i += 1) {
             if (arr[i].id === newArr[j].id) {
-                $(classSelector + ':eq(' + i + ') .badge').html(newArr[j].countUnread);
-                $(classSelector + ':eq(' + i + ') .short-message').html(newArr[j].message);
-                $(classSelector + ':eq(' + i + ') .last-message-time').html(lastMessageDate(newArr[j].created_at.seconds));
+                updateDialog();
                 newArr.shift();
             } else {
                 while (arr[i].id !== newArr[j].id) {
                     j++;
                 }
-                $(classSelector + ':eq(' + i + ') .badge').html(newArr[j].countUnread);
-                if (newArr[j].message) {
-
-                }
-                $(classSelector + ':eq(' + i + ') .short-message').html(newArr[j].message);
-                $(classSelector + ':eq(' + i + ') .last-message-time').html(lastMessageDate(newArr[j].created_at.seconds));
+                updateDialog();
                 newArr.splice(j, 1);
                 j = 0;
             }
@@ -348,6 +345,22 @@ APP.utilities.actions = (function () {
             $(classSelector + ':last').after(html);
 
             setEventsForDialogs();
+
+            $(classSelector + '.activated').click();
+        }
+
+        function updateDialog(){
+            var div = $(classSelector+':eq(' + i + ')')[0];
+            $(classSelector + ':eq(' + i + ') .badge').html(newArr[j].countUnread);
+            if (newArr[j].message) {
+                $(classSelector + ':eq(' + i + ') .short-message').html(newArr[j].message);
+            } else {
+                $(classSelector + ':eq(' + i + ') .short-message').html(lang.picture[lType]);
+            }
+            $(classSelector + ':eq(' + i + ') .last-message-time').html(lastMessageDate(newArr[j].created_at.seconds));
+
+            div.lastMessId = newArr[j].id;
+            div.countUnread = newArr[j].countUnread;
         }
     }
 
@@ -369,7 +382,7 @@ APP.utilities.actions = (function () {
             data: {id: entities.me.id, message_id: lastMessageId, conversation_id: conversationId},
             success: function (request) {
                 var html = '', i = 0,
-                    $messages = $('.messages > .jspContainer > .jspPane'),
+                    $messages = $('.jspPane:eq(1)'),
                     $names = {},
                     date,
                     elem = {};
@@ -539,7 +552,7 @@ APP.utilities.actions = (function () {
 
                     switch (behavior) {
                         case "open":
-                            $btn.html(lang.startCnoversation[lType]);
+                            $btn.html(lang.startConversation[lType]);
 
                             $btn.on('click', function () {
                                 var participants = [entities.me.id, user.id];
@@ -792,9 +805,9 @@ APP.utilities.actions = (function () {
 
     function userSearchListener(e) {
         var value = this.value;
+        canUpdate = false;
 
         if (e.key === 'Enter') {
-            canUpdate = false;
             $('.jspPane:eq(0)').html('');
 
             if (value) {
