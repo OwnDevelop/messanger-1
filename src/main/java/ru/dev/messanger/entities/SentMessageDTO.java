@@ -20,7 +20,7 @@ public class SentMessageDTO {
     private int conversation_id;
 
     @NotBlank
-    @Size(min = 10, max = 200, message = "About Me must be between 10 and 200 characters")
+    @Size(min = 0, max = 200, message = "Message must be between 0 and 200 characters")
     @SerializedName("message")
     private String message;
 
