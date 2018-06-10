@@ -709,25 +709,27 @@ APP.utilities.actions = (function () {
 
                         if (behavior === 'changeStatus') {
                             var a = $('#avatarForm');
-                            formData = new FormData(a.get(0));
-                            formData.append('user', entities.me.id);
+                            if (a.val()) {
+                                formData = new FormData(a.get(0));
+                                formData.append('user', entities.me.id);
 
-                            $.ajax({
-                                url: "/setAvatar",
-                                data: formData,
-                                method: 'POST',
-                                cache: false,
-                                dataType: 'json',
-                                processData: false,
-                                contentType: false,
-                                success: function (request) {
-                                    console.log('picture changed');
-                                },
-                                error: function (error) {
-                                    console.log(error);
-                                    alert('server error');
-                                }
-                            });
+                                $.ajax({
+                                    url: "/setAvatar",
+                                    data: formData,
+                                    method: 'POST',
+                                    cache: false,
+                                    dataType: 'json',
+                                    processData: false,
+                                    contentType: false,
+                                    success: function (request) {
+                                        console.log('picture changed');
+                                    },
+                                    error: function (error) {
+                                        console.log(error);
+                                        alert('server error');
+                                    }
+                                });
+                            }
                         }
 
                         $('.close')[0].removeEventListener('click', listener);
@@ -962,21 +964,34 @@ APP.utilities.actions = (function () {
             html = "", elem = {}, i = 0,
             className = '', dialogName = '',
             $dialogs = {},
+            index = 0,
             $conversations = {};
 
         for (i = 0; i < arr.length; i += 1) {
             elem = arr[i];
 
-            if (elem.hasOwnProperty("firstName")) {
-                html += '<div class="dialog"><img class="profile-photo" src="' + elem.avatar_url + '" alt="user">' +
-                    '<a class="dial-name">' + elem.firstName + ' ' + elem.lastName + '</a>' +
-                    '<span class="last-message-time"></span>' +
-                    '<div class="short-message ellipsis">' + elem.status + '</div></div>';
-            } else {
-                html += '<div class="conversation"><img class="profile-photo" src="img/defaults/conversation.jpg" alt="user">' +
-                    '<a class="dial-name">' + elem.title + '</a>' +
-                    '<span class="last-message-time"></span>' +
-                    '<div class="short-message ellipsis">Click to join!</div></div>';
+            index = dialogs.find(function (currentElement) {
+                return currentElement.from_id === elem.id;
+            });
+
+            if (!index) {
+                index = conversations.find(function (currentElement) {
+                    return currentElement.from_id === elem.id;
+                });
+            }
+
+            if (!index) {
+                if (elem.hasOwnProperty("firstName")) {
+                    html += '<div class="dialog"><img class="profile-photo" src="' + elem.avatar_url + '" alt="user">' +
+                        '<a class="dial-name">' + elem.firstName + ' ' + elem.lastName + '</a>' +
+                        '<span class="last-message-time"></span>' +
+                        '<div class="short-message ellipsis">' + elem.status + '</div></div>';
+                } else {
+                    html += '<div class="conversation"><img class="profile-photo" src="img/defaults/conversation.jpg" alt="user">' +
+                        '<a class="dial-name">' + elem.title + '</a>' +
+                        '<span class="last-message-time"></span>' +
+                        '<div class="short-message ellipsis">Click to join!</div></div>';
+                }
             }
         }
 
@@ -998,13 +1013,13 @@ APP.utilities.actions = (function () {
             $conversations[i].onclick = function () {
                 var answer = false,
                     conversId = this.conversId,
-                    index = 0;
+                    foundObj = null;
 
-                index = conversations.find(function (element) {
+                foundObj = conversations.find(function (element) {
                     return element.conversation_id === conversId;
                 });
 
-                if (!index) {
+                if (!foundObj) {
                     answer = confirm(lang.joinConversation[lType]);
 
                     if (answer) {
@@ -1130,8 +1145,6 @@ APP.utilities.actions = (function () {
         });
 
         buttons.$btnDev.on('click', function () {
-
-
             showModalForDevelopers();
         });
 
