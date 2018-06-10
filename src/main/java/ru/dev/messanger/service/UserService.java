@@ -25,19 +25,8 @@ public class UserService{
                     user.getFirstName(),
                     user.getActivation_code()
             );
-
             mail.send(user.getEmail(), "Activation code", message);
         }
-
         return true;
-    }
-
-    public boolean activateUser(String code) {
-        NewUserDTO user = BLL.getUserByACode(code);
-        if (user == null) {
-            return false;
-        }
-        user.setActivation_code(null);
-        return BLL.updateActivation(user);
     }
 }

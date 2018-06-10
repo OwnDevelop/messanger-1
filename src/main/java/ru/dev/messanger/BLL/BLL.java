@@ -23,11 +23,13 @@ import java.util.regex.Pattern;
 public class BLL {
 
     private final UserService userService;
+    private final Database database;
 
-    public BLL(UserService userService) {
+    public BLL(UserService userService, Database database) {
 
         this.userService = userService;
-        Database.INSTANCE.setStatusOfflineeAll();
+        this.database = database;
+        database.setStatusOfflineeAll();
     }
 
     @Value("${upload.path}")
@@ -117,8 +119,8 @@ public class BLL {
     }
 
 
-    public static NewUserDTO getUserByACode(String code) {
-        return Database.INSTANCE.getUserByACode(code);
+    public NewUserDTO getUserByACode(String code) {
+        return database.getUserByACode(code);
     }
 
     public String authorization(String login, String password) {
@@ -126,7 +128,7 @@ public class BLL {
             return new Gson().toJson("No Such User");
         }
 
-        UserDTO user = Database.INSTANCE.authorization(login, Encoder.hash256(password));
+        UserDTO user = database.authorization(login, Encoder.hash256(password));
         if (user == null) {
             return new Gson().toJson("not activated");
         }
@@ -143,23 +145,31 @@ public class BLL {
 
     public String emailAlreadyExists(String email) {
         if (StringUtils.isEmpty(email)) return "Empty email";
-        return new Gson().toJson(Database.INSTANCE.emailAlreadyExists(email));
+        return new Gson().toJson(database.emailAlreadyExists(email));
     }
 
     public String loginAlreadyExists(String login) {
         if (StringUtils.isEmpty(login)) return "Empty login";
-        return new Gson().toJson(Database.INSTANCE.loginAlreadyExists(login));
+        return new Gson().toJson(database.loginAlreadyExists(login));
     }
 
     public Boolean setUser(NewUserDTO user) {
         user.setPassword(Encoder.hash256(user.getPassword()));
         user.setActivation_code(UUID.randomUUID().toString());
         userService.sendActivationEmail(user);
-        return Database.INSTANCE.setUser(user);
+        return database.setUser(user);
+    }
+    public boolean activateUser(String code) {
+        NewUserDTO user = getUserByACode(code);
+        if (user == null) {
+            return false;
+        }
+        user.setActivation_code(null);
+        return updateActivation(user);
     }
 
-    public static Boolean updateActivation(NewUserDTO item) {
-        return Database.INSTANCE.updateActivation(item);
+    public Boolean updateActivation(NewUserDTO item) {
+        return database.updateActivation(item);
     }
 
     public String setUser( //TODO:remove in prod
@@ -190,17 +200,17 @@ public class BLL {
         user.setActivation_code(UUID.randomUUID().toString());
         userService.sendActivationEmail(user);
 
-        return new Gson().toJson(Database.INSTANCE.setUser(user));
+        return new Gson().toJson(database.setUser(user));
     }
 
     public String getUser(int id) {
         if (id < 1) return "Bad user ID";
-        return new Gson().toJson(Database.INSTANCE.getUser(id));
+        return new Gson().toJson(database.getUser(id));
     }
 
     public NewUserDTO getPUser(int id) {
         if (id < 1) return null;
-        return Database.INSTANCE.getPUser(id);
+        return database.getPUser(id);
     }
 
     public String updateUser(
@@ -225,35 +235,35 @@ public class BLL {
         user.setSex(sex);
         user.setStatus(status);
         user.setAvatar_url(avatar);
-        return new Gson().toJson(Database.INSTANCE.updateUser(user, id));
+        return new Gson().toJson(database.updateUser(user, id));
     }
 
     public String deleteUser(
             int id
     ) {
         if (id < 1) return "Bad user ID";
-        return new Gson().toJson(Database.INSTANCE.deleteUser(id));
+        return new Gson().toJson(database.deleteUser(id));
     }
 
     public String searchUsers(
             String searchQuery
     ) {
         if (StringUtils.isEmpty(searchQuery)) return "Bad Query";
-        return new Gson().toJson(Database.INSTANCE.searchUsers(searchQuery));
+        return new Gson().toJson(database.searchUsers(searchQuery));
     }
 
     public String getConversations(
             int id
     ) {
         if (id < 1) return "Bad conversation ID";
-        return new Gson().toJson(Database.INSTANCE.getConversations(id));
+        return new Gson().toJson(database.getConversations(id));
     }
 
     public String getDialogs(
             int id
     ) {
         if (id < 1) return "Bad dialog ID";
-        return new Gson().toJson(Database.INSTANCE.getDialogs(id));
+        return new Gson().toJson(database.getDialogs(id));
     }
 
     public String setConversation(
@@ -278,7 +288,7 @@ public class BLL {
         }
         conversation.setParticipants_id(userIds);
 
-        return new Gson().toJson(Database.INSTANCE.setConversation(conversation));
+        return new Gson().toJson(database.setConversation(conversation));
     }
 
     public String setMessage(SentMessageDTO message, MultipartFile file
@@ -287,7 +297,7 @@ public class BLL {
             String resultFilename;
 
             if (file.getSize() == 0){
-                return new Gson().toJson(Database.INSTANCE.setMessage(message));
+                return new Gson().toJson(database.setMessage(message));
             }
 
             String uuidFile = UUID.randomUUID().toString();
@@ -303,7 +313,7 @@ public class BLL {
                 e.printStackTrace();
             }
         }
-        return new Gson().toJson(Database.INSTANCE.setMessage(message));
+        return new Gson().toJson(database.setMessage(message));
     }
 
     public String getMessages(
@@ -313,7 +323,7 @@ public class BLL {
     ) {
         if ((conversation_id < 1) || (id < 1) || (message_id < 1))
             return "Bad conversation_id(int) or id of user(int) or id(int) of message";
-        return new Gson().toJson(Database.INSTANCE.getMessages(conversation_id, id, message_id));
+        return new Gson().toJson(database.getMessages(conversation_id, id, message_id));
     }
 
     public String searchInConversation(
@@ -321,14 +331,14 @@ public class BLL {
             Integer conversation_id
     ) {
         if (StringUtils.isEmpty(searchQuery) || (conversation_id < 1)) return "Bad Query or id of conversation";
-        return new Gson().toJson(Database.INSTANCE.searchInConversation(searchQuery, conversation_id));
+        return new Gson().toJson(database.searchInConversation(searchQuery, conversation_id));
     }
 
     public String searchConversations(
             String searchQuery
     ) {
         if (StringUtils.isEmpty(searchQuery)) return "Bad Query";
-        return new Gson().toJson(Database.INSTANCE.searchConversations(searchQuery));
+        return new Gson().toJson(database.searchConversations(searchQuery));
     }
 
     public String joinTheConversation(
@@ -336,7 +346,7 @@ public class BLL {
             Integer id
     ) {
         if ((conversation_id < 1) || (id < 1)) return "Bad  conversation_id(int) or id of user(int)";
-        return new Gson().toJson(Database.INSTANCE.joinTheConversation(conversation_id, id));
+        return new Gson().toJson(database.joinTheConversation(conversation_id, id));
     }
 
     public String leaveTheConversation(
@@ -344,7 +354,7 @@ public class BLL {
             Integer id
     ) {
         if ((conversation_id < 1) || (id < 1)) return "Bad conversation_id(int) or id of user(int)";
-        return new Gson().toJson(Database.INSTANCE.leaveTheConversation(conversation_id, id));
+        return new Gson().toJson(database.leaveTheConversation(conversation_id, id));
     }
 
     public String setUnreadMessages(
@@ -354,7 +364,7 @@ public class BLL {
     ) {
         if ((conversation_id < 1) || (id < 1) || count < 0)
             return "Bad conversation_id(int) or id of user(int) or count(int) of messages";
-        return new Gson().toJson(Database.INSTANCE.setUnreadMessages(conversation_id, id, count));
+        return new Gson().toJson(database.setUnreadMessages(conversation_id, id, count));
     }
 
     public String deleteConversation(
@@ -362,19 +372,19 @@ public class BLL {
             Integer id
     ) {
         if ((conversation_id < 1) || (id < 1)) return "Bad User conversation_id(int) or id of user(int) number";
-        return new Gson().toJson(Database.INSTANCE.deleteConversation(conversation_id, id));
+        return new Gson().toJson(database.deleteConversation(conversation_id, id));
     }
 
     public String setStatusOnline(Integer id, Integer status) {
         if ((id < 1) || (status != 1 && status != 2 && status != 3 && status != 4))
             return "Bad User ID(int) or Status(int) number";
-        return new Gson().toJson(Database.INSTANCE.setStatusOnline(id, status));
+        return new Gson().toJson(database.setStatusOnline(id, status));
     }
 
     public String setAvatar(int userID, MultipartFile file) {
         if (userID < 1 || file.isEmpty()) return "Bad User ID";
         String resultFilename;
-        NewUserDTO user = Database.INSTANCE.getPUser(userID);
+        NewUserDTO user = database.getPUser(userID);
         if (!file.getOriginalFilename().isEmpty()) {
             String uuidFile = UUID.randomUUID().toString();
             resultFilename = uuidFile + "." + file.getOriginalFilename();
@@ -405,6 +415,6 @@ public class BLL {
                 e.printStackTrace();
             }
         }
-        return new Gson().toJson(Database.INSTANCE.updateUser(user, user.getId()));
+        return new Gson().toJson(database.updateUser(user, user.getId()));
     }
 }

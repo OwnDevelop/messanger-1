@@ -1,5 +1,8 @@
 package ru.dev.messanger.dll;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Service;
 import ru.dev.messanger.entities.*;
 
 import java.sql.*;
@@ -7,40 +10,50 @@ import java.util.*;
 
 import static java.sql.DriverManager.getConnection;
 
+@Service
 public class Database implements AbstractDal {
 
     private Properties properties;
     private String url;
     private final String DEFAULT_STATUS = "4";
 
-    public static final Database INSTANCE = new Database();   // SINGLETONE
+ //   public static final Database INSTANCE = new Database();   // SINGLETONE
 
-    public Database() {
+//    public Database() {
+//
+//        properties = new Properties();
+//        properties.setProperty("url", "jdbc:mariadb://localhost:3306/messenger?useUnicode=yes&characterEncoding=UTF-8");
+//        properties.setProperty("jdbc.driver", "org.mariadb.jdbc.Driver");
+//        properties.setProperty("user", "root");
+//        properties.setProperty("password", "root");
+//
+//        url = "jdbc:mariadb://localhost:3306/messenger?useUnicode=yes&characterEncoding=UTF-8";
+//
+//        try {
+//            Class.forName("org.mariadb.jdbc.Driver");
+//        } catch (ClassNotFoundException e) {
+//            System.err.println("Driver not found.");
+//            e.printStackTrace();
+//        }
+//    }
 
-        properties = new Properties();
-        properties.setProperty("url", "jdbc:mariadb://localhost:3306/messenger?useUnicode=yes&characterEncoding=UTF-8");
-        properties.setProperty("jdbc.driver", "org.mariadb.jdbc.Driver");
-        properties.setProperty("user", "root");
-        properties.setProperty("password", "root");
+    @Value("${database.user}")
+    private String NAMEUSER;
 
-        url = "jdbc:mariadb://localhost:3306/messenger?useUnicode=yes&characterEncoding=UTF-8";
+    @Value("${database.password}")
+    private String PASSWORD;
 
-        try {
-            Class.forName("org.mariadb.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            System.err.println("Driver not found.");
-            e.printStackTrace();
-        }
-    }
+    @Value("${database.url}")
+    private String URL;
 
     //-------------------------------
-    private static final String NAMEUSER = "root";
-    private static final String PASSWORD = "root";
-    private static final String URL = "jdbc:mariadb://localhost:3306/messenger?useUnicode=yes&characterEncoding=UTF-8";
+//    private static final String NAMEUSER = "root";
+//    private static final String PASSWORD = "root";
+//    private static final String URL = "jdbc:mariadb://localhost:3306/messenger?useUnicode=yes&characterEncoding=UTF-8";
 
     //-------------------------------
     /// Создаёт конекшн
-    private static ResultSet getResult(String statement) throws SQLException {
+    private ResultSet getResult(String statement) throws SQLException {
         try (Connection connection = getConnection(URL,NAMEUSER,PASSWORD)){
             if (!connection.isClosed()) {
                 System.out.println("Connected!");
