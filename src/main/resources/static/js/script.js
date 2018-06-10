@@ -1040,11 +1040,16 @@ APP.utilities.actions = (function () {
         $.ajax({
             url: '/setMessage',
             method: 'POST',
-            data: data,
-            cache: false,
-            dataType: 'json',
-            processData: false,
-            contentType: false,
+            data: {
+                from_id: entities.me.id,
+                conversation_id: conversationId,
+                message: 'Conversation has started',
+                attachment_url: ''
+            },
+            // cache: false,
+            // dataType: 'json',
+            // processData: false,
+            // contentType: false,
             success: function (res) {
                 console.log(res);
                 fields.$searchField.val('');
