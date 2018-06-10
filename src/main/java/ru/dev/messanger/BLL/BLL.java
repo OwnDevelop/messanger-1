@@ -1,7 +1,6 @@
 package ru.dev.messanger.BLL;
 
 import com.google.gson.Gson;
-import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -17,12 +16,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
-import java.util.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class BLL {
 
-    private final UserService userService;  //TODO: НОРМАЛЬНО АВТОВАЙРИТЬ В ЛОГИКЕ?
+    private final UserService userService;
 
     public BLL(UserService userService) {
         this.userService = userService;
@@ -33,6 +33,9 @@ public class BLL {
 
     @Value("${image.profile.path}")
     private String uploadProfilePath;
+
+    @Value("${image.mapping}")
+    private String imageMapping;
 
     private HashMap<Object, Token> userToken = new HashMap<>(); //Key(Object) is ID of User
 
@@ -118,7 +121,7 @@ public class BLL {
 
     public String authorization(String login, String password) {
         if (loginAlreadyExists(login) == "false") {
-            return new Gson().toJson("No Such User"); //TODO: связана с ранним запросом ДО авторизации loginaleready exists И НЕ ТЕСТИТСЯ ИБО НИКАК чина давай
+            return new Gson().toJson("No Such User");
         }
 
         UserDTO user = Database.INSTANCE.authorization(login, Encoder.hash256(password));
@@ -132,19 +135,24 @@ public class BLL {
             setStatusOnline(tuser.getId(), 1);
             return new Gson().toJson(tuser);
         } else {
-            return new Gson().toJson("User is not activated yet"); //TODO: такое себе
+            return new Gson().toJson("User is not activated yet");
         }
     }
 
     public String emailAlreadyExists(String email) {
+        if (StringUtils.isEmpty(email)) return "Empty email";
         return new Gson().toJson(Database.INSTANCE.emailAlreadyExists(email));
     }
 
     public String loginAlreadyExists(String login) {
+        if (StringUtils.isEmpty(login)) return "Empty login";
         return new Gson().toJson(Database.INSTANCE.loginAlreadyExists(login));
     }
 
     public Boolean setUser(NewUserDTO user) {
+        user.setPassword(Encoder.hash256(user.getPassword()));
+        user.setActivation_code(UUID.randomUUID().toString());
+        userService.sendActivationEmail(user);
         return Database.INSTANCE.setUser(user);
     }
 
@@ -152,7 +160,7 @@ public class BLL {
         return Database.INSTANCE.updateActivation(item);
     }
 
-    public String setUser(
+    public String setUser( //TODO:remove in prod
             String email,
             String login,
             String password,
@@ -161,6 +169,11 @@ public class BLL {
             String sex,
             String status,
             String avatar) {
+        if ((StringUtils.isEmpty(email)) || (StringUtils.isEmpty(password)) || (StringUtils.isEmpty(first_name)) ||
+                (StringUtils.isEmpty(last_name)) || (StringUtils.isEmpty(sex)) ||
+                (StringUtils.isEmpty(status)) || (StringUtils.isEmpty(avatar))) {
+            return "Bad User";
+        }
         NewUserDTO user = new NewUserDTO();
         user.setEmail(email);
         user.setLogin(login);
@@ -179,10 +192,12 @@ public class BLL {
     }
 
     public String getUser(int id) {
+        if (id < 1) return "Bad user ID";
         return new Gson().toJson(Database.INSTANCE.getUser(id));
     }
 
     public NewUserDTO getPUser(int id) {
+        if (id < 1) return null;
         return Database.INSTANCE.getPUser(id);
     }
 
@@ -195,6 +210,11 @@ public class BLL {
             String status,
             String avatar
     ) {
+        if ((id < 1) || (StringUtils.isEmpty(password)) || (StringUtils.isEmpty(first_name)) ||
+                (StringUtils.isEmpty(last_name)) || (StringUtils.isEmpty(sex)) ||
+                (StringUtils.isEmpty(status)) || (StringUtils.isEmpty(avatar))) {
+            return "Bad User";
+        }
         NewUserDTO user = new NewUserDTO();
         user.setId(id);
         user.setPassword(Encoder.hash256(password));
@@ -209,33 +229,28 @@ public class BLL {
     public String deleteUser(
             int id
     ) {
-        if (id >= 0) {
-            return new Gson().toJson(Database.INSTANCE.deleteUser(id));
-        }
-        return "Bad ID";
+        if (id < 1) return "Bad user ID";
+        return new Gson().toJson(Database.INSTANCE.deleteUser(id));
     }
 
     public String searchUsers(
             String searchQuery
     ) {
-        if (!StringUtils.isEmpty(searchQuery)) {
-            return new Gson().toJson(Database.INSTANCE.searchUsers(searchQuery));
-        }
-        return "Bad Query";
+        if (StringUtils.isEmpty(searchQuery)) return "Bad Query";
+        return new Gson().toJson(Database.INSTANCE.searchUsers(searchQuery));
     }
 
     public String getConversations(
             int id
     ) {
-        if (id >= 0) {
-            return new Gson().toJson(Database.INSTANCE.getConversations(id));
-        }
-        return "Bad ID";
+        if (id < 1) return "Bad conversation ID";
+        return new Gson().toJson(Database.INSTANCE.getConversations(id));
     }
 
     public String getDialogs(
             int id
     ) {
+        if (id < 1) return "Bad dialog ID";
         return new Gson().toJson(Database.INSTANCE.getDialogs(id));
     }
 
@@ -244,12 +259,14 @@ public class BLL {
             String title,
             String users
     ) {
+        if (title.equals("")) title = null;
+        if ((admin_id < 1) || (StringUtils.isEmpty(users)))
+            return "Bad admin ID or title or users list(string) is empty";
         ConversationDTO conversation = new ConversationDTO();
         conversation.setAdmin_id(admin_id);
         conversation.setTitle(title);
         String[] userNames = users.split(",");
         List<Integer> userIds = new ArrayList<Integer>(userNames.length);
-        //TODO: validation
         try {
             for (int i = 0; i < userNames.length; i++) {
                 userIds.add(Integer.parseInt(userNames[i]));
@@ -270,12 +287,12 @@ public class BLL {
             String uuidFile = UUID.randomUUID().toString();
             resultFilename = uuidFile + "." + file.getOriginalFilename();
             try {
-                File uploadDir = new File("//" + uploadPath); //TODO:autowire this
+                File uploadDir = new File("//" + uploadPath);
                 if (!uploadDir.exists()) {
                     uploadDir.mkdir();
                 }
                 file.transferTo(new File(uploadPath + "\\" + resultFilename));
-                message.setAttachment_url("img/uploads/" + resultFilename);
+                message.setAttachment_url(imageMapping + resultFilename);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -288,6 +305,8 @@ public class BLL {
             Integer id,
             Integer message_id
     ) {
+        if ((conversation_id < 1) || (id < 1) || (message_id < 1))
+            return "Bad conversation_id(int) or id of user(int) or id(int) of message";
         return new Gson().toJson(Database.INSTANCE.getMessages(conversation_id, id, message_id));
     }
 
@@ -295,12 +314,14 @@ public class BLL {
             String searchQuery,
             Integer conversation_id
     ) {
+        if (StringUtils.isEmpty(searchQuery) || (conversation_id < 1)) return "Bad Query or id of conversation";
         return new Gson().toJson(Database.INSTANCE.searchInConversation(searchQuery, conversation_id));
     }
 
     public String searchConversations(
             String searchQuery
     ) {
+        if (StringUtils.isEmpty(searchQuery)) return "Bad Query";
         return new Gson().toJson(Database.INSTANCE.searchConversations(searchQuery));
     }
 
@@ -308,6 +329,7 @@ public class BLL {
             Integer conversation_id,
             Integer id
     ) {
+        if ((conversation_id < 1) || (id < 1)) return "Bad  conversation_id(int) or id of user(int)";
         return new Gson().toJson(Database.INSTANCE.joinTheConversation(conversation_id, id));
     }
 
@@ -315,6 +337,7 @@ public class BLL {
             Integer conversation_id,
             Integer id
     ) {
+        if ((conversation_id < 1) || (id < 1)) return "Bad conversation_id(int) or id of user(int)";
         return new Gson().toJson(Database.INSTANCE.leaveTheConversation(conversation_id, id));
     }
 
@@ -323,6 +346,8 @@ public class BLL {
             Integer id,
             Integer count
     ) {
+        if ((conversation_id < 1) || (id < 1) || count < 0)
+            return "Bad conversation_id(int) or id of user(int) or count(int) of messages";
         return new Gson().toJson(Database.INSTANCE.setUnreadMessages(conversation_id, id, count));
     }
 
@@ -330,21 +355,25 @@ public class BLL {
             Integer conversation_id,
             Integer id
     ) {
+        if ((conversation_id < 1) || (id < 1)) return "Bad User conversation_id(int) or id of user(int) number";
         return new Gson().toJson(Database.INSTANCE.deleteConversation(conversation_id, id));
     }
 
     public String setStatusOnline(Integer id, Integer status) {
+        if ((id < 1) || (status != 1 && status != 2 && status != 3 && status != 4))
+            return "Bad User ID(int) or Status(int) number";
         return new Gson().toJson(Database.INSTANCE.setStatusOnline(id, status));
     }
 
     public String setAvatar(int userID, MultipartFile file) {
+        if (userID < 1 || file.isEmpty()) return "Bad User ID";
         String resultFilename;
         NewUserDTO user = Database.INSTANCE.getPUser(userID);
-        if (file != null && !file.getOriginalFilename().isEmpty()) {
+        if (!file.getOriginalFilename().isEmpty()) {
             String uuidFile = UUID.randomUUID().toString();
             resultFilename = uuidFile + "." + file.getOriginalFilename();
             try {
-                File uploadDir = new File("//" + uploadProfilePath); //TODO:autowire this
+                File uploadDir = new File("//" + uploadProfilePath);
                 if (!uploadDir.exists()) {
                     uploadDir.mkdir();
                 }

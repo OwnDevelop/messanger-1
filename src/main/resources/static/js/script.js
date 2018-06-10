@@ -618,7 +618,7 @@ APP.utilities.actions = (function () {
                                     $.ajax({
                                         url: '/setConversation',
                                         method: 'POST',
-                                        data: {users: participants.join(), admin_id: entities.me.id, title: null},
+                                        data: {users: participants.join(), admin_id: entities.me.id, title: ""},
                                         success: function (request) {
                                             console.log('joined');
                                             firstMessegeAJAX(request);

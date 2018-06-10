@@ -19,7 +19,7 @@ $('#form').validate({
             email: true,
             maxlength: 35
         },
-        name: {
+        firstName: {
             required: true,
             minlength: 3,
             lettersOnly: true
@@ -49,7 +49,7 @@ $('#form').validate({
 });
 
 $('document').ready(function () {
-    var $name = $("#name"),
+    var $firstName = $("#firstName"),
         $surname = $("#last-name"),
         $login = $("#login"),
         $email = $("#email"),
@@ -63,7 +63,7 @@ $('document').ready(function () {
             email = $email.val().trim(),
             password = $password.val().trim(),
             confirmPass = $confirm_pass.val().trim(),
-            firstName = $name.val().trim(),
+            firstName = $firstName.val().trim(),
             lastName = $surname.val().trim(),
             sex = $('input[name="sex"]:checked').val();
 
@@ -92,11 +92,11 @@ $('document').ready(function () {
                             login: login,
                             email: email,
                             password: password,
-                            first_name: firstName,
-                            last_name: lastName,
+                            firstName: firstName,
+                            lastName: lastName,
                             sex: sex,
                             status: 4,
-                            avatar: url
+                            avatar_url: url
                         },
                         success: function (request) {
                             if (request) {

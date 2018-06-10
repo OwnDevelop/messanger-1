@@ -39,15 +39,9 @@ public class RESTController {
 
     @RequestMapping(value = "/setUser", method = RequestMethod.GET, produces = "application/json")
     public String setUser(
-            @RequestParam String email,
-            @RequestParam String login,
-            @RequestParam String password,
-            @RequestParam String first_name,
-            @RequestParam String last_name,
-            @RequestParam String sex,
-            @RequestParam String status,
-            @RequestParam String avatar) {
-        return bll.setUser(email, login, password, first_name, last_name, sex, status, avatar);
+            @Valid NewUserDTO user
+    ) {
+        return bll.setUser(user).toString();
     }
 
     @RequestMapping(value = "/getUser", method = RequestMethod.POST, produces = "application/json")
