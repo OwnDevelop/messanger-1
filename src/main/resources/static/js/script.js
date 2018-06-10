@@ -391,11 +391,14 @@ APP.utilities.actions = (function () {
                     $messages = $('.jspPane:eq(1)'),
                     $names = {},
                     date,
+                    ajaxUrl = '',
                     elem = {};
 
                 if (isDialog) {
+                    ajaxUrl = '/deleteConversation';
                     html = '<img src="' + url + '" class="conversation-img profile-photo">';
                 } else {
+                    ajaxUrl = '/leaveTheConversation';
                     html = '<img src="img/defaults/conversation.jpg" class="conversation-img profile-photo">';
                 }
 
@@ -418,6 +421,8 @@ APP.utilities.actions = (function () {
                         $.ajax({
                             url: '/leaveTheConversation',
                             method: 'GET',
+                            url: ajaxUrl,
+                            method: 'POST',
                             data: {
                                 id: entities.me.id,
                                 conversation_id: conversationId
@@ -1033,6 +1038,9 @@ APP.utilities.actions = (function () {
         data.append('conversation_id', conversationId);
         data.append('message', 'Conversation has started');
         data.append('attachment_url', "");
+<<<<<<< HEAD
+=======
+>>>>>>> c48475bd4b2e576476efb100bb96a051c0a85c3a
 
         $.ajax({
             url: '/setMessage',
