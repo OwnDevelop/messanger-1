@@ -1036,19 +1036,20 @@ APP.utilities.actions = (function () {
         data.append('conversation_id', conversationId);
         data.append('message', 'Conversation has started');
         data.append('attachment_url', "");
-<<<<<<< HEAD
-=======
-        data.append('file', new File([], 'start')); //создание пустого файла для отправки
->>>>>>> c48475bd4b2e576476efb100bb96a051c0a85c3a
 
         $.ajax({
             url: '/setMessage',
             method: 'POST',
-            data: data,
-            cache: false,
-            dataType: 'json',
-            processData: false,
-            contentType: false,
+            data: {
+                from_id: entities.me.id,
+                conversation_id: conversationId,
+                message: 'Conversation has started',
+                attachment_url: ''
+            },
+            // cache: false,
+            // dataType: 'json',
+            // processData: false,
+            // contentType: false,
             success: function (res) {
                 console.log(res);
                 fields.$searchField.val('');
