@@ -61,12 +61,22 @@ APP.models.entities = {
         joinConversation: ['Join Conversation?', 'Присоединиться к беседе?'],
         bigFile: ['File must be less than 2 MB', ''],
         littleFile: ['Too small file', 'Слишком маленький файл'],
-        picture: ['picture', 'картинка']
-    },
-    dialogs: [],
-    profiles: [],
-    foundConversations: [],
-    conversations: []
+        picture: ['picture', 'картинка'],
+        developers: ['Developers', 'Разработчики'],
+        developersList: [{
+            url: 'img/defaults/front.png',
+            name: ['Sergey Kovalenko', 'Коваленко Сергей'],
+            work: ['Frontend developer, Design', 'Слой представления, Дизайн']
+        }, {
+            url: 'img/defaults/back.jpg',
+            name: ['Ivan Morenkov', 'Моренков Иван'],
+            work: ['Backend developer', 'Серверная часть']
+        }, {
+            url: 'img/defaults/db.jpg',
+            name: ['Anastasia Kim', 'Ким Анастасия'],
+            work: ['Database architect, Design', 'Архитектор БД, Дизайн']
+        }]
+    }
 };
 
 APP.models.buttons = {
@@ -78,6 +88,7 @@ APP.models.buttons = {
     $btnEngLang: $('.dropdown-menu li:nth-child(2)'),
     $btnRusLang: $('.dropdown-menu li:nth-child(1)'),
     $btnLogout: $('.logout-btn'),
+    $btnDev: $('.developers-btn'),
     $btnLang: $('.dropdown-toggle')
 };
 
@@ -108,10 +119,10 @@ APP.utilities.validation = (function () {
 }());
 
 APP.utilities.actions = (function () {
-    var dialogs = APP.models.entities.dialogs,
-        conversations = APP.models.entities.conversations,
-        foundConversations = APP.models.entities.foundConversations,
-        profiles = APP.models.entities.profiles,
+    var dialogs = [],
+        conversations = [],
+        foundConversations = [],
+        profiles = [],
         validation = APP.utilities.validation,
         entities = APP.models.entities,
         buttons = APP.models.buttons,
@@ -237,7 +248,7 @@ APP.utilities.actions = (function () {
             $dialNames[i].current = i;
             $dialNames[i].onclick = function (e) {
                 e.stopPropagation();
-                showModalForUser(dialogs[this.current].from_id);
+                showModalForUser(dialogs[this.current].from_id, 'closeModal');
             };
         }
 
@@ -576,7 +587,7 @@ APP.utilities.actions = (function () {
                     $modalBody.html(html);
 
                     html = '<div class="row"><div class="col-xs-5"><h4 class="profile-info text-right">' + lang.email[lType] + ':</h4>' +
-                        '<h4 class="profile-info text-right">' + lang.login[lType] + ':</h4><h4 class="profile-info text-right">Sex:</h4><h4 class="profile-info text-right">' + lang.registration[lType] + ':</h4></div>' +
+                        '<h4 class="profile-info text-right">' + lang.login[lType] + ':</h4><h4 class="profile-info text-right">' + lang.sex[lType] + ':</h4><h4 class="profile-info text-right">' + lang.registration[lType] + ':</h4></div>' +
                         '<div class="col-xs-7"><h4 class="profile-info text-left">' + user.email + '</h4>' +
                         '<h4 class="profile-info text-left">' + user.login + '</h4>' +
                         '<h4 class="profile-info text-left">' + user.sex + '</h4>' +
@@ -640,6 +651,8 @@ APP.utilities.actions = (function () {
                                 var $status = $('.status:eq(0)'),
                                     value = $status.html();
 
+                                console.log('"' + user.status + '"');
+
                                 switch (value) {
                                     case lang.statusOnline[lType]:
                                         $status.html(lang.statusIdle[lType]);
@@ -694,7 +707,7 @@ APP.utilities.actions = (function () {
                             }
                         });
 
-                        if (behavior === 'changeStatus'){
+                        if (behavior === 'changeStatus') {
                             var a = $('#avatarForm');
                             formData = new FormData(a.get(0));
                             formData.append('user', entities.me.id);
@@ -805,6 +818,26 @@ APP.utilities.actions = (function () {
 
         $("#Modal").modal('show');
         initializeScroll();
+    }
+
+    function showModalForDevelopers() {
+        var html = "", i = 0,
+            $modalBody = $('.modal-body'),
+            dev = {};
+
+        $('.modal-title:eq(0)').html(lang.developers[lType]);
+
+        for (i=0; i< lang.developersList.length; i +=1){
+            dev = lang.developersList[i];
+
+            html += '<div class="dialog"><img class="profile-photo" src="' + dev.url + '" alt="user">' +
+                '<a class="dial-name">' + dev.name[lType] + '</a>' +
+                '<div class="short-message ellipsis">' + dev.work[lType] + '</div></div>';
+        }
+
+        $modalBody.html(html);
+
+        $('#Modal').modal('show');
     }
 
     function initializeScroll() {
@@ -1023,6 +1056,17 @@ APP.utilities.actions = (function () {
             $time = $('.last-message-time'),
             i = 0;
 
+        $('.empty-list:eq(0)').html(lang.emptyDialogs[lType]);
+        $('.empty-list:eq(1)').html(lang.emptyConversation[lType]);
+
+        buttons.$btnLogout.html(lang.logout[lType]);
+        buttons.$btnSettings.html(lang.settings[lType]);
+        buttons.$btnSearch.html(lang.search[lType]);
+        buttons.$btnLang.text(lang.language[lType]);
+        buttons.$btnCreateConvers.text(lang.startConversation[lType]);
+        buttons.$btnDev.text(lang.developers[lType]);
+        fields.$searchField.attr('placeholder', lang.userSearch[lType]);
+
         for (i = 0; i < $messages.length; i += 1) {
             if ($messages[i].innerHTML === lang.picture[0] || $messages[i].innerHTML === lang.picture[1]) {
                 $messages[i].innerHTML = lang.picture[lType];
@@ -1032,16 +1076,6 @@ APP.utilities.actions = (function () {
                 $time[i].innerHTML = lang.yesterday[lType];
             }
         }
-
-        $('.empty-list:eq(0)').html(lang.emptyDialogs[lType]);
-        $('.empty-list:eq(1)').html(lang.emptyConversation[lType]);
-
-        buttons.$btnLogout.html(lang.logout[lType]);
-        buttons.$btnSettings.html(lang.settings[lType]);
-        buttons.$btnSearch.html(lang.search[lType]);
-        buttons.$btnLang.text(lang.language[lType]);
-        buttons.$btnCreateConvers.text(lang.startConversation[lType]);
-        fields.$searchField.attr('placeholder', lang.userSearch[lType]);
         initializeSearch();
     }
 
@@ -1082,6 +1116,12 @@ APP.utilities.actions = (function () {
 
         buttons.$btnCreateConvers.on('click', function () {
             showModalForConversation();
+        });
+
+        buttons.$btnDev.on('click', function () {
+
+
+            showModalForDevelopers();
         });
 
         buttons.$btnLogout.on('click', function (e) {
