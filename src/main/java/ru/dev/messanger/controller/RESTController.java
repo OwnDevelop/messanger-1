@@ -11,6 +11,7 @@ import ru.dev.messanger.entities.SentMessageDTO;
 import ru.dev.messanger.entities.UserDTO;
 
 import javax.validation.Valid;
+import java.io.IOException;
 
 
 @RestController
@@ -96,7 +97,7 @@ public class RESTController {
             @Valid SentMessageDTO message,
             @RequestParam("file") MultipartFile file
 
-    ) {
+    ) throws IOException {
         return bll.setMessage(message, file);
     }
 
@@ -132,7 +133,7 @@ public class RESTController {
         return bll.joinTheConversation(conversation_id, id);
     }
 
-    @RequestMapping(value = "/leaveTheConversation", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/leaveTheConversation", method = RequestMethod.POST, produces = "application/json")
     public String leaveTheConversation(
             @RequestParam Integer conversation_id,
             @RequestParam Integer id
@@ -149,7 +150,7 @@ public class RESTController {
         return bll.setUnreadMessages(conversation_id, id, count);
     }
 
-    @RequestMapping(value = "/deleteConversation", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/deleteConversation", method = RequestMethod.POST, produces = "application/json")
     public String deleteConversation(
             @RequestParam Integer conversation_id,
             @RequestParam Integer id
