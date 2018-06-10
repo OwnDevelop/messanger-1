@@ -164,8 +164,6 @@ APP.utilities.actions = (function () {
                     return a.firstName < b.firstName;
                 });
 
-                console.log(request);
-
                 for (i = 0; i < dialogs.length; i += 1) {
                     elem = dialogs[i];
 
@@ -275,8 +273,6 @@ APP.utilities.actions = (function () {
                 data: {id: entities.me.id},
                 method: 'POST',
                 success: function (request) {
-                    console.log(request);
-
                     update(request, dialogs, '.dialog', 'firstName');
                 },
                 error: function (error) {
@@ -290,8 +286,6 @@ APP.utilities.actions = (function () {
                 data: {id: entities.me.id},
                 method: 'POST',
                 success: function (request) {
-                    console.log(request);
-
                     update(request, conversations, '.conversation', 'title');
                 },
                 error: function (error) {
@@ -313,7 +307,7 @@ APP.utilities.actions = (function () {
 
         for (i = 0; i < arr.length; i += 1) {
             if (arr[i].id === newArr[j].id) {
-                updateDialog();
+                updateDialog(i);
                 newArr.shift();
             } else {
                 while (arr[i].id !== newArr[j].id) {
@@ -356,11 +350,11 @@ APP.utilities.actions = (function () {
             $(classSelector + ':last').after(html);
 
             setEventsForDialogs();
-
-            $(classSelector + '.activated').click();
         }
 
-        function updateDialog() {
+        $(classSelector + '.activated').click();
+
+        function updateDialog(i) {
             var div = $(classSelector + ':eq(' + i + ')')[0];
             $(classSelector + ':eq(' + i + ') .badge').html(newArr[j].countUnread);
             if (newArr[j].message) {
@@ -368,7 +362,9 @@ APP.utilities.actions = (function () {
             } else {
                 $(classSelector + ':eq(' + i + ') .short-message').html(lang.picture[lType]);
             }
-            $(classSelector + ':eq(' + i + ') .last-message-time').html(lastMessageDate(newArr[j].created_at.seconds));
+            if (newArr[j].created_at) {
+                $(classSelector + ':eq(' + i + ') .last-message-time').html(lastMessageDate(newArr[j].created_at.seconds));
+            }
 
             div.lastMessId = newArr[j].id;
             div.countUnread = newArr[j].countUnread;
