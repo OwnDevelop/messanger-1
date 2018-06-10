@@ -173,7 +173,7 @@ public class RESTController {
 
     @RequestMapping(value = "/setAvatar", method = RequestMethod.POST, produces = "application/json")
     public String setAvatar(
-            @Valid NewUserDTO user,
+            @Valid int user,
             @RequestParam("file") MultipartFile file
     ) {
         return bll.setAvatar(user, file);

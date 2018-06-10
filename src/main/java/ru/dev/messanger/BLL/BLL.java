@@ -337,9 +337,9 @@ public class BLL {
         return new Gson().toJson(Database.INSTANCE.setStatusOnline(id, status));
     }
 
-    public String setAvatar(NewUserDTO user, MultipartFile file) {
+    public String setAvatar(int userID, MultipartFile file) {
         String resultFilename;
-
+        NewUserDTO user = Database.INSTANCE.getPUser(userID);
         if (file != null && !file.getOriginalFilename().isEmpty()) {
             String uuidFile = UUID.randomUUID().toString();
             resultFilename = uuidFile + "." + file.getOriginalFilename();
