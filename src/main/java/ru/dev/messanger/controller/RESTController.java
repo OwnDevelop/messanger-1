@@ -138,6 +138,7 @@ public class RESTController {
         return bll.joinTheConversation(conversation_id, id);
     }
 
+    @RequestMapping(value = "/leaveTheConversation", method = RequestMethod.POST, produces = "application/json")
     public String leaveTheConversation(
             @RequestParam Integer conversation_id,
             @RequestParam Integer id
@@ -154,6 +155,7 @@ public class RESTController {
         return bll.setUnreadMessages(conversation_id, id, count);
     }
 
+    @RequestMapping(value = "/deleteConversation", method = RequestMethod.POST, produces = "application/json")
     public String deleteConversation(
             @RequestParam Integer conversation_id,
             @RequestParam Integer id

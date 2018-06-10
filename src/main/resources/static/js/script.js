@@ -419,8 +419,6 @@ APP.utilities.actions = (function () {
 
                     if (answer) {
                         $.ajax({
-                            url: '/leaveTheConversation',
-                            method: 'GET',
                             url: ajaxUrl,
                             method: 'POST',
                             data: {
@@ -1040,6 +1038,7 @@ APP.utilities.actions = (function () {
         data.append('attachment_url', "");
 <<<<<<< HEAD
 =======
+        data.append('file', new File([], 'start')); //создание пустого файла для отправки
 >>>>>>> c48475bd4b2e576476efb100bb96a051c0a85c3a
 
         $.ajax({
