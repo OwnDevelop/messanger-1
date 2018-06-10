@@ -615,7 +615,7 @@ APP.utilities.actions = (function () {
                                     $.ajax({
                                         url: '/setConversation',
                                         method: 'POST',
-                                        data: {users: participants.join(), admin_id: entities.me.id, title: null},
+                                        data: {users: participants.join(), admin_id: entities.me.id, title: ""},
                                         success: function (request) {
                                             console.log('joined');
                                             firstMessegeAJAX(request);
@@ -1033,6 +1033,7 @@ APP.utilities.actions = (function () {
         data.append('conversation_id', conversationId);
         data.append('message', 'Conversation has started');
         data.append('attachment_url', "");
+        data.append('file', new File([],'start')); //создание пустого файла для отправки
 
         $.ajax({
             url: '/setMessage',
@@ -1042,7 +1043,6 @@ APP.utilities.actions = (function () {
             dataType: 'json',
             processData: false,
             contentType: false,
-                // {from_id: entities.me.id,conversation_id: conversationId,message: "Conversation has started",attachment_url: ""},
             success: function (res) {
                 console.log(res);
                 fields.$searchField.val('');

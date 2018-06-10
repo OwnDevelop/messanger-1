@@ -11,7 +11,7 @@ public class Database implements AbstractDal {
 
     private Properties properties;
     private String url;
-    private final String DEFAULT_STATUS = "1";
+    private final String DEFAULT_STATUS = "4";
 
     public static final Database INSTANCE = new Database();   // SINGLETONE
 

@@ -11,9 +11,7 @@ public interface AbstractDal {
     Boolean setUser(NewUserDTO item);
     UserDTO getUser(int id);
     NewUserDTO getPUser(int id);
-
     Boolean updateActivation(NewUserDTO item);
-
     Boolean updateUser(NewUserDTO item, Integer id);
     Boolean deleteUser(int id);
     Iterable<UserDTO> searchUsers(String searchQuery);

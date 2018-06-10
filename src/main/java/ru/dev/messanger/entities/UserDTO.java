@@ -3,6 +3,8 @@ package ru.dev.messanger.entities;
 import com.google.gson.annotations.SerializedName;
 import ru.dev.messanger.BLL.BLL;
 
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -11,14 +13,20 @@ public class UserDTO {
 
     @SerializedName("id")
     private int id;
+    @NotBlank(message = "login cannot be empty")
     @SerializedName("login")
     private String login;
+    @Email(message = "Email is not correct")
+    @NotBlank(message = "Email cannot be empty")
     @SerializedName("email")
     private String email;
+    @NotBlank(message = "firstName cannot be empty")
     @SerializedName("firstName")
     private String firstName;
+    @NotBlank(message = "lastName cannot be empty")
     @SerializedName("lastName")
     private String lastName;
+    @NotBlank(message = "sex cannot be empty")
     @SerializedName("sex")
     private String sex;
     @SerializedName("status")
