@@ -94,8 +94,7 @@ public class RESTController {
     @RequestMapping(value = "/setMessage", method = RequestMethod.POST, produces = "application/json")
     public String setMessage(
             @Valid SentMessageDTO message,
-            @RequestParam("file") MultipartFile file
-
+            @RequestParam(value = "file", required = false) MultipartFile file
     ) {
         return bll.setMessage(message, file);
     }

@@ -49,9 +49,9 @@ public class BLL {
 
     public Boolean checkToken(String token) {
         System.out.println(token);
-        if ((token == null) || ("[object Object]".equals(token))) { //TODO: это ломает всю защиту | заглушка, чтобы войти   token == null
-            return true;
-        }
+//        if ((token == null) || ("[object Object]".equals(token))) { //TODO: это ломает всю защиту | заглушка, чтобы войти   token == null
+//            return true;
+//        }
 
         if ((userToken.size() == 0) || (token.isEmpty()) || (token == null)) { // TODO: Can be removed (presents for better understanding)
             return false;
@@ -280,11 +280,11 @@ public class BLL {
     }
 
     public String setMessage(SentMessageDTO message, MultipartFile file
-    ) throws IOException {
+    ) {
         if (file != null && !file.getOriginalFilename().isEmpty()) {
             String resultFilename;
 
-            if ( file.getBytes().length == 0){
+            if (file.getSize() == 0){
                 return new Gson().toJson(Database.INSTANCE.setMessage(message));
             }
 

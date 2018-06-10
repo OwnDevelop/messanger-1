@@ -1033,7 +1033,6 @@ APP.utilities.actions = (function () {
         data.append('conversation_id', conversationId);
         data.append('message', 'Conversation has started');
         data.append('attachment_url', "");
-        data.append('file', new File([],'start')); //создание пустого файла для отправки
 
         $.ajax({
             url: '/setMessage',

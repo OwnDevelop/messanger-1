@@ -29,13 +29,13 @@ public class MappingController {
 
     @PostMapping("/enter")
     public String enter(@RequestParam String token) {
-        return bll.checkToken(token) ? "redirect:/main" : "redirect:/signin";
+        return bll.checkToken(token) ? "main" : "EnterPage ";
     }
 
-    @GetMapping("/main")
-    public String main() {
-        return "main";
-    }
+//    @GetMapping("/main")
+//    public String main() {
+//        return "main";
+//    }
 
     @GetMapping("/signup")
     public String signup() {
