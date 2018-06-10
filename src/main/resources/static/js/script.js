@@ -477,18 +477,19 @@ APP.utilities.actions = (function () {
             }
         });
 
-        if ($('.sender').length < 1) {
-            formHtml = '<form class="row sender" method="POST" enctype="multipart/form-data" id="sender">' +
-                '<img src="img/profiles/my.jpg" alt="user" class="col-xs-2 col-xs-offset-1 profile-photo img-responsive">' +
-                '<textarea class="col-xs-7 send-field form-control" contenteditable="true" aria-multiline="true" max-length="6" name="message"> </textarea>' +
-                '<button type="button" class="btn btn-info file-upload col-xs-1" id="add-images">' +
-                '<input type="file" name="file" id="add-image">' +
-                '<span class="glyphicon glyphicon-picture" aria-hidden="true"></span></button>' +
-                '<button type="submit" class="btn btn-info col-xs-1" id="send-message">' +
-                '<span class="glyphicon glyphicon-share-alt" aria-hidden="true"></span></button></form>';
+        $('.sender').remove();
 
-            $('.messages').after(formHtml);
-        }
+        formHtml = '<form class="row sender" method="POST" enctype="multipart/form-data" id="sender">' +
+            '<img src="img/profiles/my.jpg" alt="user" class="col-xs-2 col-xs-offset-1 profile-photo img-responsive">' +
+            '<textarea class="col-xs-7 send-field form-control" contenteditable="true" aria-multiline="true" max-length="6" name="message"> </textarea>' +
+            '<button type="button" class="btn btn-info file-upload col-xs-1" id="add-images">' +
+            '<input type="file" name="file" id="add-image">' +
+            '<span class="glyphicon glyphicon-picture" aria-hidden="true"></span></button>' +
+            '<button type="submit" class="btn btn-info col-xs-1" id="send-message">' +
+            '<span class="glyphicon glyphicon-share-alt" aria-hidden="true"></span></button></form>';
+
+        $('.messages').after(formHtml);
+
 
         $('#sender img').attr('src', entities.me.avatar_url);
 
@@ -823,7 +824,7 @@ APP.utilities.actions = (function () {
 
         $('.modal-title:eq(0)').html(lang.developers[lType]);
 
-        for (i=0; i< lang.developersList.length; i +=1){
+        for (i = 0; i < lang.developersList.length; i += 1) {
             dev = lang.developersList[i];
 
             html += '<div class="dialog"><img class="profile-photo" src="' + dev.url + '" alt="user">' +
@@ -1026,15 +1027,22 @@ APP.utilities.actions = (function () {
     }
 
     function firstMessegeAJAX(conversationId) {
+        var data = new FormData();
+
+        data.append('from_id', entities.me.id);
+        data.append('conversation_id', conversationId);
+        data.append('message', 'Conversation has started');
+        data.append('attachment_url', "");
+
         $.ajax({
             url: '/setMessage',
             method: 'POST',
-            data: {
-                from_id: entities.me.id,
-                conversation_id: conversationId,
-                message: "Conversation has started",
-                attachment_url: ""
-            },
+            data: data,
+            cache: false,
+            dataType: 'json',
+            processData: false,
+            contentType: false,
+                // {from_id: entities.me.id,conversation_id: conversationId,message: "Conversation has started",attachment_url: ""},
             success: function (res) {
                 console.log(res);
                 fields.$searchField.val('');
