@@ -380,8 +380,6 @@ APP.utilities.actions = (function () {
             unreadedMessages = this.countUnread,
             formHtml = '';
 
-        console.log(entities.me.avatar_url);
-
         $.ajax({
             url: "/getMessages",
             method: 'POST',
@@ -572,7 +570,7 @@ APP.utilities.actions = (function () {
             success: function (request) {
                 var user = request,
                     date,
-                    $btn = {};
+                    $btn = null;
 
                 if (user) {
                     date = new Date(user.created_at.seconds * 1000);
@@ -611,9 +609,6 @@ APP.utilities.actions = (function () {
                                     return element.id === user.id;
                                 });
 
-                                console.log(index);
-                                console.log(user.id);
-
                                 if (!index) {
                                     $.ajax({
                                         url: '/setConversation',
@@ -650,8 +645,6 @@ APP.utilities.actions = (function () {
                             $btn.on('click', function () {
                                 var $status = $('.status:eq(0)'),
                                     value = $status.html();
-
-                                console.log('"' + user.status + '"');
 
                                 switch (value) {
                                     case lang.statusOnline[lType]:
@@ -709,7 +702,7 @@ APP.utilities.actions = (function () {
 
                         if (behavior === 'changeStatus') {
                             var a = $('#avatarForm');
-                            if (a.val()) {
+                            // if (a.val()) {
                                 formData = new FormData(a.get(0));
                                 formData.append('user', entities.me.id);
 
@@ -729,7 +722,7 @@ APP.utilities.actions = (function () {
                                         alert('server error');
                                     }
                                 });
-                            }
+                            // }
                         }
 
                         $('.close')[0].removeEventListener('click', listener);
@@ -742,6 +735,8 @@ APP.utilities.actions = (function () {
             }
         });
     }
+
+    //TODO: загрузка аватарки, обновление переписки, перевод статусов, модалки форм при открытии
 
     function showModalForConversation() {
         var html = "", i = 0,
@@ -762,7 +757,7 @@ APP.utilities.actions = (function () {
         $('.modal-title:eq(0)').html(lang.selectParticipants[lType]);
         $('.modal-title:eq(0)').after('<div class="input-group">' +
             '<span class="input-group-addon" id="convers-party">' + lang.title[lType] + '</span>' +
-            '<input type="text" class="form-control" placeholder="' + lang.conversationName[lType] + '" aria-describedby="convers-party">' +
+            '<input type="text" class="form-control" placeholder="' + lang.conversationName[lType] + '" aria-describedby="convers-party" id="titleName">' +
             '</div>');
         $modalBody.html(html);
         $modalFooter.html('<button type="button" class="btn btn-default" data-dismiss="modal">' + lang.close[lType] + '</button>' +
@@ -779,7 +774,7 @@ APP.utilities.actions = (function () {
 
         $('.start-convers').on('click', function () {
             var $people = $('.selected'),
-                $title = $('.modal-title input'),
+                $title = $('#titleName'),
                 title = $title.val().trim(),
                 participantsId = [entities.me.id];
 
@@ -1133,6 +1128,7 @@ APP.utilities.actions = (function () {
     function initializeButtons() {
         buttons.$btnSearch.on('click', function () {
             fields.$searchField.focus();
+            initializeSearch();
             fields.$searchField.val("");
         });
 
@@ -1218,9 +1214,6 @@ APP.utilities.actions = (function () {
             if (text || files) {
                 text = validation.htmlEscape(text);
                 data.set('message', text);
-
-                console.log(files);
-                console.log(data);
 
                 $.ajax({
                     url: '/setMessage',

@@ -2,7 +2,7 @@
 ///<reference path="jquery.validate.js">
 
 $.validator.addMethod("lettersDegitsOnly", function (value, element) {
-    var regexp = /^[\-а-яА-Яa-zA-Z0-9]+$/i;
+    var regexp = /^[\-а-яА-Яa-zA-Z0-9@]+$/i;
     return this.optional(element) || regexp.test(value);
 }, "Please enter letters or digits only");
 
