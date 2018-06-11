@@ -11,6 +11,9 @@ public interface AbstractDal {
     Boolean setUser(NewUserDTO item);
     UserDTO getUser(int id);
     NewUserDTO getFullUser(int id);
+
+    NewUserDTO getPUser(int id);
+
     Boolean updateActivation(NewUserDTO item);
     Boolean updateUser(NewUserDTO item, Integer id);
     Boolean deleteUser(int id);
