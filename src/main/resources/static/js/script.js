@@ -392,6 +392,8 @@ APP.utilities.actions = (function () {
                     ajaxUrl = '',
                     elem = {};
 
+                console.log(request);
+
                 if (isDialog) {
                     ajaxUrl = '/deleteConversation';
                     html = '<img src="' + url + '" class="conversation-img profile-photo">';
@@ -405,7 +407,6 @@ APP.utilities.actions = (function () {
                     '<a class="leave btn btn-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>';
 
                 $('.dialog-actions').html(html);
-                initializeScroll();
                 html = '';
 
                 $('.search-messege').on('click', function () {
@@ -471,34 +472,33 @@ APP.utilities.actions = (function () {
                 initializeScroll();
 
                 fields.$sendField.focus();
-                fields.$sendField.val('');
+                //fields.$sendField.val('');
             },
             error: function (error) {
                 console.log(error);
             }
         });
 
-        $('.sender').remove();
+        if ($('.sender').length < 1) {
+            formHtml = '<form class="row sender" method="POST" enctype="multipart/form-data" id="sender">' +
+                '<img src="img/profiles/my.jpg" alt="user" class="col-xs-2 col-xs-offset-1 profile-photo img-responsive">' +
+                '<textarea class="col-xs-7 send-field form-control" contenteditable="true" aria-multiline="true" max-length="6" name="message"> </textarea>' +
+                '<button type="button" class="btn btn-info file-upload col-xs-1" id="add-images">' +
+                '<input type="file" name="file" id="add-image">' +
+                '<span class="glyphicon glyphicon-picture" aria-hidden="true"></span></button>' +
+                '<button type="submit" class="btn btn-info col-xs-1" id="send-message">' +
+                '<span class="glyphicon glyphicon-share-alt" aria-hidden="true"></span></button></form>';
 
-        formHtml = '<form class="row sender" method="POST" enctype="multipart/form-data" id="sender">' +
-            '<img src="img/profiles/my.jpg" alt="user" class="col-xs-2 col-xs-offset-1 profile-photo img-responsive">' +
-            '<textarea class="col-xs-7 send-field form-control" contenteditable="true" aria-multiline="true" max-length="6" name="message"> </textarea>' +
-            '<button type="button" class="btn btn-info file-upload col-xs-1" id="add-images">' +
-            '<input type="file" name="file" id="add-image">' +
-            '<span class="glyphicon glyphicon-picture" aria-hidden="true"></span></button>' +
-            '<button type="submit" class="btn btn-info col-xs-1" id="send-message">' +
-            '<span class="glyphicon glyphicon-share-alt" aria-hidden="true"></span></button></form>';
-
-        $('.messages').after(formHtml);
+            $('.messages').after(formHtml);
+        }
 
 
         $('#sender img').attr('src', entities.me.avatar_url);
 
-        initializeMesseges();
-
         buttons.$btnSendPict = $('#add-images')[0];
-
         fields.$sendField = $('.send-field');
+
+        initializeMesseges();
 
         buttons.$btnSendPict.onclick = function (e) {
             $('input#add-image')[0].click();
@@ -516,8 +516,6 @@ APP.utilities.actions = (function () {
                 alert(lang.littleFile[lType]);
                 return;
             }
-            files = this.files;
-            console.log(files);
         });
 
         $('.dialog').removeClass('activated');
@@ -570,6 +568,8 @@ APP.utilities.actions = (function () {
             success: function (request) {
                 var user = request,
                     date,
+                    files = [],
+                    status = '',
                     $btn = null;
 
                 if (user) {
@@ -577,9 +577,21 @@ APP.utilities.actions = (function () {
 
                     $('.modal-title:eq(0)').html(lang.profileInfo[lType]);
 
+                    switch (user.status) {
+                        case 'Online':
+                            status = lang.statusOnline[lType];
+                            break;
+                        case 'Idle':
+                            status = lang.statusIdle[lType];
+                            break;
+                        case 'Do Not Disturb':
+                            status = lang.statusDoNotDisturb[lType];
+                            break;
+                    }
+
                     html = '<div class="row"><div class="col-xs-5"><img class="profile-img" src="' + user.avatar_url + '" alt="user photo" id="avatar"></div>' +
                         '<div class="col-xs-7"><div class="name text-center">' + user.firstName + ' ' + user.lastName + '</div>' +
-                        '<div class="status text-center" >' + user.status + '</div>' +
+                        '<div class="status text-center" >' + status + '</div>' +
                         '<button type="button" class="btn btn-default btn-write">Open dialog</button></div></div></div>';
 
                     $modalBody.html(html);
@@ -636,9 +648,25 @@ APP.utilities.actions = (function () {
                             });
                             break;
                         case "changeStatus":
-                            $modalBody.after('<form class="hide" method="POST" enctype="multipart/form-data" id="avatarForm"><input type="file" name="file" id="change-avatar"><button type="submit" class="btn btn-info col-xs-1" id="send-message">submit</button></form>');
+                            $modalBody.append('<form class="hide" method="POST" enctype="multipart/form-data" id="avatarForm"><input type="file" name="file" id="change-avatar"><button type="submit" class="btn btn-info col-xs-1" id="send-message">submit</button></form>');
                             $('#avatar').on('click', function () {
                                 $('#change-avatar')[0].click();
+                            });
+
+                            $('#change-avatar').on('change', function () {
+                                if (this.files[0].size > 3388608) {
+                                    this.value = "";
+                                    alert(lang.bigFile[lType]);
+                                    return;
+                                }
+
+                                if (this.files[0].size < 1000) {
+                                    this.value = "";
+                                    alert(lang.littleFile[lType]);
+                                    return;
+                                }
+
+                                files = this.files;
                             });
 
                             $btn.html(lang.changeStatus[lType]);
@@ -702,10 +730,10 @@ APP.utilities.actions = (function () {
 
                         if (behavior === 'changeStatus') {
                             var a = $('#avatarForm');
-                            // if (a.val()) {
-                                formData = new FormData(a.get(0));
-                                formData.append('user', entities.me.id);
 
+                            formData = new FormData(a.get(0));
+                            formData.append('user', entities.me.id);
+                            if (files.length > 0) {
                                 $.ajax({
                                     url: "/setAvatar",
                                     data: formData,
@@ -716,13 +744,14 @@ APP.utilities.actions = (function () {
                                     contentType: false,
                                     success: function (request) {
                                         console.log('picture changed');
+                                        files = [];
                                     },
                                     error: function (error) {
                                         console.log(error);
                                         alert('server error');
                                     }
                                 });
-                            // }
+                            }
                         }
 
                         $('.close')[0].removeEventListener('click', listener);
@@ -735,8 +764,6 @@ APP.utilities.actions = (function () {
             }
         });
     }
-
-    //TODO: загрузка аватарки, обновление переписки, перевод статусов, модалки форм при открытии
 
     function showModalForConversation() {
         var html = "", i = 0,
@@ -1056,10 +1083,6 @@ APP.utilities.actions = (function () {
                 message: 'Conversation has started',
                 attachment_url: ''
             },
-            // cache: false,
-            // dataType: 'json',
-            // processData: false,
-            // contentType: false,
             success: function (res) {
                 console.log(res);
                 fields.$searchField.val('');
@@ -1178,69 +1201,77 @@ APP.utilities.actions = (function () {
     }
 
     function initializeMesseges() {
-        fields.$sendField.on("keyup", function (e) {
-            var $this = $(this),
-                key = e.key;
+        fields.$sendField[0].removeEventListener("keyup", keyupListener);
+        fields.$sendField[0].addEventListener("keyup", keyupListener);
 
-            switch (key) {
-                case "Enter":
-                    fixLength();
-                    buttons.$btnSendMess.click();
-                    return;
-                case "Backspace":
-                    return;
+        $('#sender')[0].removeEventListener('submit', submitListener);
+        $('#sender')[0].addEventListener('submit', submitListener);
+
+
+    }
+
+    function keyupListener(e) {
+        var $this = $(this),
+            key = e.key;
+
+        switch (key) {
+            case "Enter":
+                fixLength();
+                buttons.$btnSendMess.click();
+                return;
+            case "Backspace":
+                return;
+        }
+
+        function fixLength() {
+            if ($this.val().length > MESSEGE_MAX_LENGHT) {
+                $this.val($this.val().substr(0, MESSEGE_MAX_LENGHT));
             }
+        }
+    }
 
-            function fixLength() {
-                if ($this.val().length > MESSEGE_MAX_LENGHT) {
-                    $this.val($this.val().substr(0, MESSEGE_MAX_LENGHT));
+    function submitListener(e) {
+        var text = fields.$sendField.val().trim(),
+            $that = $(this),
+            a = $('.activated'),
+            data = new FormData($that.get(0)),
+            conversId = a[0].conversId;
+
+        e.preventDefault();
+
+        data.append('from_id', entities.me.id);
+        data.append('conversation_id', conversId);
+        data.append('attachment_url', "");
+
+        if (text || files) {
+            text = validation.htmlEscape(text);
+            data.set('message', text);
+
+            $.ajax({
+                url: '/setMessage',
+                method: 'POST',
+                data: data,
+                cache: false,
+                dataType: 'json',
+                processData: false,
+                contentType: false,
+                success: function (res) {
+                    fields.$sendField.val('');
+
+                    a[0].lastMessId = res;
+                    openDialog.apply(a[0], arguments);
+
+                    a.find('.short-message').text(text);
+                },
+                error: function (error) {
+                    console.log(error);
+                    alert('server error');
                 }
-            }
-        });
-
-        $('#sender').on('submit', function (e) {
-            var text = fields.$sendField.val().trim(),
-                $that = $(this),
-                a = $('.activated'),
-                data = new FormData($that.get(0)),
-                conversId = a[0].conversId;
-
-            e.preventDefault();
-
-            data.append('from_id', entities.me.id);
-            data.append('conversation_id', conversId);
-            data.append('attachment_url', "");
-
-            if (text || files) {
-                text = validation.htmlEscape(text);
-                data.set('message', text);
-
-                $.ajax({
-                    url: '/setMessage',
-                    method: 'POST',
-                    data: data,
-                    cache: false,
-                    dataType: 'json',
-                    processData: false,
-                    contentType: false,
-                    success: function (res) {
-                        fields.$sendField.val('');
-
-                        a[0].lastMessId = res;
-                        openDialog.apply(a[0], arguments);
-
-                        a.find('.short-message').text(text);
-                    },
-                    error: function (error) {
-                        console.log(error);
-                        alert('server error');
-                    }
-                });
-            }
-            else {
-                fields.$sendField.focus();
-            }
-        });
+            });
+        }
+        else {
+            fields.$sendField.focus();
+        }
     }
 
     return {
