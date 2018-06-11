@@ -11,8 +11,6 @@ import ru.dev.messanger.service.UserService;
 public class ActivationController {
 
     @Autowired
-    private UserService userService;
-    @Autowired
     private BLL bll;
 
 

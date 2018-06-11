@@ -17,26 +17,6 @@ public class Database implements AbstractDal {
     private String url;
     private final String DEFAULT_STATUS = "4";
 
- //   public static final Database INSTANCE = new Database();   // SINGLETONE
-
-//    public Database() {
-//
-//        properties = new Properties();
-//        properties.setProperty("url", "jdbc:mariadb://localhost:3306/messenger?useUnicode=yes&characterEncoding=UTF-8");
-//        properties.setProperty("jdbc.driver", "org.mariadb.jdbc.Driver");
-//        properties.setProperty("user", "root");
-//        properties.setProperty("password", "root");
-//
-//        url = "jdbc:mariadb://localhost:3306/messenger?useUnicode=yes&characterEncoding=UTF-8";
-//
-//        try {
-//            Class.forName("org.mariadb.jdbc.Driver");
-//        } catch (ClassNotFoundException e) {
-//            System.err.println("Driver not found.");
-//            e.printStackTrace();
-//        }
-//    }
-
     @Value("${database.user}")
     private String NAMEUSER;
 
@@ -46,12 +26,6 @@ public class Database implements AbstractDal {
     @Value("${database.url}")
     private String URL;
 
-    //-------------------------------
-//    private static final String NAMEUSER = "root";
-//    private static final String PASSWORD = "root";
-//    private static final String URL = "jdbc:mariadb://localhost:3306/messenger?useUnicode=yes&characterEncoding=UTF-8";
-
-    //-------------------------------
     /// Создаёт конекшн
     private ResultSet getResult(String statement) throws SQLException {
         try (Connection connection = getConnection(URL,NAMEUSER,PASSWORD)){
@@ -65,7 +39,6 @@ public class Database implements AbstractDal {
         }
         return null;
     }
-
 
     @Override
     public UserDTO authorization(String login, String password) {
@@ -153,14 +126,14 @@ public class Database implements AbstractDal {
     }
 
     @Override
-    public NewUserDTO getPUser(int id) {
+    public NewUserDTO getFullUser(int id) {
         NewUserDTO user = null;
         String SqlQuery = "SELECT users.id, email, login, password, first_name, last_name, sex, created_at, activation_code, value as status, url as avatar FROM users LEFT JOIN status ON users.status=status.id LEFT JOIN photos ON users.avatar=photos.id " +
                 "WHERE users.id=" + id;
         try {
             ResultSet rs = getResult(SqlQuery);
             while (rs.next()) {
-                user = getPUser(rs);
+                user = getFullUser(rs);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -688,22 +661,6 @@ public class Database implements AbstractDal {
         user.setStatus(rs.getString(9));
         user.setAvatar_url(rs.getString(10));
         user.setActivation_code(rs.getString(11));
-        return user;
-    }
-
-    private static NewUserDTO getPUser(ResultSet rs) throws SQLException {
-        NewUserDTO user = new NewUserDTO();
-        user.setId(rs.getInt(1));
-        user.setEmail(rs.getString(2));
-        user.setLogin(rs.getString(3));
-        user.setPassword(rs.getString(4));
-        user.setFirstName(rs.getString(5));
-        user.setLastName(rs.getString(6));
-        user.setSex(rs.getString(7));
-        user.setCreated_at(rs.getTimestamp(8).toInstant());
-        user.setActivation_code(rs.getString(9));
-        user.setStatus(rs.getString(10));
-        user.setAvatar_url(rs.getString(11));
         return user;
     }
 

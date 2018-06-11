@@ -53,11 +53,11 @@ public class BLL {
 
     public Boolean checkToken(String token) {
         System.out.println(token);
-        if ((token == null) || ("[object Object]".equals(token))) { //TODO: это ломает всю защиту | заглушка, чтобы войти   token == null
-            return false; //TODO: ВСЁ , ЭТО КОНЕЦ
+        if (token == null || token.isEmpty()) {
+            return false;
         }
 
-        if ((userToken.size() == 0) || (token.isEmpty()) || (token == null)) { // TODO: Can be removed (presents for better understanding)
+        if (userToken.size() == 0) {
             return false;
         }
         Token storedToken = getToken(token);
@@ -97,7 +97,7 @@ public class BLL {
             for (Object key : userToken.keySet()) {
                 if (userToken.get(key) == token) {
                     userToken.remove(key);
-                    return true; //Tokens are unique, no need to continue iteration
+                    return true;
                 }
             }
         }
@@ -108,7 +108,7 @@ public class BLL {
         for (Object key : userToken.keySet()) {
             if (token.equals(userToken.get(key).getStringToken())) {
                 userToken.remove(key);
-                return true; //Tokens are unique, no need to continue iteration
+                return true;
             }
         }
         return false;
@@ -119,7 +119,7 @@ public class BLL {
     }
 
 
-    public NewUserDTO getUserByACode(String code) {
+    private NewUserDTO getUserByACode(String code) {
         return database.getUserByACode(code);
     }
 
@@ -132,6 +132,7 @@ public class BLL {
         if (user == null) {
             return new Gson().toJson("not activated");
         }
+
         if (user.getActivation_code() == null) {
             Token tkn = new Token();
             TUser tuser = new TUser(user, tkn.getStringToken());
@@ -144,12 +145,16 @@ public class BLL {
     }
 
     public String emailAlreadyExists(String email) {
-        if (StringUtils.isEmpty(email)) return "Empty email";
+        if (StringUtils.isEmpty(email)) {
+            return "Empty email";
+        }
         return new Gson().toJson(database.emailAlreadyExists(email));
     }
 
     public String loginAlreadyExists(String login) {
-        if (StringUtils.isEmpty(login)) return "Empty login";
+        if (StringUtils.isEmpty(login)) {
+            return "Empty login";
+        }
         return new Gson().toJson(database.loginAlreadyExists(login));
     }
 
@@ -159,6 +164,7 @@ public class BLL {
         userService.sendActivationEmail(user);
         return database.setUser(user);
     }
+
     public boolean activateUser(String code) {
         NewUserDTO user = getUserByACode(code);
         if (user == null) {
@@ -172,97 +178,40 @@ public class BLL {
         return database.updateActivation(item);
     }
 
-    public String setUser( //TODO:remove in prod
-            String email,
-            String login,
-            String password,
-            String first_name,
-            String last_name,
-            String sex,
-            String status,
-            String avatar) {
-        if ((StringUtils.isEmpty(email)) || (StringUtils.isEmpty(password)) || (StringUtils.isEmpty(first_name)) ||
-                (StringUtils.isEmpty(last_name)) || (StringUtils.isEmpty(sex)) ||
-                (StringUtils.isEmpty(status)) || (StringUtils.isEmpty(avatar))) {
-            return "Bad User";
-        }
-        NewUserDTO user = new NewUserDTO();
-        user.setEmail(email);
-        user.setLogin(login);
-        user.setPassword(Encoder.hash256(password));
-        user.setFirstName(first_name);
-        user.setLastName(last_name);
-        user.setSex(sex);
-        user.setStatus(status);
-        user.setAvatar_url(avatar);
-        user.setCreated_at(Instant.now());
-
-        user.setActivation_code(UUID.randomUUID().toString());
-        userService.sendActivationEmail(user);
-
-        return new Gson().toJson(database.setUser(user));
-    }
-
     public String getUser(int id) {
         if (id < 1) return "Bad user ID";
         return new Gson().toJson(database.getUser(id));
     }
 
-    public NewUserDTO getPUser(int id) {
+    public NewUserDTO getFullUser(int id) {
         if (id < 1) return null;
-        return database.getPUser(id);
-    }
-
-    public String updateUser(
-            int id,
-            String password,
-            String first_name,
-            String last_name,
-            String sex,
-            String status,
-            String avatar
-    ) {
-        if ((id < 1) || (StringUtils.isEmpty(password)) || (StringUtils.isEmpty(first_name)) ||
-                (StringUtils.isEmpty(last_name)) || (StringUtils.isEmpty(sex)) ||
-                (StringUtils.isEmpty(status)) || (StringUtils.isEmpty(avatar))) {
-            return "Bad User";
-        }
-        NewUserDTO user = new NewUserDTO();
-        user.setId(id);
-        user.setPassword(Encoder.hash256(password));
-        user.setFirstName(first_name);
-        user.setLastName(last_name);
-        user.setSex(sex);
-        user.setStatus(status);
-        user.setAvatar_url(avatar);
-        return new Gson().toJson(database.updateUser(user, id));
-    }
-
-    public String deleteUser(
-            int id
-    ) {
-        if (id < 1) return "Bad user ID";
-        return new Gson().toJson(database.deleteUser(id));
+        return database.getFullUser(id);
     }
 
     public String searchUsers(
             String searchQuery
     ) {
-        if (StringUtils.isEmpty(searchQuery)) return "Bad Query";
+        if (StringUtils.isEmpty(searchQuery)) {
+            return "Bad Query";
+        }
         return new Gson().toJson(database.searchUsers(searchQuery));
     }
 
     public String getConversations(
             int id
     ) {
-        if (id < 1) return "Bad conversation ID";
+        if (id < 1) {
+            return "Bad conversation ID";
+        }
         return new Gson().toJson(database.getConversations(id));
     }
 
     public String getDialogs(
             int id
     ) {
-        if (id < 1) return "Bad dialog ID";
+        if (id < 1) {
+            return "Bad dialog ID";
+        }
         return new Gson().toJson(database.getDialogs(id));
     }
 
@@ -271,9 +220,12 @@ public class BLL {
             String title,
             String users
     ) {
-        if (title.equals("")) title = null;
-        if ((admin_id < 1) || (StringUtils.isEmpty(users)))
+        if (title.equals("")) {
+            title = null;
+        }
+        if ((admin_id < 1) || (StringUtils.isEmpty(users))) {
             return "Bad admin ID or title or users list(string) is empty";
+        }
         ConversationDTO conversation = new ConversationDTO();
         conversation.setAdmin_id(admin_id);
         conversation.setTitle(title);
@@ -296,7 +248,7 @@ public class BLL {
         if (file != null && !file.getOriginalFilename().isEmpty()) {
             String resultFilename;
 
-            if (file.getSize() == 0){
+            if (file.getSize() == 0) {
                 return new Gson().toJson(database.setMessage(message));
             }
 
@@ -321,8 +273,9 @@ public class BLL {
             Integer id,
             Integer message_id
     ) {
-        if ((conversation_id < 1) || (id < 1) || (message_id < 1))
+        if ((conversation_id < 1) || (id < 1) || (message_id < 1)) {
             return "Bad conversation_id(int) or id of user(int) or id(int) of message";
+        }
         return new Gson().toJson(database.getMessages(conversation_id, id, message_id));
     }
 
@@ -330,14 +283,18 @@ public class BLL {
             String searchQuery,
             Integer conversation_id
     ) {
-        if (StringUtils.isEmpty(searchQuery) || (conversation_id < 1)) return "Bad Query or id of conversation";
+        if (StringUtils.isEmpty(searchQuery) || (conversation_id < 1)) {
+            return "Bad Query or id of conversation";
+        }
         return new Gson().toJson(database.searchInConversation(searchQuery, conversation_id));
     }
 
     public String searchConversations(
             String searchQuery
     ) {
-        if (StringUtils.isEmpty(searchQuery)) return "Bad Query";
+        if (StringUtils.isEmpty(searchQuery)) {
+            return "Bad Query";
+        }
         return new Gson().toJson(database.searchConversations(searchQuery));
     }
 
@@ -345,7 +302,9 @@ public class BLL {
             Integer conversation_id,
             Integer id
     ) {
-        if ((conversation_id < 1) || (id < 1)) return "Bad  conversation_id(int) or id of user(int)";
+        if ((conversation_id < 1) || (id < 1)) {
+            return "Bad  conversation_id(int) or id of user(int)";
+        }
         return new Gson().toJson(database.joinTheConversation(conversation_id, id));
     }
 
@@ -353,7 +312,9 @@ public class BLL {
             Integer conversation_id,
             Integer id
     ) {
-        if ((conversation_id < 1) || (id < 1)) return "Bad conversation_id(int) or id of user(int)";
+        if ((conversation_id < 1) || (id < 1)) {
+            return "Bad conversation_id(int) or id of user(int)";
+        }
         return new Gson().toJson(database.leaveTheConversation(conversation_id, id));
     }
 
@@ -362,8 +323,9 @@ public class BLL {
             Integer id,
             Integer count
     ) {
-        if ((conversation_id < 1) || (id < 1) || count < 0)
+        if ((conversation_id < 1) || (id < 1) || count < 0) {
             return "Bad conversation_id(int) or id of user(int) or count(int) of messages";
+        }
         return new Gson().toJson(database.setUnreadMessages(conversation_id, id, count));
     }
 
@@ -371,20 +333,25 @@ public class BLL {
             Integer conversation_id,
             Integer id
     ) {
-        if ((conversation_id < 1) || (id < 1)) return "Bad User conversation_id(int) or id of user(int) number";
+        if ((conversation_id < 1) || (id < 1)) {
+            return "Bad User conversation_id(int) or id of user(int) number";
+        }
         return new Gson().toJson(database.deleteConversation(conversation_id, id));
     }
 
     public String setStatusOnline(Integer id, Integer status) {
-        if ((id < 1) || (status != 1 && status != 2 && status != 3 && status != 4))
+        if ((id < 1) || (status != 1 && status != 2 && status != 3 && status != 4)) {
             return "Bad User ID(int) or Status(int) number";
+        }
         return new Gson().toJson(database.setStatusOnline(id, status));
     }
 
     public String setAvatar(int userID, MultipartFile file) {
-        if (userID < 1 || file.isEmpty()) return "Bad User ID";
+        if (userID < 1 || file.isEmpty()) {
+            return "Bad User ID";
+        }
         String resultFilename;
-        NewUserDTO user = database.getPUser(userID);
+        NewUserDTO user = database.getFullUser(userID);
         if (!file.getOriginalFilename().isEmpty()) {
             String uuidFile = UUID.randomUUID().toString();
             resultFilename = uuidFile + "." + file.getOriginalFilename();

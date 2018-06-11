@@ -10,7 +10,7 @@ public interface AbstractDal {
     Boolean loginAlreadyExists(String login);
     Boolean setUser(NewUserDTO item);
     UserDTO getUser(int id);
-    NewUserDTO getPUser(int id);
+    NewUserDTO getFullUser(int id);
     Boolean updateActivation(NewUserDTO item);
     Boolean updateUser(NewUserDTO item, Integer id);
     Boolean deleteUser(int id);

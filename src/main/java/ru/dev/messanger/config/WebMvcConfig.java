@@ -10,6 +10,7 @@ import ru.dev.messanger.controller.AuthoriseInterceptor;
 
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
+
     public WebMvcConfig(BLL bll) {
         this.bll = bll;
     }
@@ -33,7 +34,5 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .addResourceLocations("file://" + uploadPath + "/");
         registry.addResourceHandler("/img/profiles/**")
                 .addResourceLocations("file://" + uploadProfilePath + "/");
-        registry.addResourceHandler("/static/**") //TODO: ВРОДЕ КАК НЕ ОБЯЗАТЕЛЬНО
-                .addResourceLocations("classpath:/static/");   //
     }
 }
