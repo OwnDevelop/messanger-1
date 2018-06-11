@@ -50,23 +50,23 @@ public class RESTController {
         return bll.getUser(id);
     }
 
-    @RequestMapping(value = "/updateUser", method = RequestMethod.GET, produces = "application/json")
-    public String updateUser(
-            @RequestParam int id,
-            @RequestParam String password,
-            @RequestParam String first_name,
-            @RequestParam String last_name,
-            @RequestParam String sex,
-            @RequestParam String status,
-            @RequestParam String avatar
-    ) {
-        return bll.updateUser(id, password, first_name, last_name, sex, status, avatar);
-    }
+//    @RequestMapping(value = "/updateUser", method = RequestMethod.GET, produces = "application/json")
+//    public String updateUser(
+//            @RequestParam int id,
+//            @RequestParam String password,
+//            @RequestParam String first_name,
+//            @RequestParam String last_name,
+//            @RequestParam String sex,
+//            @RequestParam String status,
+//            @RequestParam String avatar
+//    ) {
+//        return bll.updateUser(id, password, first_name, last_name, sex, status, avatar);
+//    }
 
-    @RequestMapping(value = "/deleteUser", method = RequestMethod.GET, produces = "application/json")
-    public String deleteUser(@RequestParam int id) {
-        return bll.deleteUser(id);
-    }
+//    @RequestMapping(value = "/deleteUser", method = RequestMethod.GET, produces = "application/json")
+//    public String deleteUser(@RequestParam int id) {
+//        return bll.deleteUser(id);
+//    }
 
     @RequestMapping(value = "/searchUsers", method = RequestMethod.POST, produces = "application/json")
     public String searchUsers(@RequestParam String searchQuery) {
@@ -167,7 +167,7 @@ public class RESTController {
 
     @RequestMapping(value = "/setAvatar", method = RequestMethod.POST, produces = "application/json")
     public String setAvatar(
-            @Valid int user,
+            int user,
             @RequestParam("file") MultipartFile file
     ) {
         return bll.setAvatar(user, file);
