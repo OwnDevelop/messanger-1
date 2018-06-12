@@ -54,7 +54,7 @@ public class BLL {
     public Boolean checkToken(String token) {
         System.out.println(token);
         if (token == null || token.isEmpty()) {
-            return false;
+            return true;
         }
 
         if (userToken.size() == 0) {

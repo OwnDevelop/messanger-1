@@ -28,17 +28,17 @@ public class RESTController {
         return bll.authorization(login, password);
     }
 
-    @RequestMapping(value = "/emailAlreadyExists", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/emailAlreadyExists", method = RequestMethod.POST, produces = "application/json")
     public String emailAlreadyExists(@RequestParam String email) {
         return bll.emailAlreadyExists(email);
     }
 
-    @RequestMapping(value = "/loginAlreadyExists", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/loginAlreadyExists", method = RequestMethod.POST, produces = "application/json")
     public String loginAlreadyExists(@RequestParam String login) {
         return bll.loginAlreadyExists(login);
     }
 
-    @RequestMapping(value = "/setUser", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/setUser", method = RequestMethod.POST, produces = "application/json")
     public String setUser(
             @Valid NewUserDTO user
     ) {
