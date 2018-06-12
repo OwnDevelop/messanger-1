@@ -824,9 +824,9 @@ public class Database implements AbstractDal {
         user.setLastName(rs.getString(6));
         user.setSex(rs.getString(7));
         user.setCreated_at(rs.getTimestamp(8).toInstant());
-        user.setStatus(rs.getString(9));
+        user.setActivation_code(rs.getString(9));
         user.setAvatar_url(rs.getString(10));
-        user.setActivation_code(rs.getString(11));
+        user.setStatus(rs.getString(11));
         return user;
     }
 
