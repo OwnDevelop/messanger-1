@@ -63,6 +63,8 @@ APP.models.entities = {
         littleFile: ['Too small file', 'Слишком маленький файл'],
         picture: ['picture', 'картинка'],
         developers: ['Developers', 'Разработчики'],
+        enableForAdding: ['Can be invited', 'Можно добавить'],
+        conversLength: ['Title too short', 'Слишком короткое название'],
         developersList: [{
             url: 'img/defaults/front.png',
             name: ['Sergey Kovalenko', 'Коваленко Сергей'],
@@ -200,6 +202,10 @@ APP.utilities.actions = (function () {
                 html = "";
                 conversations = request;
 
+                conversations.sort(function (a, b) {
+                    return a.title < b.title;
+                });
+
                 for (i = 0; i < conversations.length; i += 1) {
                     elem = conversations[i];
 
@@ -273,6 +279,9 @@ APP.utilities.actions = (function () {
                 data: {id: entities.me.id},
                 method: 'POST',
                 success: function (request) {
+                    dialogs.sort(function (a, b) {
+                        return a.firstName < b.firstName;
+                    });
                     update(request, dialogs, '.dialog', 'firstName');
                 },
                 error: function (error) {
@@ -286,6 +295,9 @@ APP.utilities.actions = (function () {
                 data: {id: entities.me.id},
                 method: 'POST',
                 success: function (request) {
+                    conversations.sort(function (a, b) {
+                        return a.title < b.title;
+                    });
                     update(request, conversations, '.conversation', 'title');
                 },
                 error: function (error) {
@@ -313,7 +325,7 @@ APP.utilities.actions = (function () {
                 while (arr[i].id !== newArr[j].id) {
                     j++;
                 }
-                updateDialog();
+                updateDialog(i);
                 newArr.splice(j, 1);
                 j = 0;
             }
@@ -321,7 +333,6 @@ APP.utilities.actions = (function () {
 
         //если добавился новый диалог/беседа
         if (newArr.length > 0) {
-            console.log(newArr);
 
             for (i = 0; i < newArr.length; i += 1) {
                 elem = arr[i];
@@ -778,7 +789,7 @@ APP.utilities.actions = (function () {
             html += '<div class="dialog participant"><img class="profile-photo" src="' + elem.avatar_url + '" alt="user">' +
                 '<a class="dial-name">' + elem.firstName + ' ' + elem.lastName + '</a>' +
                 '<span class="last-message-time"></span>' +
-                '<div class="short-message ellipsis">' + elem.status + '</div></div>';
+                '<div class="short-message ellipsis">' + lang.enableForAdding[lType] + '</div></div>';
         }
 
         $('.modal-title:eq(0)').html(lang.selectParticipants[lType]);
@@ -793,11 +804,15 @@ APP.utilities.actions = (function () {
         $participant = $('.participant');
 
         for (i = 0; i < $participant.length; i += 1) {
-            $participant[i].current = dialogs[i].id;
+            $participant[i].current = dialogs[i].from_id;
             $participant[i].onclick = function () {
                 $(this).toggleClass('selected');
             };
         }
+
+        $('#titleName').on('focus', function () {
+            $(this).removeClass('invalid');
+        });
 
         $('.start-convers').on('click', function () {
             var $people = $('.selected'),
@@ -811,8 +826,8 @@ APP.utilities.actions = (function () {
             }
 
             if (!title || title.length < 5) {
-                $title.addClass('invalid')
-                $title.focus();
+                $title.addClass('invalid');
+                alert(lang.conversLength[lType]);
                 return;
             }
 
@@ -900,6 +915,7 @@ APP.utilities.actions = (function () {
 
         if (e.key === "Enter") {
             if (value) {
+                canUpdate = false;
                 $.ajax({
                         url: '/searchInConversation',
                         method: 'POST',
@@ -916,6 +932,8 @@ APP.utilities.actions = (function () {
                         }
                     }
                 );
+            } else {
+                canUpdate = true;
             }
         }
     }
