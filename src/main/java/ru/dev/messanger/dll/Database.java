@@ -30,10 +30,10 @@ public class Database implements AbstractDal {
     public Database() {
 
         properties = new Properties();
-        properties.setProperty("url", URL);
+        properties.setProperty("url", "jdbc:mariadb://localhost:3306/messenger?useUnicode=yes&characterEncoding=UTF-8");
         properties.setProperty("jdbc.driver", "org.mariadb.jdbc.Driver");
-        properties.setProperty("user", NAMEUSER);
-        properties.setProperty("password", PASSWORD);
+        properties.setProperty("user", "root");
+        properties.setProperty("password", "root");
 
         url = "jdbc:mariadb://localhost:3306/messenger?useUnicode=yes&characterEncoding=UTF-8";
 
