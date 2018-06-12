@@ -130,7 +130,7 @@ public class BLL {
 
         UserDTO user = database.authorization(login, Encoder.hash256(password));
         if (user == null) {
-            return new Gson().toJson("not activated");
+            return new Gson().toJson("Incorrect password");
         }
 
         if (user.getActivation_code() == null) {

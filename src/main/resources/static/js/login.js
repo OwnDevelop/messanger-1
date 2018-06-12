@@ -2,7 +2,7 @@
 ///<reference path="jquery.validate.js">
 
 $.validator.addMethod("lettersDegitsOnly", function (value, element) {
-    var regexp = /^[\-а-яА-Яa-zA-Z0-9@]+$/i;
+    var regexp = /^[\-а-яА-Яa-zA-Z0-9@.]+$/i;
     return this.optional(element) || regexp.test(value);
 }, "Please enter letters or digits only");
 
@@ -39,32 +39,28 @@ $('document').ready(function () {
     });
 
     $('.send').on('click', function (e) {
-        var a = $login.val();
+        var value = $login.val();
         e.preventDefault();
         //проверка, зареган ли такой пользователь
         $.ajax({
             url: '/loginAlreadyExists',
-            data: {login: a},
+            data: {login: value},
             method: 'POST',
             success: function (request) {
                 if (request) {
+                    authorize(value);
+                } else {
                     $.ajax({
-                        url: '/authorization',
-                        data: {login: $login.val(), password: $password.val()},
+                        url: '/emailAlreadyExists',
+                        data: {email: value},
                         method: 'POST',
                         success: function (answer) {
-                            var $input = $('#token');
-                            console.log(answer);
-
-                            if (answer) {
-                                localStorage.setItem("user", JSON.stringify(answer));
-                                $input.val(answer.token);
-                                $('#form').submit();
+                            if (answer){
+                                authorize(value);
                             } else {
-                                $password.addClass('invalid');
-                                $('#password').addClass('invalid');
-                                $passError.html('Incorrect password');
-                                $passError.css('display', 'block');
+                                $login.addClass('invalid');
+                                $loginError.css('display', 'block');
+                                $loginError.html('Incorrect login or email');
                             }
                         },
                         error: function (error) {
@@ -72,9 +68,6 @@ $('document').ready(function () {
                             alert('server error');
                         }
                     });
-                } else {
-                    $login.addClass('invalid');
-                    $loginError[0].innerHTML = 'Uncorrect login';
                 }
             },
             error: function (error) {
@@ -83,4 +76,38 @@ $('document').ready(function () {
             }
         });
     });
+
+    function authorize(value) {
+        $.ajax({
+            url: '/authorization',
+            data: {login: value, password: $password.val()},
+            method: 'POST',
+            success: function (answer) {
+                var $input = $('#token');
+
+                switch (answer) {
+                    case "User is not activated yet":
+                        $login.addClass('invalid');
+                        $loginError.css('display', 'block');
+                        $loginError.html(answer);
+                        break;
+                    case "No Such User":
+                    case "Incorrect password":
+                        $password.addClass('invalid');
+                        $passError.css('display', 'block');
+                        $passError.html(answer);
+                        break;
+                    default:
+                        localStorage.setItem("user", JSON.stringify(answer));
+                        $input.val(answer.token);
+                        $('#form').submit();
+                        break;
+                }
+            },
+            error: function (error) {
+                console.log(error);
+                alert('server error');
+            }
+        });
+    }
 });
