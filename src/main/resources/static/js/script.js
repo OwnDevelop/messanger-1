@@ -286,7 +286,6 @@ APP.utilities.actions = (function () {
                 },
                 error: function (error) {
                     console.log(error);
-                    alert('server error');
                 }
             });
 
@@ -302,7 +301,6 @@ APP.utilities.actions = (function () {
                 },
                 error: function (error) {
                     console.log(error);
-                    alert('server error');
                 }
             });
         }
@@ -443,7 +441,6 @@ APP.utilities.actions = (function () {
                             },
                             error: function (error) {
                                 console.log(error);
-                                alert('server error');
                             }
                         });
                     }
@@ -464,7 +461,6 @@ APP.utilities.actions = (function () {
                         },
                         error: function (error) {
                             console.log(error);
-                            alert('message error');
                         }
                     });
                 }
@@ -642,7 +638,6 @@ APP.utilities.actions = (function () {
                                             firstMessegeAJAX(request);
                                         },
                                         error: function (error) {
-                                            alert('server error');
                                             console.log(error);
                                         }
                                     });
@@ -735,7 +730,6 @@ APP.utilities.actions = (function () {
                             },
                             error: function (error) {
                                 console.log(error);
-                                alert('server error');
                             }
                         });
 
@@ -759,7 +753,6 @@ APP.utilities.actions = (function () {
                                     },
                                     error: function (error) {
                                         console.log(error);
-                                        alert('server error');
                                     }
                                 });
                             }
@@ -846,7 +839,6 @@ APP.utilities.actions = (function () {
                 },
                 error: function (err) {
                     console.log(err);
-                    alert('server error');
                 }
             });
 
@@ -928,7 +920,6 @@ APP.utilities.actions = (function () {
                         },
                         error: function (error) {
                             console.log(error);
-                            alert('error');
                         }
                     }
                 );
@@ -973,7 +964,6 @@ APP.utilities.actions = (function () {
                     },
                     error: function (e) {
                         console.log(e);
-                        alert('server error');
                     }
                 });
 
@@ -993,7 +983,6 @@ APP.utilities.actions = (function () {
                     },
                     error: function (error) {
                         console.log(error);
-                        alert('server error');
                     }
                 });
             } else {
@@ -1077,7 +1066,6 @@ APP.utilities.actions = (function () {
                             },
                             error: function (error) {
                                 console.log(error);
-                                alert('server error');
                             }
                         });
                     }
@@ -1112,7 +1100,6 @@ APP.utilities.actions = (function () {
             },
             error: function (error) {
                 console.log(error);
-                alert('server error');
             }
         });
     }
@@ -1200,7 +1187,6 @@ APP.utilities.actions = (function () {
                 },
                 error: function (error) {
                     console.log(error);
-                    alert('server error');
                 }
             });
         });
@@ -1287,7 +1273,6 @@ APP.utilities.actions = (function () {
                 },
                 error: function (error) {
                     console.log(error);
-                    alert('server error');
                 }
             });
         }

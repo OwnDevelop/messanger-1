@@ -1,0 +1,17 @@
+1) Выполнить database.sql
+
+2) Перейти в /src/main/resources
+
+3) Открыть файл application.properties
+
+4) Заменить поля database.user и database.password на соответствующие
+Пример:
+database.user=root
+database.password=root
+
+5) Заменить upload.path и image.profile.path на полный путь для конкретной машины
+в виде: upload.path=/.../src/main/resources/uploads
+	image.profile.path=/.../src/main/resources/avatars
+Пример: 
+upload.path=/D:/JS study/full messanger/messanger/src/main/resources/uploads
+image.profile.path=/D:/JS study/full messanger/messanger/src/main/resources/avatars

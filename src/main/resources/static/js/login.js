@@ -65,14 +65,12 @@ $('document').ready(function () {
                         },
                         error: function (error) {
                             console.log(error);
-                            alert('server error');
                         }
                     });
                 }
             },
             error: function (error) {
                 console.log(error);
-                alert('server error');
             }
         });
     });
@@ -106,7 +104,6 @@ $('document').ready(function () {
             },
             error: function (error) {
                 console.log(error);
-                alert('server error');
             }
         });
     }
