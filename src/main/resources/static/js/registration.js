@@ -95,7 +95,7 @@ $('document').ready(function () {
                             firstName: firstName,
                             lastName: lastName,
                             sex: sex,
-                            status: 4,
+                            status: 'Offline',
                             avatar_url: url
                         },
                         method: 'POST',
