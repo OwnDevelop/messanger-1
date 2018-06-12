@@ -23,7 +23,7 @@ public class RESTController {
         this.bll = bll;
     }
 
-    @RequestMapping(value = "/authorization", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/authorization", method = RequestMethod.POST, produces = "application/json")
     public String authorization(@RequestParam String login, @RequestParam String password) {
         return bll.authorization(login, password);
     }

@@ -45,11 +45,13 @@ $('document').ready(function () {
         $.ajax({
             url: '/loginAlreadyExists',
             data: {login: a},
+            method: 'POST',
             success: function (request) {
                 if (request) {
                     $.ajax({
                         url: '/authorization',
                         data: {login: $login.val(), password: $password.val()},
+                        method: 'POST',
                         success: function (answer) {
                             var $input = $('#token');
                             console.log(answer);
