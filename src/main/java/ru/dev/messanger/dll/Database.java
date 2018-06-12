@@ -605,20 +605,13 @@ public class Database implements AbstractDal {
                     st.executeQuery();
 
                     try (ResultSet rs = st.getResultSet()) {
+                        int k=0;
                         while (rs.next()) {
-                            SqlQuery = "UPDATE messages LEFT JOIN participants ON messages.conversation_id=participants.conversation_id " +
-                                    "SET messages.to_id='" + id +
-                                    "' WHERE messages.conversation_id=" + i + " AND user_id=" + id;
-
-                            try (PreparedStatement str = connection.prepareStatement(SqlQuery)) {
-                                str.executeQuery();
-                            }
                             if (rs.getInt(1) > 2) {
-                                SqlQuery = "SELECT messages.id, messages.conversation_id, title, from_id, url as avatar_url, message, messages.created_at, unread_messages " +
+                                SqlQuery = "SELECT messages.id, conversation_id, title, from_id, url as avatar_url, message, messages.created_at " +
                                         "FROM messages LEFT JOIN conversations ON messages.conversation_id=conversations.id " +
                                         "LEFT JOIN users ON messages.from_id=users.id LEFT JOIN photos ON users.avatar=photos.id " +
-                                        "LEFT JOIN participants ON participants.user_id=messages.to_id " +
-                                        "WHERE messages.conversation_id=" + i + " AND user_id=" + id + " ORDER BY messages.id DESC LIMIT 1;";
+                                        "WHERE messages.conversation_id=" + i + " ORDER BY messages.id DESC LIMIT 1;";
 
                                 try (PreparedStatement stm = connection.prepareStatement(SqlQuery)) {
                                     stm.executeQuery();
@@ -632,9 +625,22 @@ public class Database implements AbstractDal {
                                             msg.setImage_url(rst.getString(5));
                                             msg.setMessage(rst.getString(6));
                                             msg.setCreated_at(rst.getTimestamp(7).toInstant());
-                                            msg.setCountUnread(rst.getInt(8));
 
                                             conversations.add(msg);
+                                        }
+                                    }
+                                }
+                                SqlQuery = "SELECT unread_messages " +
+                                        "FROM participants WHERE conversation_id=" + i + " AND user_id="+id;
+
+                                try (PreparedStatement stm = connection.prepareStatement(SqlQuery)) {
+                                    stm.executeQuery();
+                                    try (ResultSet rst = stm.getResultSet()) {
+                                        while (rst.next()) {
+                                            MessageConversationDTO msg = conversations.get(k);
+                                            msg.setCountUnread(rst.getInt(1));
+
+                                            conversations.set(k,msg);
                                         }
                                     }
                                 }
