@@ -886,6 +886,7 @@ APP.utilities.actions = (function () {
         var foundMessages = [];
         fields.$searchField.val('');
         fields.$searchField.focus();
+        fields.$searchField.attr('placeholder', lang.messageSearch[lType]);
         fields.$searchField[0].conversId = conversId;
 
         fields.$searchField[0].removeEventListener('keyup', userSearchListener);
@@ -923,6 +924,7 @@ APP.utilities.actions = (function () {
         foundConversations = [];
 
         fields.$searchField.val('');
+        fields.$searchField.attr('placeholder', lang.userSearch[lType]);
 
         fields.$searchField[0].removeEventListener('keyup', userSearchListener);
         fields.$searchField[0].removeEventListener('keyup', messageSearchListener);
@@ -949,6 +951,7 @@ APP.utilities.actions = (function () {
                         }
                         profiles = request;
                         showSearchResults(request);
+                        initializeScroll();
                     },
                     error: function (e) {
                         console.log(e);
@@ -968,6 +971,7 @@ APP.utilities.actions = (function () {
                         }
                         foundConversations = request;
                         showSearchResults(request);
+                        initializeScroll();
                     },
                     error: function (error) {
                         console.log(error);

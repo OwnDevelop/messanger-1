@@ -98,7 +98,9 @@ $('document').ready(function () {
                             status: 4,
                             avatar_url: url
                         },
+                        method: 'POST',
                         success: function (request) {
+                            console.log(request);
                             if (request) {
                                 location.replace('/signin');
                             } else {
@@ -124,6 +126,7 @@ $('document').ready(function () {
         $.ajax({
             url: '/loginAlreadyExists',
             data: {login: login},
+            method: 'POST',
             success: function (request) {
                 if (!request) {
                     isLoginValide = true;
@@ -143,6 +146,7 @@ $('document').ready(function () {
         $.ajax({
             url: '/emailAlreadyExists',
             data: {email: email},
+            method: 'POST',
             success: function (request) {
                 if (!request) {
                     isEmailValide = true;
