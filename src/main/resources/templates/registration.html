@@ -36,10 +36,12 @@
                         <div class="form-group">
                             <label for="login">Login</label>
                             <input type="text" class="form-control" id="login" name="login" required>
+                            <label id="login-error" class="invalid" for="login"></label>
                         </div>
                         <div class="form-group">
                             <label for="email">Email address</label>
                             <input type="email" class="form-control" id="email" name="email" required>
+                            <label id="email-error" class="invalid" for="email"></label>
                         </div>
                         <div class="form-group">
                             <label for="password">Password</label>
@@ -55,12 +57,6 @@
                             <label class="radio-inline">
                                 <input type="radio" name="sex" value="female">Female</label>
                         </div>
-                        <!--<div class="form-group">-->
-                            <!--<input type="hidden" class="form-control" id="status" name="status" value="Offline">-->
-                        <!--</div>-->
-                        <!--<div class="form-group">-->
-                            <!--<input type="hidden" class="form-control" id="avatar_url" name="avatar_url" value="img/defaults/image012.jpg">-->
-                        <!--</div>-->
                         <div class="form-group">
                             <button type="submit" class="btn btn-default send">Sign up</button>
                         </div>

@@ -55,6 +55,8 @@ $('document').ready(function () {
         $email = $("#email"),
         $password = $("#password"),
         $confirm_pass = $("#confirm-pass"),
+        $loginError = $('#login-error'),
+        $emailError = $('#email-error'),
         isLoginValide = false,
         isEmailValide = false;
 
@@ -104,7 +106,7 @@ $('document').ready(function () {
                             if (request) {
                                 location.replace('/signin');
                             } else {
-                                console.log('косяк с добавлением');
+                                alert('We cannot create account with current parameters');
                             }
                         },
                         error: function (error) {
@@ -117,7 +119,7 @@ $('document').ready(function () {
         }
 
         function checkOnFieldsFullFill() {
-            return login.length > 6 && firstName.length > 6 && lastName.length > 6 && email.length > 6 && password.length > 6 && confirmPass.length > 6;
+            return login.length > 3 && firstName.length > 3 && lastName.length > 3 && email.length > 6 && password.length > 6 && confirmPass.length > 6;
         }
     }
 
@@ -133,6 +135,8 @@ $('document').ready(function () {
                 } else {
                     isLoginValide = false;
                     $login.addClass('invalid');
+                    $loginError.css('display', 'block');
+                    $loginError.html('Login already in use');
                 }
             },
             error: function (error) {
@@ -153,6 +157,8 @@ $('document').ready(function () {
                 } else {
                     isEmailValide = false;
                     $email.addClass('invalid');
+                    $emailError.css('display', 'block');
+                    $emailError.html('Email already in use');
                 }
             },
             error: function (error) {
